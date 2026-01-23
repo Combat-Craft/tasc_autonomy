@@ -1,2 +1,2 @@
 # tasc_autonomy
-Autonomous Navigation, perception, and sensor fusion
+Sub-packages: `autonomy_sensors`, `autonomy_vision`
