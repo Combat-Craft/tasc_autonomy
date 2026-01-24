@@ -1,0 +1,59 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 30
+    # use_sim_time: true
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+# https://github.com/ros-controls/ros2_control_demos/blob/humble/example_2/bringup/config/diffbot_controllers.yaml
+# https://control.ros.org/humble/doc/ros2_controllers/doc/controllers_index.html#controllers-for-wheeled-mobile-robots
+# https://github.com/mvipin/perceptor/blob/main/config/my_controllers.yaml
+diff_drive_controller:
+  ros__parameters:
+    left_wheel_names: ["left_wheels"]
+    right_wheel_names: ["right_wheels"]
+
+    wheel_separation: 0.50 # assuming this is centre to centre
+    wheels_per_side: 1  # actually 2, but both are controlled by 1 signal ??? CHECK IF SO
+    wheel_radius: 0.20 # might need to update later
+
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    odom_frame_id: odom
+    base_frame_id: base_link
+    # These values should be tuned to your robot’s sample odometry data, but these values are a good place to start
+    pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]   
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+    # default is [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    position_feedback: false
+    open_loop: false # If set to true the odometry of the robot will be calculated from the commanded values and not from feedback.
+    enable_odom_tf: true # Publish transformation between odom_frame_id and base_frame_id
+
+    cmd_vel_timeout: 0.5 # seconds
+    publish_limited_velocity: true
+    velocity_rolling_window_size: 10
+
+    linear.x.max_velocity: .NAN
+    linear.x.min_velocity: .NAN
+    linear.x.max_acceleration: .NAN
+    linear.x.max_deceleration: .NAN
+    linear.x.max_acceleration_reverse: .NAN
+    linear.x.max_deceleration_reverse: .NAN
+    linear.x.max_jerk: .NAN
+    linear.x.min_jerk: .NAN
+
+    angular.z.max_velocity: .NAN
+    angular.z.min_velocity: .NAN
+    angular.z.max_acceleration: .NAN
+    angular.z.max_deceleration: .NAN
+    angular.z.max_acceleration_reverse: .NAN
+    angular.z.max_deceleration_reverse: .NAN
+    angular.z.max_jerk: .NAN
+    angular.z.min_jerk: .NAN
