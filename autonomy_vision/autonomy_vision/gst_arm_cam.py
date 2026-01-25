@@ -17,13 +17,20 @@ class ArmCamCompressed(Node):
         )
 
         # RTP / MJPEG from USB camera
+        # gst = (
+        #     "udpsrc port=5002 caps=application/x-rtp,media=video,encoding-name=JPEG,payload=26 ! "
+        #     "rtpjpegdepay ! "
+        #     "jpegdec ! "
+        #     "videoconvert ! "
+        #     "appsink"
+        # )
         gst = (
-            "udpsrc port=5002 caps=application/x-rtp,media=video,encoding-name=JPEG,payload=26 ! "
-            "rtpjpegdepay ! "
-            "jpegdec ! "
+            "v4l2src device=/dev/video0 io-mode=2 ! "
+            "video/x-raw,format=YUY2,width=640,height=480,framerate=30/1 ! "
             "videoconvert ! "
-            "appsink"
+            "appsink drop=true sync=false"
         )
+
 
         self.cap = cv2.VideoCapture(gst, cv2.CAP_GSTREAMER)
         if not self.cap.isOpened():

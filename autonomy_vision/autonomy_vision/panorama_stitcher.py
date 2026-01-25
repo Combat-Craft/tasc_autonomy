@@ -42,7 +42,6 @@ class PanoramaSweeper(Node):
             10
         )
 
-
         # Kick off sweep after a short delay
         self.create_timer(2.0, self.start_sweep)
 

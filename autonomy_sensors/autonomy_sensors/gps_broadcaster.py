@@ -4,8 +4,10 @@ from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix, NavSatStatus
 
 import serial
-import pynmea2
+import pynmea2 #type: ignore
 
+#To be used with the "gps_forward" sketch
+#doesn't work because I don't have the pyNMEA library (meh)
 
 class SerialGPSNode(Node):
     def __init__(self):
