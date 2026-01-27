@@ -30,4 +30,16 @@
       </geometry>
   </collision>
 
+  <gazebo reference="imu_link">
+    <sensor type="imu" name="imu_sensor">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+  
+      <plugin name="gazebo_ros_imu_sensor" filename="libgazebo_ros_imu_sensor.so">
+        <topicName>/imu/data</topicName>
+        <frameName>imu_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
 </robot>
