@@ -10,4 +10,5 @@ I placed  **ros2_control.xacro** here as it is a xacro file, but **ros2controls_
  * All were missing collision, added them by copying the geometry from visual, except for complicated ones like Orbbec.
  * All also missing <inertial> within the <link>, but not sure if they're mandatory?
  * No RGB camera found?
+ * MAY NEED TO UPLOAD ORBBEC MESHES 
 
