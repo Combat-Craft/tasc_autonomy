@@ -6,6 +6,7 @@ I placed  **ros2_control.xacro** here as it is a xacro file, but **ros2controls_
 ### 27/01/2027 Notes:
 
  * Seperated URDF into sperate XACRO files for each sensor, leaving out ASIMOV as it looks we are moving away.
+   * HOWEVER I am including the original file that had them all together for reference. 
  * All were missing collision, added them by copying the geometry from visual, except for complicated ones like Orbbec.
  * All also missing <inertial> within the <link>, but not sure if they're mandatory?
  * No RGB camera found?
