@@ -18,6 +18,9 @@
         <color rgba="0 1 0 1"/>
       </material>
     </visual>
+
+    <!-- no inertial? not sure if it needs it or not-->
+
   </link>
 
   <!-- no collision? just copied geo from visual, may need edits-->
