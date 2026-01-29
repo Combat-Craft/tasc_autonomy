@@ -19,8 +19,14 @@
         <color rgba="1 1 0 1"/>
       </material>
     </visual>
-
-    <!-- no inertial? not sure if it needs it or not-->
+    <!-- not accurate inertial. rec is 0.001 for 0.1m box of 0.6kg. This thing is about half the size and lighter.-->
+    <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0"
+                 iyy="0.00001" iyz="0.0"
+                 izz="0.00001" />
+    </inertial>
 
   </link>
 
