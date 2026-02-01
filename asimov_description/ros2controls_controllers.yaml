@@ -14,8 +14,8 @@ controller_manager:
 # https://github.com/mvipin/perceptor/blob/main/config/my_controllers.yaml
 diff_drive_controller:
   ros__parameters:
-    left_wheel_names: ["left_wheels"]
-    right_wheel_names: ["right_wheels"]
+    left_wheel_names: ["fl-wheel", "rl-wheel"]
+    right_wheel_names: ["fr-wheel", "rr-wheel"]
 
     wheel_separation: 0.50 # assuming this is centre to centre
     wheels_per_side: 1  # actually 2, but both are controlled by 1 signal ??? CHECK IF SO
