@@ -1,3 +1,5 @@
+<!-- REPLACE MESH PATH WHEN FINALIZING ex file://$(find asimov_nav2test)/src/description/meshes/orbbec_meshes/gemini2_base_link.STL"-->
+
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
