@@ -1,3 +1,5 @@
+<!-- REPLACE MESH PATH WHEN FINALIZING ex file://$(find asimov_nav2test)/src/description/meshes/RL_wheel.STL-->
+
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ASIMOV_FINAL_v3">
   <link
