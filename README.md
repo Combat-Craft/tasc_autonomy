@@ -14,7 +14,7 @@ Overall:
 ### Steps
 1) cloned the entire main branch into a workspace i.e. ```$ mkdir -p ~/YOUR_WORKSPACE_NAME_HERE/src```
 2) cd and then worked inside ```$  ~/YOUR_WORKSPACE_NAME_HERE/src/tasc_autonomy ```
-3) Replace the main branch's ``` giskard_description ``` folder with this one's.
+3) Replace the main branch's ``` giskard_description ``` folder with this one's - ONLY THE FOLDER/PACKAGE giskard_description; ignore the others inside artemis branch.
 4) Source, build, source workspace. You can then launch test.launch.py to see it in both rviz and gazebo
 ```
 $ source /opt/ros/humble/setup.bash
