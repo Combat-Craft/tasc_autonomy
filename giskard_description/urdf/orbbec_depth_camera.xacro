@@ -416,7 +416,7 @@
   </link>
 
   <!-- Taken from giskard-->
-  <gazebo reference="camera_link">
+  <gazebo reference="orbbec_camera_link">
     <sensor name="depth_camera" type="depth">
       <visualize>true</visualize>
       <update_rate>30.0</update_rate>
