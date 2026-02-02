@@ -22,3 +22,7 @@ $ colcon build
 $ source install/local_setup.bash
 $ ros2 launch giskard_description test.launch.py
 ```
+
+### Extras if we have time
+ * could make a seperate materials.xacro then include them to futher modular-ize
+ * clean up simple inertials to use only the macros inside inertial.xacro, include them as needed (i.e. not ones ported from CAD files, just boxes and cylinders)
