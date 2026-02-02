@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <!-- Include the inertial file -->
+  <xacro:include filename="inertial.xacro" />
+
+  <!-- GPS Link (must exist as a link) -->
+  <link name="gps_link">
+      <visual>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+      </collision>
+
+      <xacro:box_inertia m="0.1" w="0.1" d="0.1" h="0.1"/>
+    </link>
+
+  <!-- GPS joint to attach it to base_link -->
+  <joint name="gps_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_link"/>
+    <origin xyz="0.2 0 0.01"/>   <!-- adjust height/offset as needed -->
+  </joint>
+
+  <!-- Gazebo GPS plugin -->
+  <gazebo reference="gps_link">
+    <sensor name="gps_sensor" type="gps">
+      <always_on>true</always_on>
+      <update_rate>5</update_rate>
+      <use_clock>true</use_clock>
+
+      <plugin name="gps_plugin" filename="libgazebo_ros_gps_sensor.so">
+        <ros>
+          <!-- no namespace -->
+          <namespace>/</namespace>
+          <use_sim_time>true</use_sim_time>  
+
+          <!-- remap output to /gps/fix -->
+          <remapping>~/out:=gps/fix</remapping>
+        </ros>
+
+        <!-- frame ID published in the /gps/fix message -->
+        <frame_name>gps_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
