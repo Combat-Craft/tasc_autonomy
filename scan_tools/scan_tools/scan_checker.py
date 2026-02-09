@@ -4,13 +4,13 @@ from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 import math
+from collections import deque
 
 
 class ScanChecker(Node):
     def __init__(self):
         super().__init__('scan_checker')
 
-        # Subscribe to laserScan because its tuff
         self.subscription = self.create_subscription(
             LaserScan,
             '/scan',
@@ -24,27 +24,56 @@ class ScanChecker(Node):
             10
         )
 
-        self.threshold = 0.5  # its in meters
+        # Detection threshold
+        self.threshold = 0.5  # meters
+
+        # Range sanity limits (adjust to your LiDAR)
+        self.min_valid_range = 0.1   # meters
+        self.max_valid_range = 8.0   # meters
+
+        # Temporal smoothing
+        self.history = deque(maxlen=5)
+
+        # Anti-flicker logic
+        self.close_count = 0
+        self.required_hits = 3
+
         self.get_logger().info('Scan checker started')
 
+
     def scan_callback(self, msg: LaserScan):
-        # Remove inf / NaN bcz extraneous and stuff
+        # Step 1: clean raw scan
         valid_ranges = [
             r for r in msg.ranges
-            if not math.isinf(r) and not math.isnan(r)
+            if self.min_valid_range <= r <= self.max_valid_range
+            and not math.isnan(r)
+            and not math.isinf(r)
         ]
 
         if not valid_ranges:
             return
 
-        min_distance = min(valid_ranges)
+        # Step 2: use percentile instead of raw min
+        valid_ranges.sort()
+        percentile_index = int(0.05 * len(valid_ranges))  # 5th percentile
+        closest_distance = valid_ranges[percentile_index]
 
+        # Step 3: temporal smoothing
+        self.history.append(closest_distance)
+        smoothed_distance = sum(self.history) / len(self.history)
+
+        # Step 4: persistence check
         status = String()
 
-        if min_distance < self.threshold:
-            status.data = f"CLOSE obstacle at {min_distance:.2f} m"
+        if smoothed_distance < self.threshold:
+            self.close_count += 1
         else:
-            status.data = f"FAR – closest obstacle at {min_distance:.2f} m"
+            self.close_count = 0
+
+        if self.close_count >= self.required_hits:
+            status.data = f"CLOSE obstacle at {smoothed_distance:.2f} m"
+        else:
+            status.data = f"FAR – closest obstacle at {smoothed_distance:.2f} m"
 
         self.publisher.publish(status)
         self.get_logger().info(status.data)
