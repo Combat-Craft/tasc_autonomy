@@ -25,7 +25,7 @@ class ScanChecker(Node):
         )
 
         # Detection threshold
-        self.threshold = 0.5  # meters
+        self.threshold = 0.35  # meters
 
         # Range sanity limits (adjust to your LiDAR)
         self.min_valid_range = 0.1   # meters
