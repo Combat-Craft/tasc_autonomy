@@ -1,0 +1,837 @@
+#include <gazebo/gazebo.hh> #include <gazebo/physics/physics.hh> #include <gazebo/transport/transport.hh> #include <gazebo/msgs/msgs.hh> #include <gazebo/common/common.hh> #include <rclcpp/rclcpp.hpp> #include <std_msgs/msg/string.hpp> #include <vector> #include <string> #include <thread> #include <mutex> namespace gazebo { class MorseLightPlugin : public WorldPlugin { public: void Load(physics::WorldPtr _world, sdf::ElementPtr) override { world = _world; // ---------------- Gazebo transport ---------------- gz_node = transport::NodePtr(new transport::Node()); gz_node->Init(world->Name()); light_pub = gz_node->Advertise<msgs::Light>( "/gazebo/default/light/modify" ); // ---------------- ROS 2 ---------------- if (!rclcpp::ok()) rclcpp::init(0, nullptr); ros_node = std::make_shared<rclcpp::Node>("morse_light_node"); ros_sub = ros_node->create_subscription<std_msgs::msg::String>( "/morse_numbers", 10, std::bind(&MorseLightPlugin::RosCallback, this, std::placeholders::_1) ); ros_thread = std::thread([this]() { rclcpp::spin(ros_node); }); // ---------------- State ---------------- playing = false; currentStep = 0; elapsed = 0.0; update_conn = event::Events::ConnectWorldUpdateBegin( std::bind(&MorseLightPlugin::OnUpdate, this)); // Force OFF at start PublishLight(false); } // ================================================== // Update loop (stable timing) // ================================================== void OnUpdate() { std::lock_guard<std::mutex> lock(mutex); if (!playing || sequence.empty()) return; elapsed += world->Physics()->GetMaxStepSize(); if (elapsed >= sequence[currentStep].duration) { elapsed = 0.0; currentStep++; if (currentStep >= sequence.size()) { playing = false; sequence.clear(); PublishLight(false); return; } PublishLight(sequence[currentStep].on); } } private: // ================================================== // Data // ================================================== struct Step { bool on; double duration; }; // ================================================== // Light control (THIS IS THE IMPORTANT LINE) // ================================================== void PublishLight(bool on) { msgs::Light msg; msg.set_name("morse_light"); // MUST MATCH WORLD LIGHT NAME msg.set_type(msgs::Light::POINT); auto *d = msg.mutable_diffuse(); d->set_r(on ? 1.0 : 0.0); d->set_g(on ? 1.0 : 0.0); d->set_b(on ? 1.0 : 0.0); d->set_a(1.0); light_pub->Publish(msg); } // ================================================== // Morse helpers // ================================================== std::string DigitToMorse(char d) { switch (d) { case '1': return ".----"; case '2': return "..---"; case '3': return "...--"; case '4': return "....-"; case '5': return "....."; case '6': return "-...."; case '7': return "--..."; case '8': return "---.."; case '9': return "----."; case '0': return "-----"; default: return ""; } } void BuildSequence(const std::string &input) { sequence.clear(); constexpr double DOT = 0.2; constexpr double DASH = 0.6; constexpr double SYMBOL_GAP = 0.2; constexpr double DIGIT_GAP = 1.0; for (char c : input) { std::string morse = DigitToMorse(c); if (morse.empty()) continue; for (char m : morse) { sequence.push_back({true, (m == '.') ? DOT : DASH}); sequence.push_back({false, SYMBOL_GAP}); } sequence.back().duration = DIGIT_GAP; } sequence.push_back({false, 1.5}); currentStep = 0; elapsed = 0.0; PublishLight(sequence[0].on); } // ================================================== // ROS callback // ================================================== void RosCallback(const std_msgs::msg::String::SharedPtr msg) { std::lock_guard<std::mutex> lock(mutex); BuildSequence(msg->data); playing = true; } private: // Gazebo physics::WorldPtr world; transport::NodePtr gz_node; transport::PublisherPtr light_pub; event::ConnectionPtr update_conn; // Morse std::vector<Step> sequence; size_t currentStep; double elapsed; bool playing; std::mutex mutex; // ROS rclcpp::Node::SharedPtr ros_node; rclcpp::Subscription<std_msgs::msg::String>::SharedPtr ros_sub; std::thread ros_thread; }; GZ_REGI#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/transport/transport.hh>
+#include <gazebo/msgs/msgs.hh>
+#include <gazebo/common/common.hh>
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
+#include <vector>
+#include <string>
+#include <thread>
+#include <mutex>
+
+namespace gazebo
+{
+
+class MorseLightPlugin : public WorldPlugin
+{
+public:
+  void Load(physics::WorldPtr _world, sdf::ElementPtr) override
+  {
+    world = _world;
+
+    // ---------------- Gazebo transport ----------------
+    gz_node = transport::NodePtr(new transport::Node());
+    gz_node->Init(world->Name());
+
+    light_pub = gz_node->Advertise<msgs::Light>(
+      "/gazebo/default/light/modify"
+    );
+
+    // ---------------- ROS 2 ----------------
+    if (!rclcpp::ok())
+      rclcpp::init(0, nullptr);
+
+    ros_node = std::make_shared<rclcpp::Node>("morse_light_node");
+
+    ros_sub = ros_node->create_subscription<std_msgs::msg::String>(
+      "/morse_numbers",
+      10,
+      std::bind(&MorseLightPlugin::RosCallback, this, std::placeholders::_1)
+    );
+
+    ros_thread = std::thread([this]() {
+      rclcpp::spin(ros_node);
+    });
+
+    // ---------------- State ----------------
+    playing = false;
+    currentStep = 0;
+    elapsed = 0.0;
+
+    update_conn = event::Events::ConnectWorldUpdateBegin(
+      std::bind(&MorseLightPlugin::OnUpdate, this));
+
+    // Force OFF at start
+    PublishLight(false);
+  }
+
+  // ==================================================
+  // Update loop (stable timing)
+  // ==================================================
+  void OnUpdate()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (!playing || sequence.empty())
+      return;
+
+    elapsed += world->Physics()->GetMaxStepSize();
+
+    if (elapsed >= sequence[currentStep].duration)
+    {
+      elapsed = 0.0;
+      currentStep++;
+
+      if (currentStep >= sequence.size())
+      {
+        playing = false;
+        sequence.clear();
+        PublishLight(false);
+        return;
+      }
+
+      PublishLight(sequence[currentStep].on);
+    }
+  }
+
+private:
+  // ==================================================
+  // Data
+  // ==================================================
+  struct Step
+  {
+    bool on;
+    double duration;
+  };
+
+  // ==================================================
+  // Light control (THIS IS THE IMPORTANT LINE)
+  // ==================================================
+  void PublishLight(bool on)
+  {
+    msgs::Light msg;
+    msg.set_name("morse_light");   // MUST MATCH WORLD LIGHT NAME
+    msg.set_type(msgs::Light::POINT);
+
+    auto *d = msg.mutable_diffuse();
+    d->set_r(on ? 5.0 : 0.0);
+    d->set_g(on ? 5.0 : 0.0);
+    d->set_b(on ? 5.0 : 0.0);
+    d->set_a(1.0);
+
+    light_pub->Publish(msg);
+  }
+
+  // ==================================================
+  // Morse helpers
+  // ==================================================
+  std::string DigitToMorse(char d)
+  {
+    switch (d)
+    {
+      case '1': return ".----";
+      case '2': return "..---";
+      case '3': return "...--";
+      case '4': return "....-";
+      case '5': return ".....";
+      case '6': return "-....";
+      case '7': return "--...";
+      case '8': return "---..";
+      case '9': return "----.";
+      case '0': return "-----";
+      default:  return "";
+    }
+  }
+
+  void BuildSequence(const std::string &input)
+  {
+    sequence.clear();
+
+    constexpr double DOT = 0.2;
+    constexpr double DASH = 0.6;
+    constexpr double SYMBOL_GAP = 0.2;
+    constexpr double DIGIT_GAP = 1.0;
+
+    for (char c : input)
+    {
+      std::string morse = DigitToMorse(c);
+      if (morse.empty()) continue;
+
+      for (char m : morse)
+      {
+        sequence.push_back({true,  (m == '.') ? DOT : DASH});
+        sequence.push_back({false, SYMBOL_GAP});
+      }
+
+      sequence.back().duration = DIGIT_GAP;
+    }
+
+    sequence.push_back({false, 1.5});
+
+    currentStep = 0;
+    elapsed = 0.0;
+  }
+
+  // ==================================================
+  // ROS callback
+  // ==================================================
+ void RosCallback(const std_msgs::msg::String::SharedPtr msg)
+ {
+  std::lock_guard<std::mutex> lock(mutex);
+
+  BuildSequence(msg->data);
+
+  if (!sequence.empty())
+   {
+    currentStep = 0;
+    elapsed = 0.0;
+    PublishLight(sequence[0].on);  // 🔴 start FIRST symbol immediately
+    playing = true;
+   } 
+ }
+
+
+private:
+  // Gazebo
+  physics::WorldPtr world;
+  transport::NodePtr gz_node;
+  transport::PublisherPtr light_pub;
+  event::ConnectionPtr update_conn;
+
+  // Morse
+  std::vector<Step> sequence;
+  size_t currentStep;
+  double elapsed;
+  bool playing;
+  std::mutex mutex;
+
+  // ROS
+  rclcpp::Node::SharedPtr ros_node;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr ros_sub;
+  std::thread ros_thread;
+};
+
+GZ_REGISTER_WORLD_PLUGIN(MorseLightPlugin)
+
+} // namespace gazebo
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/transport/transport.hh>
+#include <gazebo/msgs/msgs.hh>
+#include <gazebo/common/common.hh>
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
+#include <vector>
+#include <string>
+#include <thread>
+#include <mutex>
+
+namespace gazebo
+{
+
+class MorseLightPlugin : public WorldPlugin
+{
+public:
+  void Load(physics::WorldPtr _world, sdf::ElementPtr) override
+  {
+    world = _world;
+
+    // ---------------- Gazebo transport ----------------
+    gz_node = transport::NodePtr(new transport::Node());
+    gz_node->Init(world->Name());
+
+    light_pub = gz_node->Advertise<msgs::Light>(
+      "/gazebo/default/light/modify"
+    );
+
+    // ---------------- ROS 2 ----------------
+    if (!rclcpp::ok())
+      rclcpp::init(0, nullptr);
+
+    ros_node = std::make_shared<rclcpp::Node>("morse_light_node");
+
+    ros_sub = ros_node->create_subscription<std_msgs::msg::String>(
+      "/morse_numbers",
+      10,
+      std::bind(&MorseLightPlugin::RosCallback, this, std::placeholders::_1)
+    );
+
+    ros_thread = std::thread([this]() {
+      rclcpp::spin(ros_node);
+    });
+
+    // ---------------- State ----------------
+    playing = false;
+    currentStep = 0;
+    elapsed = 0.0;
+
+    update_conn = event::Events::ConnectWorldUpdateBegin(
+      std::bind(&MorseLightPlugin::OnUpdate, this));
+
+    // Force OFF at start
+    PublishLight(false);
+  }
+
+  // ==================================================
+  // Update loop (stable timing)
+  // ==================================================
+  void OnUpdate()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (!playing || sequence.empty())
+      return;
+
+    elapsed += world->Physics()->GetMaxStepSize();
+
+    if (elapsed >= sequence[currentStep].duration)
+    {
+      elapsed = 0.0;
+      currentStep++;
+
+      if (currentStep >= sequence.size())
+      {
+        playing = false;
+        sequence.clear();
+        PublishLight(false);
+        return;
+      }
+
+      PublishLight(sequence[currentStep].on);
+    }
+  }
+
+private:
+  // ==================================================
+  // Data
+  // ==================================================
+  struct Step
+  {
+    bool on;
+    double duration;
+  };
+
+  // ==================================================
+  // Light control (THIS IS THE IMPORTANT LINE)
+  // ==================================================
+  void PublishLight(bool on)
+  {
+    msgs::Light msg;
+    msg.set_name("morse_light");   // MUST MATCH WORLD LIGHT NAME
+    msg.set_type(msgs::Light::POINT);
+
+    auto *d = msg.mutable_diffuse();
+    d->set_r(on ? 5.0 : 0.0);
+    d->set_g(on ? 5.0 : 0.0);
+    d->set_b(on ? 5.0 : 0.0);
+    d->set_a(1.0);
+
+    light_pub->Publish(msg);
+  }
+
+  // ==================================================
+  // Morse helpers
+  // ==================================================
+  std::string DigitToMorse(char d)
+  {
+    switch (d)
+    {
+      case '1': return ".----";
+      case '2': return "..---";
+      case '3': return "...--";
+      case '4': return "....-";
+      case '5': return ".....";
+      case '6': return "-....";
+      case '7': return "--...";
+      case '8': return "---..";
+      case '9': return "----.";
+      case '0': return "-----";
+      default:  return "";
+    }
+  }
+
+  void BuildSequence(const std::string &input)
+  {
+    sequence.clear();
+
+    constexpr double DOT = 0.2;
+    constexpr double DASH = 0.6;
+    constexpr double SYMBOL_GAP = 0.2;
+    constexpr double DIGIT_GAP = 1.0;
+
+    for (char c : input)
+    {
+      std::string morse = DigitToMorse(c);
+      if (morse.empty()) continue;
+
+      for (char m : morse)
+      {
+        sequence.push_back({true,  (m == '.') ? DOT : DASH});
+        sequence.push_back({false, SYMBOL_GAP});
+      }
+
+      sequence.back().duration = DIGIT_GAP;
+    }
+
+    sequence.push_back({false, 1.5});
+
+    currentStep = 0;
+    elapsed = 0.0;
+  }
+
+  // ==================================================
+  // ROS callback
+  // ==================================================
+ void RosCallback(const std_msgs::msg::String::SharedPtr msg)
+ {
+  std::lock_guard<std::mutex> lock(mutex);
+
+  BuildSequence(msg->data);
+
+  if (!sequence.empty())
+   {
+    currentStep = 0;
+    elapsed = 0.0;
+    PublishLight(sequence[0].on);  // 🔴 start FIRST symbol immediately
+    playing = true;
+   } 
+ }
+
+
+private:
+  // Gazebo
+  physics::WorldPtr world;
+  transport::NodePtr gz_node;
+  transport::PublisherPtr light_pub;
+  event::ConnectionPtr update_conn;
+
+  // Morse
+  std::vector<Step> sequence;
+  size_t currentStep;
+  double elapsed;
+  bool playing;
+  std::mutex mutex;
+
+  // ROS
+  rclcpp::Node::SharedPtr ros_node;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr ros_sub;
+  std::thread ros_thread;
+};
+
+GZ_REGISTER_WORLD_PLUGIN(MorseLightPlugin)
+
+} // namespace gazebo
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/transport/transport.hh>
+#include <gazebo/msgs/msgs.hh>
+#include <gazebo/common/common.hh>
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
+#include <vector>
+#include <string>
+#include <thread>
+#include <mutex>
+
+namespace gazebo
+{
+
+class MorseLightPlugin : public WorldPlugin
+{
+public:
+  void Load(physics::WorldPtr _world, sdf::ElementPtr) override
+  {
+    world = _world;
+
+    // ---------------- Gazebo transport ----------------
+    gz_node = transport::NodePtr(new transport::Node());
+    gz_node->Init(world->Name());
+
+    light_pub = gz_node->Advertise<msgs::Light>(
+      "/gazebo/default/light/modify"
+    );
+
+    // ---------------- ROS 2 ----------------
+    if (!rclcpp::ok())
+      rclcpp::init(0, nullptr);
+
+    ros_node = std::make_shared<rclcpp::Node>("morse_light_node");
+
+    ros_sub = ros_node->create_subscription<std_msgs::msg::String>(
+      "/morse_numbers",
+      10,
+      std::bind(&MorseLightPlugin::RosCallback, this, std::placeholders::_1)
+    );
+
+    ros_thread = std::thread([this]() {
+      rclcpp::spin(ros_node);
+    });
+
+    // ---------------- State ----------------
+    playing = false;
+    currentStep = 0;
+    elapsed = 0.0;
+
+    update_conn = event::Events::ConnectWorldUpdateBegin(
+      std::bind(&MorseLightPlugin::OnUpdate, this));
+
+    // Force OFF at start
+    PublishLight(false);
+  }
+
+  // ==================================================
+  // Update loop (stable timing)
+  // ==================================================
+  void OnUpdate()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (!playing || sequence.empty())
+      return;
+
+    elapsed += world->Physics()->GetMaxStepSize();
+
+    if (elapsed >= sequence[currentStep].duration)
+    {
+      elapsed = 0.0;
+      currentStep++;
+
+      if (currentStep >= sequence.size())
+      {
+        playing = false;
+        sequence.clear();
+        PublishLight(false);
+        return;
+      }
+
+      PublishLight(sequence[currentStep].on);
+    }
+  }
+
+private:
+  // ==================================================
+  // Data
+  // ==================================================
+  struct Step
+  {
+    bool on;
+    double duration;
+  };
+
+  // ==================================================
+  // Light control (THIS IS THE IMPORTANT LINE)
+  // ==================================================
+  void PublishLight(bool on)
+  {
+    msgs::Light msg;
+    msg.set_name("morse_light");   // MUST MATCH WORLD LIGHT NAME
+    msg.set_type(msgs::Light::POINT);
+
+    auto *d = msg.mutable_diffuse();
+    d->set_r(on ? 5.0 : 0.0);
+    d->set_g(on ? 5.0 : 0.0);
+    d->set_b(on ? 5.0 : 0.0);
+    d->set_a(1.0);
+
+    light_pub->Publish(msg);
+  }
+
+  // ==================================================
+  // Morse helpers
+  // ==================================================
+  std::string DigitToMorse(char d)
+  {
+    switch (d)
+    {
+      case '1': return ".----";
+      case '2': return "..---";
+      case '3': return "...--";
+      case '4': return "....-";
+      case '5': return ".....";
+      case '6': return "-....";
+      case '7': return "--...";
+      case '8': return "---..";
+      case '9': return "----.";
+      case '0': return "-----";
+      default:  return "";
+    }
+  }
+
+  void BuildSequence(const std::string &input)
+  {
+    sequence.clear();
+
+    constexpr double DOT = 0.2;
+    constexpr double DASH = 0.6;
+    constexpr double SYMBOL_GAP = 0.2;
+    constexpr double DIGIT_GAP = 1.0;
+
+    for (char c : input)
+    {
+      std::string morse = DigitToMorse(c);
+      if (morse.empty()) continue;
+
+      for (char m : morse)
+      {
+        sequence.push_back({true,  (m == '.') ? DOT : DASH});
+        sequence.push_back({false, SYMBOL_GAP});
+      }
+
+      sequence.back().duration = DIGIT_GAP;
+    }
+
+    sequence.push_back({false, 1.5});
+
+    currentStep = 0;
+    elapsed = 0.0;
+  }
+
+  // ==================================================
+  // ROS callback
+  // ==================================================
+ void RosCallback(const std_msgs::msg::String::SharedPtr msg)
+ {
+  std::lock_guard<std::mutex> lock(mutex);
+
+  BuildSequence(msg->data);
+
+  if (!sequence.empty())
+   {
+    currentStep = 0;
+    elapsed = 0.0;
+    PublishLight(sequence[0].on);  // 🔴 start FIRST symbol immediately
+    playing = true;
+   } 
+ }
+
+
+private:
+  // Gazebo
+  physics::WorldPtr world;
+  transport::NodePtr gz_node;
+  transport::PublisherPtr light_pub;
+  event::ConnectionPtr update_conn;
+
+  // Morse
+  std::vector<Step> sequence;
+  size_t currentStep;
+  double elapsed;
+  bool playing;
+  std::mutex mutex;
+
+  // ROS
+  rclcpp::Node::SharedPtr ros_node;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr ros_sub;
+  std::thread ros_thread;
+};
+
+GZ_REGISTER_WORLD_PLUGIN(MorseLightPlugin)
+
+} // namespace gazebo
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/transport/transport.hh>
+#include <gazebo/msgs/msgs.hh>
+#include <gazebo/common/common.hh>
+
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+
+#include <vector>
+#include <string>
+#include <thread>
+#include <mutex>
+
+namespace gazebo
+{
+
+class MorseLightPlugin : public WorldPlugin
+{
+public:
+  void Load(physics::WorldPtr _world, sdf::ElementPtr) override
+  {
+    world = _world;
+
+    // ---------------- Gazebo transport ----------------
+    gz_node = transport::NodePtr(new transport::Node());
+    gz_node->Init(world->Name());
+
+    light_pub = gz_node->Advertise<msgs::Light>(
+      "/gazebo/default/light/modify"
+    );
+
+    // ---------------- ROS 2 ----------------
+    if (!rclcpp::ok())
+      rclcpp::init(0, nullptr);
+
+    ros_node = std::make_shared<rclcpp::Node>("morse_light_node");
+
+    ros_sub = ros_node->create_subscription<std_msgs::msg::String>(
+      "/morse_numbers",
+      10,
+      std::bind(&MorseLightPlugin::RosCallback, this, std::placeholders::_1)
+    );
+
+    ros_thread = std::thread([this]() {
+      rclcpp::spin(ros_node);
+    });
+
+    // ---------------- State ----------------
+    playing = false;
+    currentStep = 0;
+    elapsed = 0.0;
+
+    update_conn = event::Events::ConnectWorldUpdateBegin(
+      std::bind(&MorseLightPlugin::OnUpdate, this));
+
+    // Force OFF at start
+    PublishLight(false);
+  }
+
+  // ==================================================
+  // Update loop (stable timing)
+  // ==================================================
+  void OnUpdate()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+
+    if (!playing || sequence.empty())
+      return;
+
+    elapsed += world->Physics()->GetMaxStepSize();
+
+    if (elapsed >= sequence[currentStep].duration)
+    {
+      elapsed = 0.0;
+      currentStep++;
+
+      if (currentStep >= sequence.size())
+      {
+        playing = false;
+        sequence.clear();
+        PublishLight(false);
+        return;
+      }
+
+      PublishLight(sequence[currentStep].on);
+    }
+  }
+
+private:
+  // ==================================================
+  // Data
+  // ==================================================
+  struct Step
+  {
+    bool on;
+    double duration;
+  };
+
+  // ==================================================
+  // Light control (THIS IS THE IMPORTANT LINE)
+  // ==================================================
+  void PublishLight(bool on)
+  {
+    msgs::Light msg;
+    msg.set_name("morse_light");   // MUST MATCH WORLD LIGHT NAME
+    msg.set_type(msgs::Light::POINT);
+
+    auto *d = msg.mutable_diffuse();
+    d->set_r(on ? 5.0 : 0.0);
+    d->set_g(on ? 5.0 : 0.0);
+    d->set_b(on ? 5.0 : 0.0);
+    d->set_a(1.0);
+
+    light_pub->Publish(msg);
+  }
+
+  // ==================================================
+  // Morse helpers
+  // ==================================================
+  std::string DigitToMorse(char d)
+  {
+    switch (d)
+    {
+      case '1': return ".----";
+      case '2': return "..---";
+      case '3': return "...--";
+      case '4': return "....-";
+      case '5': return ".....";
+      case '6': return "-....";
+      case '7': return "--...";
+      case '8': return "---..";
+      case '9': return "----.";
+      case '0': return "-----";
+      default:  return "";
+    }
+  }
+
+  void BuildSequence(const std::string &input)
+  {
+    sequence.clear();
+
+    constexpr double DOT = 0.2;
+    constexpr double DASH = 0.6;
+    constexpr double SYMBOL_GAP = 0.2;
+    constexpr double DIGIT_GAP = 1.0;
+
+    for (char c : input)
+    {
+      std::string morse = DigitToMorse(c);
+      if (morse.empty()) continue;
+
+      for (char m : morse)
+      {
+        sequence.push_back({true,  (m == '.') ? DOT : DASH});
+        sequence.push_back({false, SYMBOL_GAP});
+      }
+
+      sequence.back().duration = DIGIT_GAP;
+    }
+
+    sequence.push_back({false, 1.5});
+
+    currentStep = 0;
+    elapsed = 0.0;
+  }
+
+  // ==================================================
+  // ROS callback
+  // ==================================================
+ void RosCallback(const std_msgs::msg::String::SharedPtr msg)
+ {
+  std::lock_guard<std::mutex> lock(mutex);
+
+  BuildSequence(msg->data);
+
+  if (!sequence.empty())
+   {
+    currentStep = 0;
+    elapsed = 0.0;
+    PublishLight(sequence[0].on);  // 🔴 start FIRST symbol immediately
+    playing = true;
+   } 
+ }
+
+
+private:
+  // Gazebo
+  physics::WorldPtr world;
+  transport::NodePtr gz_node;
+  transport::PublisherPtr light_pub;
+  event::ConnectionPtr update_conn;
+
+  // Morse
+  std::vector<Step> sequence;
+  size_t currentStep;
+  double elapsed;
+  bool playing;
+  std::mutex mutex;
+
+  // ROS
+  rclcpp::Node::SharedPtr ros_node;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr ros_sub;
+  std::thread ros_thread;
+};
+
+GZ_REGISTER_WORLD_PLUGIN(MorseLightPlugin)
+
+} // namespace gazebo
+
