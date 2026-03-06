@@ -1,0 +1,31 @@
+running egg_info
+creating ../build/autonomy_bringup/autonomy_bringup.egg-info
+writing ../build/autonomy_bringup/autonomy_bringup.egg-info/PKG-INFO
+writing dependency_links to ../build/autonomy_bringup/autonomy_bringup.egg-info/dependency_links.txt
+writing entry points to ../build/autonomy_bringup/autonomy_bringup.egg-info/entry_points.txt
+writing requirements to ../build/autonomy_bringup/autonomy_bringup.egg-info/requires.txt
+writing top-level names to ../build/autonomy_bringup/autonomy_bringup.egg-info/top_level.txt
+writing manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+reading manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+writing manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/mnt/tasc_autonomy/build/autonomy_bringup/build
+creating /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib
+creating /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib/autonomy_bringup
+copying autonomy_bringup/__init__.py -> /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib/autonomy_bringup
+running install
+running install_lib
+creating /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup
+copying /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib/autonomy_bringup/__init__.py -> /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup
+byte-compiling /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index
+creating /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index/resource_index
+creating /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index/resource_index/packages
+copying resource/autonomy_bringup -> /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index/resource_index/packages
+copying package.xml -> /home/mnt/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup
+running install_egg_info
+Copying ../build/autonomy_bringup/autonomy_bringup.egg-info to /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup-0.0.0-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/home/mnt/tasc_autonomy/build/autonomy_bringup/install.log'

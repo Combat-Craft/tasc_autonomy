@@ -1,0 +1,80 @@
+[1.672s] Invoking command in '/home/mnt/tasc_autonomy/autonomy_vision': PYTHONPATH=/home/mnt/tasc_autonomy/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_vision build --build-base /home/mnt/tasc_autonomy/build/autonomy_vision/build install --record /home/mnt/tasc_autonomy/build/autonomy_vision/install.log --single-version-externally-managed install_data
+[2.078s] running egg_info
+[2.078s] creating ../build/autonomy_vision/autonomy_vision.egg-info
+[2.078s] writing ../build/autonomy_vision/autonomy_vision.egg-info/PKG-INFO
+[2.078s] writing dependency_links to ../build/autonomy_vision/autonomy_vision.egg-info/dependency_links.txt
+[2.079s] writing entry points to ../build/autonomy_vision/autonomy_vision.egg-info/entry_points.txt
+[2.079s] writing requirements to ../build/autonomy_vision/autonomy_vision.egg-info/requires.txt
+[2.079s] writing top-level names to ../build/autonomy_vision/autonomy_vision.egg-info/top_level.txt
+[2.079s] writing manifest file '../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[2.083s] reading manifest file '../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[2.083s] adding license file 'LICENSE'
+[2.084s] writing manifest file '../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[2.084s] running build
+[2.084s] running build_py
+[2.085s] creating /home/mnt/tasc_autonomy/build/autonomy_vision/build
+[2.085s] creating /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib
+[2.085s] creating /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.085s] copying autonomy_vision/panorama_stitcher.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/display_images.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/new_pano_stitcher.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/panorama_stitcher_with_heading.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/gst_pose_cam.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/display_heading_imu.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/gst_arm_cam.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.086s] copying autonomy_vision/camera_mjpeg_publisher.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.087s] copying autonomy_vision/yolo_depth_v1.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.087s] copying autonomy_vision/yolo_pc.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.087s] copying autonomy_vision/__init__.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.087s] copying autonomy_vision/display_heading.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.087s] copying autonomy_vision/yolo_depth_v2.py -> /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[2.089s] running install
+[2.089s] running install_lib
+[2.090s] creating /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.091s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/panorama_stitcher.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.091s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/display_images.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.092s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/new_pano_stitcher.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.092s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/panorama_stitcher_with_heading.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.092s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/gst_pose_cam.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.092s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/display_heading_imu.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.092s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/gst_arm_cam.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.093s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/camera_mjpeg_publisher.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.093s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/yolo_depth_v1.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.096s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/yolo_pc.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.096s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/__init__.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.096s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/display_heading.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.096s] copying /home/mnt/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/yolo_depth_v2.py -> /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[2.096s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/panorama_stitcher.py to panorama_stitcher.cpython-310.pyc
+[2.097s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/display_images.py to display_images.cpython-310.pyc
+[2.097s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/new_pano_stitcher.py to new_pano_stitcher.cpython-310.pyc
+[2.097s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/panorama_stitcher_with_heading.py to panorama_stitcher_with_heading.cpython-310.pyc
+[2.099s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/gst_pose_cam.py to gst_pose_cam.cpython-310.pyc
+[2.101s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/display_heading_imu.py to display_heading_imu.cpython-310.pyc
+[2.102s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/gst_arm_cam.py to gst_arm_cam.cpython-310.pyc
+[2.102s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/camera_mjpeg_publisher.py to camera_mjpeg_publisher.cpython-310.pyc
+[2.102s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/yolo_depth_v1.py to yolo_depth_v1.cpython-310.pyc
+[2.104s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/yolo_pc.py to yolo_pc.cpython-310.pyc
+[2.106s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/__init__.py to __init__.cpython-310.pyc
+[2.106s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/display_heading.py to display_heading.cpython-310.pyc
+[2.107s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/yolo_depth_v2.py to yolo_depth_v2.cpython-310.pyc
+[2.110s] running install_data
+[2.110s] creating /home/mnt/tasc_autonomy/install/autonomy_vision/share/ament_index
+[2.110s] creating /home/mnt/tasc_autonomy/install/autonomy_vision/share/ament_index/resource_index
+[2.110s] creating /home/mnt/tasc_autonomy/install/autonomy_vision/share/ament_index/resource_index/packages
+[2.110s] copying resource/autonomy_vision -> /home/mnt/tasc_autonomy/install/autonomy_vision/share/ament_index/resource_index/packages
+[2.110s] copying package.xml -> /home/mnt/tasc_autonomy/install/autonomy_vision/share/autonomy_vision
+[2.110s] running install_egg_info
+[2.112s] Copying ../build/autonomy_vision/autonomy_vision.egg-info to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision-0.0.0-py3.10.egg-info
+[2.117s] running install_scripts
+[2.144s] Installing arm_cam script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.144s] Installing display_heading script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.144s] Installing display_heading_imu script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing display_images script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing panorama_stitcher script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing panorama_stitcher_with_heading script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing pose_cam script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing yolo_depth_v1 script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing yolo_depth_v2 script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] Installing yolo_pc script to /home/mnt/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[2.145s] writing list of installed files to '/home/mnt/tasc_autonomy/build/autonomy_vision/install.log'
+[2.175s] Invoked command in '/home/mnt/tasc_autonomy/autonomy_vision' returned '0': PYTHONPATH=/home/mnt/tasc_autonomy/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_vision build --build-base /home/mnt/tasc_autonomy/build/autonomy_vision/build install --record /home/mnt/tasc_autonomy/build/autonomy_vision/install.log --single-version-externally-managed install_data

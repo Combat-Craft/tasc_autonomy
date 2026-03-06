@@ -1,0 +1,33 @@
+[1.726s] Invoking command in '/home/mnt/tasc_autonomy/autonomy_bringup': PYTHONPATH=/home/mnt/tasc_autonomy/build/autonomy_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_bringup build --build-base /home/mnt/tasc_autonomy/build/autonomy_bringup/build install --record /home/mnt/tasc_autonomy/build/autonomy_bringup/install.log --single-version-externally-managed install_data
+[2.083s] running egg_info
+[2.083s] creating ../build/autonomy_bringup/autonomy_bringup.egg-info
+[2.083s] writing ../build/autonomy_bringup/autonomy_bringup.egg-info/PKG-INFO
+[2.083s] writing dependency_links to ../build/autonomy_bringup/autonomy_bringup.egg-info/dependency_links.txt
+[2.083s] writing entry points to ../build/autonomy_bringup/autonomy_bringup.egg-info/entry_points.txt
+[2.083s] writing requirements to ../build/autonomy_bringup/autonomy_bringup.egg-info/requires.txt
+[2.084s] writing top-level names to ../build/autonomy_bringup/autonomy_bringup.egg-info/top_level.txt
+[2.084s] writing manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+[2.088s] reading manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+[2.088s] writing manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+[2.089s] running build
+[2.089s] running build_py
+[2.089s] creating /home/mnt/tasc_autonomy/build/autonomy_bringup/build
+[2.089s] creating /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib
+[2.089s] creating /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib/autonomy_bringup
+[2.089s] copying autonomy_bringup/__init__.py -> /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib/autonomy_bringup
+[2.090s] running install
+[2.090s] running install_lib
+[2.090s] creating /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup
+[2.091s] copying /home/mnt/tasc_autonomy/build/autonomy_bringup/build/lib/autonomy_bringup/__init__.py -> /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup
+[2.091s] byte-compiling /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup/__init__.py to __init__.cpython-310.pyc
+[2.091s] running install_data
+[2.091s] creating /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index
+[2.092s] creating /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index/resource_index
+[2.092s] creating /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index/resource_index/packages
+[2.092s] copying resource/autonomy_bringup -> /home/mnt/tasc_autonomy/install/autonomy_bringup/share/ament_index/resource_index/packages
+[2.092s] copying package.xml -> /home/mnt/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup
+[2.092s] running install_egg_info
+[2.093s] Copying ../build/autonomy_bringup/autonomy_bringup.egg-info to /home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup-0.0.0-py3.10.egg-info
+[2.094s] running install_scripts
+[2.112s] writing list of installed files to '/home/mnt/tasc_autonomy/build/autonomy_bringup/install.log'
+[2.139s] Invoked command in '/home/mnt/tasc_autonomy/autonomy_bringup' returned '0': PYTHONPATH=/home/mnt/tasc_autonomy/build/autonomy_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_bringup build --build-base /home/mnt/tasc_autonomy/build/autonomy_bringup/build install --record /home/mnt/tasc_autonomy/build/autonomy_bringup/install.log --single-version-externally-managed install_data
