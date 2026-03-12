@@ -33,6 +33,7 @@ setup(
 
             'pose_cam = autonomy_vision.gst_pose_cam:main',
             'arm_cam = autonomy_vision.gst_arm_cam:main',
+            'multi_camera_streamer = autonomy_vision.multi_camera_streamer:main',
             
             'yolo_pc = autonomy_vision.yolo_pc:main',
             'yolo_depth_v1 = autonomy_vision.yolo_depth_v1:main',
