@@ -131,6 +131,7 @@ void loop() {
   /* -------- IMU OUTPUT -------- */
   if (now - last_imu_time >= IMU_PERIOD_MS) {
     Serial.print("IMU,");
+    Serial.print(now); Serial.print(",");
     // start IMU serial print
     if (myICM.dataReady()){
       myICM.getAGMT();             // The values are only updated when you call 'getAGMT'
