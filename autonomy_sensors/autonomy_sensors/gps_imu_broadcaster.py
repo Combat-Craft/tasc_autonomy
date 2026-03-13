@@ -14,8 +14,27 @@ from sensor_msgs.msg import Imu, MagneticField, NavSatFix, NavSatStatus
 from geometry_msgs.msg import Quaternion
 from std_msgs.msg import Header
 
-class SerialImuGpsNode(Node):
+from math import atan2, PI, sqrt     # for heading, roll, pitch i.e. "compass" angles
 
+def Cardinal_Direction_8(angle):
+    if ((0 <= angle <= 22.5) or angle > 337.5):
+        return "N"
+    if (22.5 < angle <= 67.5):
+        return "NE"
+    if (67.5 < angle <= 112.5):
+        return "E"
+    if (112.5 < angle <= 157.5):
+        return "SE"
+    if (157.5 < angle <= 202.5):
+        return "S"
+    if (202.5 < angle <= 247.5):
+        return "SW"
+    if (247.5 < angle <= 292.5):
+        return "W"
+    if (292.5 < angle <= 337.5):
+        return "NW"
+
+class SerialImuGpsNode(Node):
     def __init__(self):
         super().__init__('serial_imu_gps')
 
@@ -30,9 +49,11 @@ class SerialImuGpsNode(Node):
 
         # Publishers
         self.imu_pub = self.create_publisher(Imu, '/imu/data_raw', 50)
-        self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', qos)
+        self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', 50)
         self.gps_pub = self.create_publisher(NavSatFix, '/gps/fix', 10)
-
+        self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
+        self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
+                                               
         # Serial
         try:
             self.ser = serial.Serial(port, baud, timeout=0.1)
@@ -68,6 +89,9 @@ class SerialImuGpsNode(Node):
     # IMU handler
     # Format:
     # IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz
+    #
+    # Cardinal Compass and Heading Angle handler
+    # Calculated from IMU
     # --------------------------------------------------
     def handle_imu(self, line: str):
         try:
@@ -84,7 +108,7 @@ class SerialImuGpsNode(Node):
         except ValueError:
             return
           
-        # Publish IMU data
+        # Publish IMU data ==============================================================================
         imu_msg = Imu()
         imu_msg.header = Header()
         imu_msg.header.stamp = self.get_clock().now().to_msg()
@@ -117,7 +141,7 @@ class SerialImuGpsNode(Node):
         ]
         self.imu_pub.publish(imu_msg)
 
-        # Publish magnetometer
+        # Publish magnetometer ===========================================================================
         mag_msg = MagneticField()
         mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
         mag_msg.header.frame_id = self.get_parameter('frame_id_imu').value # same frame ids for both mag and imu in imu_node.py
@@ -127,6 +151,46 @@ class SerialImuGpsNode(Node):
         mag_msg.magnetic_field.z = mz
             
         self.mag_pub.publish(mag_msg)
+
+        # Publish Heading (commented out: pitch and roll) ================================================
+        DECLINATION 10.05 # Declination (degrees) in Boulder, CO.
+        
+        //roll = atan2(ay, az)
+        //pitch = atan2(-ax, sqrt(ay * ay + az * az))
+        
+        heading = 0
+        if (my == 0):
+            # C++ code is heading = (mx < 0) ? PI : 0;
+            if (mx < 0):
+                heading = PI
+            else:
+                heading = 0
+        else:
+            heading = atan2(mx, my)
+        
+        heading -= DECLINATION * PI / 180
+        
+        if (heading > PI):
+            heading -= (2 * PI)
+        elif (heading < -PI):
+            heading += (2 * PI)
+        
+        // Convert everything from radians to degrees:
+        heading *= 180.0 / PI
+        //pitch *= 180.0 / PI
+        //roll  *= 180.0 / PI
+
+        heading_msg = Float32()
+        heading_msg.data = heading
+        self.heading_pub.publish(heading_msg)
+
+        # Publish Cardinal Compass  ======================================================================
+        ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
+        cardinal_dir = Cardinal_Direction_8(heading)
+
+        compass_msg = String()
+        compass_msg.data = heading
+        self.compass_pub.publish(compass_msg)
 
         # END handle_imu()
 
