@@ -14,4 +14,6 @@ The bolded are to be used for the heads-up display, the rest required for standa
 https://docs.ros2.org/latest/api/sensor_msgs/msg/NavSatFix.html
 https://docs.ros.org/en/api/sensor_msgs/html/msg/Imu.html
 
-The example10 code is from the SparkFun github, and imu_gps_serial.ino is the actual code to be used. It is based on imu_gps_simple.ino and example10.ino
+The example10 code is from the SparkFun github, ~~and imu_gps_serial.ino is the actual code to be used. It is based on imu_gps_simple.ino and example10.ino~~
+
+So, i misunderstood compass, its the magnetometer. While quat is from DMP, and prob needed later, for now let's just focus on the accel, gyro and magnetometer. I'll calculate the compass and heading angles from those 3 rather from quat
