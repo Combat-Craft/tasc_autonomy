@@ -17,3 +17,7 @@ https://docs.ros.org/en/api/sensor_msgs/html/msg/Imu.html
 The example10 code is from the SparkFun github, ~~and imu_gps_serial.ino is the actual code to be used. It is based on imu_gps_simple.ino and example10.ino~~
 
 So, i misunderstood compass, its the magnetometer. While quat is from DMP, and prob needed later, for now let's just focus on the accel, gyro and magnetometer. I'll calculate the compass and heading angles from those 3 rather from quat
+
+Us another sparkfun board for later use, has code for both reg serial and DMP code
+https://github.com/sparkfun/9DOF_Razor_IMU/blob/master/Firmware/_9DoF_Razor_M0_Firmware/_9DoF_Razor_M0_Firmware.ino
+learn.sparkfun.com/tutorials/9dof-razor-imu-m0-hookup-guide
