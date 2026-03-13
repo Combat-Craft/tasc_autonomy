@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
-# To be used in conjunction with the Arduino sketch "imu_gps_simple" which publishes data in the format 
-#  GPS,ms,lat,lon,alt,speed,hdop,sats,fix at 1Hz
-#  IMU,ms,ax,ay,az,gx,gy,gz at 100Hz
-# This is the "No microROS, only Serial" option
-
+# editing from antonia's gps_imu_broadcaster.py and MNTadro's imu_node.py, to work with current imu_gps_serial.ino 
+#
+## #  GPS,ms,lat,lon,alt,speed,hdop,sats,fix at 1Hz <- NO CHANGES  
+## #  IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz at 100Hz
+## # This is the "No microROS, only Serial" option
 
 import serial
 import threading
@@ -11,31 +10,9 @@ import threading
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Imu, NavSatFix, NavSatStatus
+from sensor_msgs.msg import Imu, MagneticField, NavSatFix, NavSatStatus
+from geometry_msgs.msg import Quaternion
 from std_msgs.msg import Header
-
-'''Output from estimate_covariance_from_log while sitting on my desk:
-IMU (stationary) robust std:
-  accel std [m/s^2]: [0.02129755 0.02129755 0.0425951 ]
-  gyro  std [rad/s]: [0.00315942 0.00256786 0.00217201]
-
-Suggested Imu message covariances (diagonal):
-  linear_acceleration_covariance diag: [0.00045359 0.00045359 0.00181434]
-  angular_velocity_covariance     diag: [9.98193853e-06 6.59392141e-06 4.71762310e-06]
-  orientation_covariance: set [0]=-1 (unknown)
-
-GPS (fix==1) reference:
-  lat0, lon0 = 43.6452805, -79.4367445
-  sats median = 5.0
-  hdop median = 3.47
-
-GPS robust std over last ~60s (meters):
-  east  std [m]: 8.106
-  north std [m]: 1.318
-  up    std [m]: 0.890
-
-Suggested NavSatFix position_covariance diag (m^2):
-  [65.70660303  1.73676908  0.79131699]'''
 
 class SerialImuGpsNode(Node):
 
@@ -44,7 +21,7 @@ class SerialImuGpsNode(Node):
 
         # Parameters (easy to override in launch files)
         self.declare_parameter('port', '/dev/ttyUSB0')
-        self.declare_parameter('baud', 115200)
+        self.declare_parameter('baud', 115200) #still matches with new arduino sketch
         self.declare_parameter('frame_id_imu', 'imu_link')
         self.declare_parameter('frame_id_gps', 'gps_link')
 
@@ -53,6 +30,7 @@ class SerialImuGpsNode(Node):
 
         # Publishers
         self.imu_pub = self.create_publisher(Imu, '/imu/data_raw', 50)
+        self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', qos)
         self.gps_pub = self.create_publisher(NavSatFix, '/gps/fix', 10)
 
         # Serial
@@ -89,53 +67,68 @@ class SerialImuGpsNode(Node):
     # --------------------------------------------------
     # IMU handler
     # Format:
-    # IMU,ms,ax,ay,az,gx,gy,gz
+    # IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz
     # --------------------------------------------------
     def handle_imu(self, line: str):
         try:
-            _, ms, ax, ay, az, gx, gy, gz = line.split(',')
+            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz = line.split(',')
             ax = float(ax)
             ay = float(ay)
             az = float(az)
             gx = float(gx)
             gy = float(gy)
             gz = float(gz)
+            mx = float(mx)
+            my = float(my)
+            mz = float(mz)
         except ValueError:
             return
+          
+        # Publish IMU data
+        imu_msg = Imu()
+        imu_msg.header = Header()
+        imu_msg.header.stamp = self.get_clock().now().to_msg()
+        imu_msg.header.frame_id = self.get_parameter('frame_id_imu').value
 
-        msg = Imu()
-        msg.header = Header()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = self.get_parameter('frame_id_imu').value
+        imu_msg.linear_acceleration.x = ax
+        imu_msg.linear_acceleration.y = ay
+        imu_msg.linear_acceleration.z = az
 
-        msg.linear_acceleration.x = ax
-        msg.linear_acceleration.y = ay
-        msg.linear_acceleration.z = az
+        imu_msg.angular_velocity.x = gx
+        imu_msg.angular_velocity.y = gy
+        imu_msg.angular_velocity.z = gz
 
-        msg.angular_velocity.x = gx
-        msg.angular_velocity.y = gy
-        msg.angular_velocity.z = gz
-
-        # Orientation unknown
-        msg.orientation.w = 1.0
-        msg.orientation.x = 0.0
-        msg.orientation.y = 0.0
-        msg.orientation.z = 0.0
+        ## -- Orientation unknown --
+        imu_msg.orientation.w = 1.0
+        imu_msg.orientation.x = 0.0
+        imu_msg.orientation.y = 0.0
+        imu_msg.orientation.z = 0.0
         
-        msg.orientation_covariance[0] = -1.0  # unknown orientation
-
-        msg.linear_acceleration_covariance = [
+        imu_msg.orientation_covariance[0] = -1.0  # unknown orientation
+        imu_msg.linear_acceleration_covariance = [
             4.5359e-4, 0.0, 0.0,
             0.0, 4.5359e-4, 0.0,
             0.0, 0.0, 1.81434e-3
         ]
-
-        msg.angular_velocity_covariance = [
+        imu_msg.angular_velocity_covariance = [
             9.98194e-6, 0.0, 0.0,
             0.0, 6.59392e-6, 0.0,
             0.0, 0.0, 4.71762e-6
         ]
-        self.imu_pub.publish(msg)
+        self.imu_pub.publish(imu_msg)
+
+        # Publish magnetometer
+        mag_msg = MagneticField()
+        mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
+        mag_msg.header.frame_id = self.get_parameter('frame_id_imu').value # same frame ids for both mag and imu in imu_node.py
+      
+        mag_msg.magnetic_field.x = mx
+        mag_msg.magnetic_field.y = my
+        mag_msg.magnetic_field.z = mz
+            
+        self.mag_pub.publish(mag_msg)
+
+        # END handle_imu()
 
     # --------------------------------------------------
     # GPS handler
