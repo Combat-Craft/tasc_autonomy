@@ -13,10 +13,10 @@
 #include "ICM_20948.h" //Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 // I also just flat out included the src folder, but will assume we're installing the actual library @ https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary
 
-// #include <Wire.h> // removed as already defined in firmware/src/ICM_20948.h
+// #include <Wire.h>      // removed as already defined in firmware/src/ICM_20948.h
 #include <TinyGPS++.h>
 
-#define WIRE_PORT Wire // Your desired Wire port.      Used when "USE_SPI" is not defined
+#define WIRE_PORT Wire    // Your desired Wire port.      Used when "USE_SPI" is not defined
 #define SERIAL_PORT Serial
 
 /* =========================
@@ -64,15 +64,7 @@ HardwareSerial gpsSerial(2);
 
 
 void setup_imu(){
-  // from Example1_Basics.ino
-
-  #ifdef USE_SPI
-    SPI_PORT.begin();
-  #else
-    WIRE_PORT.begin();
-    //Wire.begin(SDA_PIN, SCL_PIN); // the SDA and SLA pins for MPU 6050 module, old IMU
-    WIRE_PORT.setClock(400000);
-  #endif
+  // from Example1_Basics.ino, Example2_advanced.ino  
 
   //myICM.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
 
@@ -81,19 +73,22 @@ void setup_imu(){
     #ifdef USE_SPI
       myICM.begin(CS_PIN, SPI_PORT);
     #else
-      myICM.begin(WIRE_PORT, AD0_VAL);
+      myICM.begin(Wire, AD0_VAL);
     #endif
 
-    SERIAL_PORT.print(F("Initialization of the IMU sensor returned: "));
-    SERIAL_PORT.println(myICM.statusString());
+    Serial.print(F("Initialization of the IMU sensor returned: "));
+    Serial.println(myICM.statusString());
     if (myICM.status != ICM_20948_Stat_Ok){ // failed to start imu
-      SERIAL_PORT.println("Trying again...");
+      Serial.println("Trying again...");
       delay(500);
     }
     else{
       initialized = true;
     }
   }// END while loop  
+   
+  // advanced has more setup but idc right now
+   
 } // END setup_imu()
 
 /* =========================
@@ -102,6 +97,15 @@ void setup_imu(){
 void setup() {
   Serial.begin(115200);
   delay(2000);
+
+  //due to IMU
+  #ifdef USE_SPI
+    SPI_PORT.begin();
+  #else
+    Wire.begin();
+    //Wire.begin(SDA_PIN, SCL_PIN); // the SDA and SLA pins for MPU 6050 module, old IMU
+    Wire.setClock(400000);
+  #endif
   
   // start GPS unit
   gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
@@ -135,7 +139,7 @@ void loop() {
       delay(30);
     }
     else{
-      SERIAL_PORT.print("nan,nan,nan,nan,nan,nan,nan,nan,nan,");
+      Serial.print("nan,nan,nan,nan,nan,nan,nan,nan,nan,");
       delay(500);
     }
     Serial.println(""); //IMU stops printing
@@ -176,57 +180,48 @@ void printScaledAGMT(ICM_20948_SPI *sensor)
 void printScaledAGMT(ICM_20948_I2C *sensor)
 {
 #endif
-  printFormattedFloat(sensor->accX(), 5, 2); Serial.print(",");
-  printFormattedFloat(sensor->accY(), 5, 2); Serial.print(",");
-  printFormattedFloat(sensor->accZ(), 5, 2); Serial.print(",");
-
-  printFormattedFloat(sensor->gyrX(), 5, 2); Serial.print(",");
-  printFormattedFloat(sensor->gyrY(), 5, 2); Serial.print(",");
-  printFormattedFloat(sensor->gyrZ(), 5, 2); Serial.print(",");
+  printFormattedFloat(sensor->accX(), 4, 2); Serial.print(",");
+  printFormattedFloat(sensor->accY(), 4, 2); Serial.print(",");
+  printFormattedFloat(sensor->accZ(), 4, 2); Serial.print(",");
+   
+  printFormattedFloat(sensor->gyrX(), 4, 2); Serial.print(",");
+  printFormattedFloat(sensor->gyrY(), 4, 2); Serial.print(",");
+  printFormattedFloat(sensor->gyrZ(), 4, 2); Serial.print(",");
   
-  printFormattedFloat(sensor->magX(), 5, 2); Serial.print(",");
-  printFormattedFloat(sensor->magY(), 5, 2); Serial.print(",");
-  printFormattedFloat(sensor->magZ(), 5, 2);
+  printFormattedFloat(sensor->magX(), 4, 2); Serial.print(",");
+  printFormattedFloat(sensor->magY(), 4, 2); Serial.print(",");
+  printFormattedFloat(sensor->magZ(), 4, 2);
 }
 
 // helper function from example1, to print the imu data
 void printFormattedFloat(float val, uint8_t leading, uint8_t decimals)
 {
   float aval = abs(val);
-  if (val < 0)
-  {
-    SERIAL_PORT.print("-");
+  if (val < 0)  {
+    Serial.print("-");
   }
-  else
-  {
-    SERIAL_PORT.print(" ");
+  else  {
+    Serial.print(" ");
   }
-  for (uint8_t indi = 0; indi < leading; indi++)
-  {
+  for (uint8_t indi = 0; indi < leading; indi++){
     uint32_t tenpow = 0;
-    if (indi < (leading - 1))
-    {
+    if (indi < (leading - 1))    {
       tenpow = 1;
     }
-    for (uint8_t c = 0; c < (leading - 1 - indi); c++)
-    {
+    for (uint8_t c = 0; c < (leading - 1 - indi); c++){
       tenpow *= 10;
     }
-    if (aval < tenpow)
-    {
-      SERIAL_PORT.print("0");
+    if (aval < tenpow){
+      Serial.print("0");
     }
-    else
-    {
+    else{
       break;
     }
+  }//END for loop
+  if (val < 0){
+    Serial.print(-val, decimals);
   }
-  if (val < 0)
-  {
-    SERIAL_PORT.print(-val, decimals);
-  }
-  else
-  {
-    SERIAL_PORT.print(val, decimals);
+  else{
+    Serial.print(val, decimals);
   }
 }
