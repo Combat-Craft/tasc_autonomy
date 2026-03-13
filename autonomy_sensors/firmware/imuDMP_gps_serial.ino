@@ -63,26 +63,6 @@ TinyGPSPlus gps;
 HardwareSerial gpsSerial(2);
 
 
-/* =========================
-   MPU FUNCTIONS
-   ========================= */
-void read_mpu(int16_t &ax, int16_t &ay, int16_t &az,
-              int16_t &gx, int16_t &gy, int16_t &gz)
-{
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3B);
-  Wire.endTransmission(false);
-  Wire.requestFrom(MPU_ADDR, 14);
-
-  ax = (Wire.read() << 8) | Wire.read();
-  ay = (Wire.read() << 8) | Wire.read();
-  az = (Wire.read() << 8) | Wire.read();
-  Wire.read(); Wire.read();
-  gx = (Wire.read() << 8) | Wire.read();
-  gy = (Wire.read() << 8) | Wire.read();
-  gz = (Wire.read() << 8) | Wire.read();
-}
-
 void setup_imu(){
    // not entirely sure with GPS and IMU, if this will be ok...
    /*
@@ -150,9 +130,9 @@ void setup_imu(){
    success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_GAME_ROTATION_VECTOR) == ICM_20948_Stat_Ok);
    
    // Enable additional sensors / features
-   success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_RAW_GYROSCOPE) == ICM_20948_Stat_Ok);
-   success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_RAW_ACCELEROMETER) == ICM_20948_Stat_Ok);
-   success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_MAGNETIC_FIELD_UNCALIBRATED) == ICM_20948_Stat_Ok);
+   success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_GYROSCOPE) == ICM_20948_Stat_Ok);
+   success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_ACCELEROMETER) == ICM_20948_Stat_Ok);
+   success &= (myICM.enableDMPSensor(INV_ICM20948_SENSOR_GEOMAGNETIC_FIELD) == ICM_20948_Stat_Ok);
    
    // Configuring DMP to output data at multiple ODRs:
    // DMP is capable of outputting multiple sensor data at different rates to FIFO.
@@ -161,11 +141,11 @@ void setup_imu(){
    // E.g. For a 225Hz ODR rate when DMP is running at 225Hz, value = (225/225) - 1 = 0.
    // E.g. For a 5Hz ODR rate when DMP is running at 55Hz, value = (55/5) - 1 = 10.
    success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Quat6, 10) == ICM_20948_Stat_Ok);        // Set to 5Hz
-   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Accel, 54) == ICM_20948_Stat_Ok);        // Set to 1Hz
-   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, 54) == ICM_20948_Stat_Ok);         // Set to 1Hz
-   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 54) == ICM_20948_Stat_Ok);  // Set to 1Hz
-   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, 54) == ICM_20948_Stat_Ok);        // Set to 1Hz
-   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 54) == ICM_20948_Stat_Ok); // Set to 1Hz
+   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Accel, 10) == ICM_20948_Stat_Ok);        // Set to 5Hz
+   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Gyro, 10) == ICM_20948_Stat_Ok);         // Set to 5Hz
+   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Gyro_Calibr, 10) == ICM_20948_Stat_Ok);  // Set to 5Hz
+   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Cpass, 10) == ICM_20948_Stat_Ok);        // Set to 5Hz
+   success &= (myICM.setDMPODRrate(DMP_ODR_Reg_Cpass_Calibr, 10) == ICM_20948_Stat_Ok); // Set to 5Hz
    
    // Enable the FIFO
    success &= (myICM.enableFIFO() == ICM_20948_Stat_Ok);
@@ -190,45 +170,6 @@ void setup_imu(){
       ; // Do nothing more
    }
 } // END setup_imu()
-
-void wake_mpu() {
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x6B);
-  Wire.write(0x00);
-  Wire.endTransmission();
-  delay(50);
-}
-
-void calibrate_imu(int samples=1200) {
-  Serial.println("# Calibrating IMU, keep still...");
-  delay(1500);
-
-  long sax=0, say=0, saz=0;
-  long sgx=0, sgy=0, sgz=0;
-
-  for (int i=0; i<samples; i++) {
-    int16_t ax, ay, az, gx, gy, gz;
-    read_mpu(ax, ay, az, gx, gy, gz);
-    sax+=ax; say+=ay; saz+=az;
-    sgx+=gx; sgy+=gy; sgz+=gz;
-    delay(2);
-  }
-
-  float axm = sax/(float)samples;
-  float aym = say/(float)samples;
-  float azm = saz/(float)samples;
-
-  gbx = sgx/(float)samples;
-  gby = sgy/(float)samples;
-  gbz = sgz/(float)samples;
-
-  float target_az = (azm >= 0) ? ACC_SCALE : -ACC_SCALE;
-  abx = axm;
-  aby = aym;
-  abz = azm - target_az;
-
-  Serial.println("# IMU calibration done");
-}
 
 /* =========================
    SETUP
@@ -257,62 +198,122 @@ void setup() {
    ========================= */
 void loop() {
 
-  /* Always parse GPS bytes */
-  while (gpsSerial.available()) {
-    gps.encode(gpsSerial.read());
-  }
-
-  unsigned long now = millis();
-
-  /* -------- IMU OUTPUT -------- */
-  if (now - last_imu_time >= IMU_PERIOD_MS) {
-    last_imu_time = now;
-
-    int16_t ax, ay, az, gx, gy, gz;
-    read_mpu(ax, ay, az, gx, gy, gz);
-
-    ax -= abx; ay -= aby; az -= abz;
-    gx -= gbx; gy -= gby; gz -= gbz;
-
-    float ax_si = ax * (G / ACC_SCALE);
-    float ay_si = ay * (G / ACC_SCALE);
-    float az_si = az * (G / ACC_SCALE);
-
-    float gx_si = gx * (M_PI/180.0f) / GYRO_SCALE;
-    float gy_si = gy * (M_PI/180.0f) / GYRO_SCALE;
-    float gz_si = gz * (M_PI/180.0f) / GYRO_SCALE;
-
-    Serial.print("IMU,");
-    Serial.print(now); Serial.print(",");
-    Serial.print(ax_si,6); Serial.print(",");
-    Serial.print(ay_si,6); Serial.print(",");
-    Serial.print(az_si,6); Serial.print(",");
-    Serial.print(gx_si,6); Serial.print(",");
-    Serial.print(gy_si,6); Serial.print(",");
-    Serial.println(gz_si,6);
-  }
-
-  /* -------- GPS OUTPUT -------- */
-  if (now - last_gps_time >= GPS_PERIOD_MS) {
-    last_gps_time = now;
-
-    bool fix = gps.location.isValid();
-
-    Serial.print("GPS,");
-    Serial.print(now); Serial.print(",");
-
-    if (fix) {
-      Serial.print(gps.location.lat(),6); Serial.print(",");
-      Serial.print(gps.location.lng(),6); Serial.print(",");
-      Serial.print(gps.altitude.meters(),2); Serial.print(",");
-      Serial.print(gps.speed.mps(),2); Serial.print(",");
-      Serial.print(gps.hdop.isValid() ? gps.hdop.value()/100.0f : NAN,2);
-      Serial.print(",");
-      Serial.print(gps.satellites.isValid() ? gps.satellites.value() : 0);
-      Serial.print(",");
-      Serial.println(1);
-    } else {
+   /* Always parse GPS bytes */
+   while (gpsSerial.available()) {
+   gps.encode(gpsSerial.read());
+   }
+   
+   unsigned long now = millis();
+   
+   /* -------- IMU OUTPUT -------- */
+   if (now - last_imu_time >= IMU_PERIOD_MS) {
+      Serial.print("IMU,");
+      imu_loop(); // prints Q1,Q2,Q3,ax,ay,az,gx,gy,gz,mag_x,mag_y,mag_z i.e. quaternion, acceleromter, gyroscope, magnetometer
+      Serial.println(1);// to ensure newline
+   }
+   
+   /* -------- GPS OUTPUT -------- */
+   //THIS HAS BEEN LEFT ALONE
+   if (now - last_gps_time >= GPS_PERIOD_MS) {
+      last_gps_time = now;
+      
+      bool fix = gps.location.isValid();
+      
+      Serial.print("GPS,");
+      Serial.print(now); Serial.print(",");
+      
+      if (fix) {
+         Serial.print(gps.location.lat(),6); Serial.print(",");
+         Serial.print(gps.location.lng(),6); Serial.print(",");
+         Serial.print(gps.altitude.meters(),2); Serial.print(",");
+         Serial.print(gps.speed.mps(),2); Serial.print(",");
+         Serial.print(gps.hdop.isValid() ? gps.hdop.value()/100.0f : NAN,2);
+         Serial.print(",");
+         Serial.print(gps.satellites.isValid() ? gps.satellites.value() : 0);
+         Serial.print(",");
+         Serial.println(1);
+      } else {
       Serial.println("nan,nan,nan,nan,nan,0,0");
-    }
-  }
-}
+      }
+   }
+
+void imu_loop(){
+   // Read any DMP data waiting in the FIFO
+   // Note:
+   //    readDMPdataFromFIFO will return ICM_20948_Stat_FIFONoDataAvail if no data is available.
+   //    If data is available, readDMPdataFromFIFO will attempt to read _one_ frame of DMP data.
+   //    readDMPdataFromFIFO will return ICM_20948_Stat_FIFOIncompleteData if a frame was present but was incomplete
+   //    readDMPdataFromFIFO will return ICM_20948_Stat_Ok if a valid frame was read.
+   //    readDMPdataFromFIFO will return ICM_20948_Stat_FIFOMoreDataAvail if a valid frame was read _and_ the FIFO contains more (unread) data.
+   icm_20948_DMP_data_t data;
+   myICM.readDMPdataFromFIFO(&data);
+   
+   if ((myICM.status == ICM_20948_Stat_Ok) || (myICM.status == ICM_20948_Stat_FIFOMoreDataAvail)) // Was valid data available?
+   {
+      //SERIAL_PORT.print(F("Received data! Header: 0x")); // Print the header in HEX so we can see what data is arriving in the FIFO
+      //if ( data.header < 0x1000) SERIAL_PORT.print( "0" ); // Pad the zeros
+      //if ( data.header < 0x100) SERIAL_PORT.print( "0" );
+      //if ( data.header < 0x10) SERIAL_PORT.print( "0" );
+      //SERIAL_PORT.println( data.header, HEX );
+
+      // to get yaw/heading, from Example7_DMP_Quat6_EulerAngles.ino
+      // will output only quat, then do yaw/heading calcs in python
+      if ((data.header & DMP_header_bitmap_Quat6) > 0) // Check for orientation data (Quat9)
+      {
+         // Q0 value is computed from this equation: Q0^2 + Q1^2 + Q2^2 + Q3^2 = 1.
+         // In case of drift, the sum will not add to 1, therefore, quaternion data need to be corrected with right bias values.
+         // The quaternion data is scaled by 2^30.
+      
+         //SERIAL_PORT.printf("Quat6 data is: Q1:%ld Q2:%ld Q3:%ld\r\n", data.Quat6.Data.Q1, data.Quat6.Data.Q2, data.Quat6.Data.Q3);
+      
+         // Scale to +/- 1
+         double q1 = ((double)data.Quat6.Data.Q1) / 1073741824.0; // Convert to double. Divide by 2^30
+         double q2 = ((double)data.Quat6.Data.Q2) / 1073741824.0; // Convert to double. Divide by 2^30
+         double q3 = ((double)data.Quat6.Data.Q3) / 1073741824.0; // Convert to double. Divide by 2^30
+
+         //Q1,Q2,Q3
+         Serial.print(q1, 6); Serial.print(",");
+         Serial.print(q2, 6); Serial.print(",");
+         Serial.print(q3, 6); Serial.print(",");
+      }
+
+      if ((data.header & DMP_header_bitmap_Accel) > 0) // Check for Accel
+      {
+         float acc_x = (float)data.Raw_Accel.Data.X; // Extract the raw accelerometer data
+         float acc_y = (float)data.Raw_Accel.Data.Y;
+         float acc_z = (float)data.Raw_Accel.Data.Z;
+
+         Serial.print(acc_x,6); Serial.print(","); 
+         Serial.print(acc_y,6); Serial.print(","); 
+         Serial.print(acc_z,6); Serial.print(","); 
+      }
+
+      if ((data.header & DMP_header_bitmap_Gyro) > 0) // Check for Gyro
+      {
+         float gy_x = (float)data.Raw_Gyro.Data.X; // Extract the raw gyro data
+         float gy_y = (float)data.Raw_Gyro.Data.Y;
+         float gy_z = (float)data.Raw_Gyro.Data.Z;
+
+         Serial.print(gy_x,6); Serial.print(","); 
+         Serial.print(gy_y,6); Serial.print(","); 
+         Serial.print(gy_z,6); Serial.print(","); 
+      }   
+      
+      if ((data.header & DMP_header_bitmap_Compass) > 0) // Check for Compass
+      {
+         float mag_x = (float)data.Compass.Data.X; // Extract the compass data
+         float mag_y = (float)data.Compass.Data.Y;
+         float mag_z = (float)data.Compass.Data.Z;
+
+         Serial.print(mag_,6); Serial.print(","); 
+         Serial.print(mag_y,6); Serial.print(","); 
+         Serial.print(mag_z,6); Serial.print(","); 
+      }      
+   }
+
+   if (myICM.status != ICM_20948_Stat_FIFOMoreDataAvail) // If more data is available then we should read it right away - and not delay
+   {
+      delay(10);
+   }   
+   
+}// END imu_loop()
