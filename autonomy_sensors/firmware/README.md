@@ -25,10 +25,10 @@ From Antonia's set up, it orginally used the SDA/21 and SLC/22 pins, so I2C comm
 
 However, this new board has more complicated hookup as per [sparkfun's hardware guide](https://learn.sparkfun.com/tutorials/sparkfun-9dof-imu-icm-20948-breakout-hookup-guide#hardware-hookup). The Top is the I2C side (will be labelled as such vs SPI), and will need to connect to the Da (SDA) and CL(SLC) pins from the sparkfun to #ESP32's SDA/21 and SCL/22.
 
-Address of the I2C in client/slave mode is 0x68 as per Sparkfun. (The ICM chip notes it is b110100X where the LSB bit of the 7-bit address is determined by the logic level on pin AD0).
+Address of the I2C in client/slave mode is 0x68 as per Sparkfun. (The ICM chip notes it is b110100X where the LSB bit of the 7-bit address is determined by the logic level on pin AD0). Sparkfun uses AD0 = 1
 
 ### Firmware Libraries:
-The code uses [TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus/tree/master) for Arduino NMEA parsing, and ESP32's [HardwareSerial](https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/HardwareSerial.cpp) to read data from the GPS board.
+The code uses [sparkfun's arduino library](https://github.com/mikalhart/TinyGPSPlus/tree/master) to handle pretty much all the Wire.h based connection, handshaking, and read/write, and DMP access.
 
 ### Note on DMP:
 Considering using to gain access to quaternion, 6 axis or 9 axis, or game vector data, etc. however, per doc. However because of the note below in the ICM-20948's document
