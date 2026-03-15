@@ -17,6 +17,8 @@ The code uses [TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus/tree/master
 ## SparkFun 9DoF IMU (ICM-20948)
 
 ### Wiring: 
+[This tutorial](https://www.esp32learning.com/code/esp32-and-icm-20948-motiontracking-device-arduino-example.php) uses different code and some other boards, but the general wiring looks fine.
+
 refering to [sparkfun's hookup guide](https://learn.sparkfun.com/tutorials/sparkfun-9dof-imu-icm-20948-breakout-hookup-guide)).
 
 From Antonia's set up, it orginally used the SDA/21 and SLC/22 pins, so I2C communications. The given [Arduino Code examples](https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/tree/main/examples/Arduino) appear to assume Quicc which are also I2C. 
