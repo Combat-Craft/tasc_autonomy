@@ -55,7 +55,8 @@ unsigned long last_gps_time = 0;
 /* =========================
    GPS CONFIG
    ========================= */
-#define RXD2 16
+// these are the pin #s on the ESP32, we are using UART pins for the GPS i.e. RX/MOsi and TX/MISO pins
+#define RXD2 16 
 #define TXD2 17
 #define GPS_BAUD 38400
 
