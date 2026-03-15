@@ -57,6 +57,7 @@ I'm assuming these are in scientific notation... maybe??? we'll have to test the
   //    INV_ICM20948_SENSOR_LINEAR_ACCELERATION         (16-bit accel + 32-bit 6-axis quaternion)
   //    INV_ICM20948_SENSOR_ORIENTATION                 (32-bit 9-axis quaternion + heading accuracy)
 ```
+Refer to this [course/tutorial](https://github.com/FastRobotsCornell/FastRobots-2026/blob/main/docs/tutorials/dmp.md) for some extra refinement on DMP code, in particular the publishing rate cause the FIFO can't handle overflow i.e. it crashes the whole chip. 
 
 # Package and Code 
 
