@@ -39,7 +39,7 @@ def generate_launch_description():
 
         ## IMU (raw_data and magnetic field), GPS, Heading, Cardinal Compass
         Node(
-            package='autonomu_sensors',
+            package='autonomy_sensors',
             executable='gps_imu_broadcaster',
             name='serial_imu_gps',
             output='screen',
