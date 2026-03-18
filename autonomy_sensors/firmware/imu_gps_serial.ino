@@ -29,10 +29,16 @@ ICM_20948_I2C myICM; // removed the SPI configuration
 // On the SparkFun 9DoF IMU breakout the default is 1, and when the ADR jumper is closed the value becomes 0
 #define AD0_VAL 1
 
+// NOTE: we want as much accuracy as possible, so I will do the bulk of the conversion in ROS2/python, mainly yhe micro and milli to standard
+const float ACC_CONVERSION  = 9.80665f; // micro m/s^2 | from micro g's : 1 g = 9.80665 m/s^2, and 1g = 1000 milli-g
+const float GYRO_CONVERSION = DEG_TO_RAD; // radian/second | from deg/sec : apparently already defined by Arduino
+//const float MAG_CONVERSION = 0.000001f; // Tesla | from microTesla: 1,000,000  micro Tesla = 1 Tesla
+
+
 // ESP32 needs the pins and address? but the sparkfun ICM_20948.cpp/h object appaers to handle the wire part...
-#define IMU_ADDR 0x68 
-#define SDA_PIN 21
-#define SCL_PIN 22
+//#define IMU_ADDR 0x68 
+//define SDA_PIN 21
+//#define SCL_PIN 22
 
 /* Timing */
 const unsigned long IMU_PERIOD_MS = 10;    // 100 Hz
@@ -128,8 +134,17 @@ void loop() {
     // start IMU serial print
     if (myICM.dataReady()){
       myICM.getAGMT();             // The values are only updated when you call 'getAGMT'
-      printScaledAGMT(&myICM);     // This function takes into account the scale settings 
-                                   // from when the measurement was made to calculate the values with unit
+      Serial.print("IMU,");
+      Serial.print(now); Serial.print(",");
+      Serial.print(agmt.acc.axes.x,6*ACC_CONVERSION); Serial.print(",");
+      Serial.print(agmt.acc.axes.y,6*ACC_CONVERSION); Serial.print(",");
+      Serial.print(agmt.acc.axes.z,6*ACC_CONVERSION); Serial.print(",");
+      Serial.print(agmt.gyr.axes.x,6*GYRO_CONVERSION); Serial.print(",");
+      Serial.print(agmt.gyr.axes.y,6*GYRO_CONVERSION); Serial.print(",");
+      Serial.print(agmt.gyr.axes.z,6*GYRO_CONVERSION); Serial.print(",");
+      Serial.print(agmt.mag.axes.x,6); Serial.print(",");
+      Serial.print(agmt.mag.axes.y,6); Serial.print(",");
+      Serial.println(agmt.mag.axes.z,6); 
       delay(30);
     }
     else{
@@ -137,7 +152,6 @@ void loop() {
       // SERIAL_PORT.println("Waiting for IMU data: myICM.dataReady() == False");
       delay(500);
     }
-    Serial.println(""); //IMU stops printing
   }//END imu if()
   
   /* -------- GPS OUTPUT -------- */
@@ -168,50 +182,4 @@ void loop() {
   
 }//END loop()
 
-//From Example1_Basics.ino printing helper, modified to match old format
-void printScaledAGMT(ICM_20948_I2C *sensor){
-  printFormattedFloat(sensor->accX(), 4, 2); Serial.print(",");
-  printFormattedFloat(sensor->accY(), 4, 2); Serial.print(",");
-  printFormattedFloat(sensor->accZ(), 4, 2); Serial.print(",");
-   
-  printFormattedFloat(sensor->gyrX(), 4, 2); Serial.print(",");
-  printFormattedFloat(sensor->gyrY(), 4, 2); Serial.print(",");
-  printFormattedFloat(sensor->gyrZ(), 4, 2); Serial.print(",");
-  
-  printFormattedFloat(sensor->magX(), 4, 2); Serial.print(",");
-  printFormattedFloat(sensor->magY(), 4, 2); Serial.print(",");
-  printFormattedFloat(sensor->magZ(), 4, 2);
-}
 
-// helper function from Example1_Basics.ino, to print the imu data
-void printFormattedFloat(float val, uint8_t leading, uint8_t decimals){
-  float aval = abs(val);
-  if (val < 0)  {
-    Serial.print("-");
-  }
-  else  {
-    Serial.print(" ");
-  }
-  for (uint8_t indi = 0; indi < leading; indi++){
-    uint32_t tenpow = 0;
-    if (indi < (leading - 1)){
-      tenpow = 1;
-    }
-    for (uint8_t c = 0; c < (leading - 1 - indi); c++){
-      tenpow *= 10;
-    }
-    if (aval < tenpow){
-      Serial.print("0");
-    }
-    else{
-      break;
-    }
-  }//END outerfor loop
-   
-  if (val < 0){
-    Serial.print(-val, decimals);
-  }
-  else{
-    Serial.print(val, decimals);
-  }
-}
