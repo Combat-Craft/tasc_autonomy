@@ -72,6 +72,21 @@ This folder contains the firmware required for:
 
 
 # Notes/Logs
+### MArch 17th, 2026
+NEED TO TEST IF ENU OR NED due to robot_localization expecting it to be ENU, and MANY sensor fusion libraries, Arduino or Python, expecting NED.
+https://github.com/uutzinger/pyIMU
+https://github.com/adafruit/Adafruit_AHRS/tree/master
+
+not entirely sure we actually need quaternion at the moment. pause for now.
+
+```
+    Acceleration: Be careful with acceleration data. The state estimation nodes in robot_localization assume that an IMU that is placed in its neutral right-side-up position on a flat surface will:
+
+        Measure +9.81 meters per second squared for the Z axis.
+        If the sensor is rolled +90 degrees (left side up), the acceleration should be +9.81 meters per second squared for the Y axis.
+        If the sensor is pitched +90 degrees (front side down), it should read -9.81 meters per second squared for the X axis.
+```
+
 ### March 13th, 2026
 The bolded are to be used for the heads-up display, the rest required for standard sensor_msgs/msg/NavSatFix and sensor_msgs/Imu Messages.
 
