@@ -3,12 +3,6 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        Node(
-            package='cam_stream',
-            executable='multi_camera_publisher',
-            name='multi_camera_publisher',
-            output='screen',
-        ),
 
         #Node(
         #    package='cam_stream',
@@ -42,28 +36,12 @@ def generate_launch_description():
             ]
         ),
         # Sensors node
-        Node(
-            package='cam_stream',
-            executable='sensors_node',
-            name='sensors_node',
-            output='screen',
-            parameters=[
-                {'port': '/dev/ttyACM0'},
-                {'baud_rate': 115200}
-            ]
-        ),   
 
+        ## IMU (raw_data and magnetic field), GPS, Heading, Cardinal Compass
         Node(
-            package='cam_stream',
-            executable='distance_tracker',
-            name='distance_tracker',
+            package='autonomu_sensors',
+            executable='gps_imu_broadcaster',
+            name='serial_imu_gps',
             output='screen',
-        ),
-        #
-        Node(
-            package='cam_stream',
-            executable='heading',
-            name='heading',
-            output='screen',
-        ),
+        ),   
     ])
