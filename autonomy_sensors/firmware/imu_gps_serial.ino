@@ -30,7 +30,7 @@ ICM_20948_I2C myICM; // removed the SPI configuration
 #define AD0_VAL 1
 
 // NOTE: we want as much accuracy as possible, so I will do the bulk of the conversion in ROS2/python, mainly yhe micro and milli to standard
-const float ACC_CONVERSION  = 9.80665f; // micro m/s^2 | from micro g's : 1 g = 9.80665 m/s^2, and 1g = 1000 milli-g
+const float ACC_CONVERSION  = 9.80665f; // milli m/s^2 | from milli g's : 1 g = 9.80665 m/s^2, and 1g = 1000 milli-g
 const float GYRO_CONVERSION = DEG_TO_RAD; // radian/second | from deg/sec : apparently already defined by Arduino
 //const float MAG_CONVERSION = 0.000001f; // Tesla | from microTesla: 1,000,000  micro Tesla = 1 Tesla
 
