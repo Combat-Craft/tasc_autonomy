@@ -1,7 +1,7 @@
 # Firmware Info
 ESP32 DEvkit Rev2, it seems, since Rx/TX are 16/17, and SDA/SLA were 21/22.
 
-<img src="https://pinoutdiagrams.com/wp-content/images/devkit-v1-esp32-pinout-hrnln.jpg" alt="ESP32 pinout">
+[ESP32 pinout](https://pinoutdiagrams.com/wp-content/images/devkit-v1-esp32-pinout-hrnln.jpg)
 
 
 ## SparkFun GPS NEO-M9N
