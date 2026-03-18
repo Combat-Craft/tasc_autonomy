@@ -13,8 +13,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='toni',
-    maintainer_email='tonithetutor@gmail.com',
+    maintainer='',
+    maintainer_email='',
     description='TODO: Package description',
     license='Apache-2.0',
     extras_require={
@@ -24,9 +24,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'gps_broadcaster = autonomy_sensors.gps_broadcaster:main',
-            'gps_frame_fixer = autonomy_sensors.gps_frame_fixer:main',
-            'path_publisher = autonomy_sensors.path_publisher:main',
+            'esp32_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
+            #'gps_broadcaster = autonomy_sensors.gps_broadcaster:main',
+            #'gps_frame_fixer = autonomy_sensors.gps_frame_fixer:main',
+            #'path_publisher = autonomy_sensors.path_publisher:main',
         ],
     },
 )
