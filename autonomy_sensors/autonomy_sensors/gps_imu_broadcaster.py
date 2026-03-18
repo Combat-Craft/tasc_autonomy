@@ -89,22 +89,24 @@ class SerialImuGpsNode(Node):
     # IMU handler
     # Format:
     # IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz
-    #
+    # 
     # Cardinal Compass and Heading Angle handler
     # Calculated from IMU
     # --------------------------------------------------
     def handle_imu(self, line: str):
+        ACCEL_CONVERSION = 0.001 # it will be coming in milli m/s^2, as it was converted from milli g's
+        MAG_CONVERSION = 0.000001 # it will be coming in micro Tesla, need Tesla
         try:
             _, ms, ax, ay, az, gx, gy, gz, mx, my, mz = line.split(',')
-            ax = float(ax)
-            ay = float(ay)
-            az = float(az)
-            gx = float(gx)
+            ax = float(ax) * ACCEL_CONVERSION
+            ay = float(ay) * ACCEL_CONVERSION
+            az = float(az) * ACCEL_CONVERSION
+            gx = float(gx) # should be radians/second
             gy = float(gy)
             gz = float(gz)
-            mx = float(mx)
-            my = float(my)
-            mz = float(mz)
+            mx = float(mx) * MAG_CONVERSION
+            my = float(my) * MAG_CONVERSION
+            mz = float(mz) * MAG_CONVERSION
         except ValueError:
             return
           
