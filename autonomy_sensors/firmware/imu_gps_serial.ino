@@ -134,22 +134,25 @@ void loop() {
     // start IMU serial print
     if (myICM.dataReady()){
       myICM.getAGMT();             // The values are only updated when you call 'getAGMT'
+
+      //Print the data
       Serial.print("IMU,");
       Serial.print(now); Serial.print(",");
-      Serial.print(agmt.acc.axes.x,6*ACC_CONVERSION); Serial.print(",");
-      Serial.print(agmt.acc.axes.y,6*ACC_CONVERSION); Serial.print(",");
-      Serial.print(agmt.acc.axes.z,6*ACC_CONVERSION); Serial.print(",");
-      Serial.print(agmt.gyr.axes.x,6*GYRO_CONVERSION); Serial.print(",");
-      Serial.print(agmt.gyr.axes.y,6*GYRO_CONVERSION); Serial.print(",");
-      Serial.print(agmt.gyr.axes.z,6*GYRO_CONVERSION); Serial.print(",");
-      Serial.print(agmt.mag.axes.x,6); Serial.print(",");
-      Serial.print(agmt.mag.axes.y,6); Serial.print(",");
-      Serial.println(agmt.mag.axes.z,6); 
+      // via printRawAGMT( myICM.agmt ) -> void printRawAGMT(ICM_20948_AGMT_t agmt)
+      Serial.print(myICM.agmt.acc.axes.x*ACC_CONVERSION,6); Serial.print(",");
+      Serial.print(myICM.agmt.acc.axes.y*ACC_CONVERSION,6; Serial.print(",");
+      Serial.print(myICM.agmt.acc.axes.z*ACC_CONVERSION,6); Serial.print(",");
+      Serial.print(myICM.agmt.gyr.axes.x*GYRO_CONVERSION6,6); Serial.print(",");
+      Serial.print(myICM.agmt.gyr.axes.y*GYRO_CONVERSION6,6); Serial.print(",");
+      Serial.print(myICM.agmt.gyr.axes.z*GYRO_CONVERSION6,6); Serial.print(",");
+      Serial.print(myICM.agmt.mag.axes.x,6); Serial.print(",");
+      Serial.print(myICM.agmt.mag.axes.y,6); Serial.print(",");
+      Serial.println(myICM.agmt.mag.axes.z,6); 
       delay(30);
     }
     else{
       Serial.print("nan,nan,nan,nan,nan,nan,nan,nan,nan,");
-      // SERIAL_PORT.println("Waiting for IMU data: myICM.dataReady() == False");
+      SERIAL_PORT.println("Waiting for IMU data: myICM.dataReady() == False");
       delay(500);
     }
   }//END imu if()
