@@ -3,6 +3,20 @@
 ## #  GPS,ms,lat,lon,alt,speed,hdop,sats,fix at 1Hz <- NO CHANGES  
 ## #  IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz at 100Hz
 ## # This is the "No microROS, only Serial" option
+#
+# Note that this is publishing various topics :
+#    - standard ROS2: 
+#        - /imu/data_raw
+#        - /imu/mag
+#        - /gps/fix
+#    - custom for overlay: 
+#        - /heading (as in pitch, roll, the angle of the Object away frm North)
+#        - /cardinal_compass (using 8-rose i.e. N, NE, E, etc)
+#    - custom using foxglove (all of TextAnnotation for use on 2D panels): 
+#        - /cam_overlay/latitude_longitude, 
+#        - /cam_overlay/heading 
+#        - /cam_overlay/compass
+#
 
 import serial
 import threading
