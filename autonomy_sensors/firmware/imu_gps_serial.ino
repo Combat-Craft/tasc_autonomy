@@ -71,7 +71,8 @@ void setup() {
   Serial.println("# GPS serial started");
 
   // IMU setup
-  Wire.begin(SDA_PIN, SCL_PIN); 
+  //Wire.begin(SDA_PIN, SCL_PIN); //if i manually set pins, but ICM_20948 object handles it
+  Wire.begin(); 
   Wire.setClock(400000);
    
   //wake_mpu(), not required with ICM_20948_I2C object, i think
@@ -140,11 +141,11 @@ void loop() {
       Serial.print(now); Serial.print(",");
       // via printRawAGMT( myICM.agmt ) -> void printRawAGMT(ICM_20948_AGMT_t agmt)
       Serial.print(myICM.agmt.acc.axes.x*ACC_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.acc.axes.y*ACC_CONVERSION,6; Serial.print(",");
+      Serial.print(myICM.agmt.acc.axes.y*ACC_CONVERSION,6); Serial.print(",");
       Serial.print(myICM.agmt.acc.axes.z*ACC_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.gyr.axes.x*GYRO_CONVERSION6,6); Serial.print(",");
-      Serial.print(myICM.agmt.gyr.axes.y*GYRO_CONVERSION6,6); Serial.print(",");
-      Serial.print(myICM.agmt.gyr.axes.z*GYRO_CONVERSION6,6); Serial.print(",");
+      Serial.print(myICM.agmt.gyr.axes.x*GYRO_CONVERSION,6); Serial.print(",");
+      Serial.print(myICM.agmt.gyr.axes.y*GYRO_CONVERSION,6); Serial.print(",");
+      Serial.print(myICM.agmt.gyr.axes.z*GYRO_CONVERSION,6); Serial.print(",");
       Serial.print(myICM.agmt.mag.axes.x,6); Serial.print(",");
       Serial.print(myICM.agmt.mag.axes.y,6); Serial.print(",");
       Serial.println(myICM.agmt.mag.axes.z,6); 
