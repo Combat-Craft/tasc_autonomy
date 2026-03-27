@@ -1,23 +1,23 @@
 /****************************************************************
  * This code is based on Sparkfun's ICM20948 code "Example10_DMP_FastMultipleSensors.ino" (IMU),
  * "Example9_DMP_MultipleSensors.ino" (IMU), and imu_gps_simple.ino by Antonia.
+ * 
+ * Please use the ESP32 Dev Module board. 
+ *  - Used a ESP32-D0WD-V3 chip i.e. ESP32 Devkit v1
  *
- * The following comment is from the IMU example:
- * ** Important note: by default the DMP functionality is disabled in the library
- * ** as the DMP firmware takes up 14301 Bytes of program memory.
- * ** To use the DMP, you will need to:
- * ** Edit ICM_20948_C.h
- * ** Uncomment line 29: #define ICM_20948_USE_DMP
- * ** Save changes
+ * DMP is not used despite providing Quat, as it is far more complicated and needs custom calibrations
  ***************************************************************/
 #include "ICM_20948.h" //Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
-// I also just flat out included the src folder, but will assume we're installing the actual library @ https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary
 
-#include <Wire.h>      // placed it back in, but depending on how it goes maybe comment out again
-#include <TinyGPS++.h>
-
+//#include <Wire.h>    // don't need to re-include bc ICM_20948.h has it
+#include <TinyGPS++.h> // for the GPS / NMEA
 
 #define SERIAL_PORT Serial
+
+/* =========================
+   SENSOR FUSION CONFIG
+   ========================= */
+// if I decide to find quaternions here
 
 /* =========================
    IMU CONFIG
@@ -25,20 +25,20 @@
 ICM_20948_I2C myICM; // removed the SPI configuration
 
 #define WIRE_PORT Wire    
-// For the ICM_20948 object: The value of the last bit of the I2C address.
-// On the SparkFun 9DoF IMU breakout the default is 1, and when the ADR jumper is closed the value becomes 0
-#define AD0_VAL 1
+#define AD0_VAL 1 // For the ICM_20948 object: The value of the last bit of the I2C address.
+                  // On the SparkFun 9DoF IMU breakout the default is 1, 
+                  // and when the ADR jumper is closed the value becomes 0
 
-// NOTE: we want as much accuracy as possible, so I will do the bulk of the conversion in ROS2/python, mainly yhe micro and milli to standard
-const float ACC_CONVERSION  = 9.80665f; // milli m/s^2 | from milli g's : 1 g = 9.80665 m/s^2, and 1g = 1000 milli-g
-const float GYRO_CONVERSION = DEG_TO_RAD; // radian/second | from deg/sec : apparently already defined by Arduino
+
+// NOTE: we want as much accuracy as possible
+const float ACC_CONVERSION  = 0.00980665f; // m/s^2 | from milli g's : 1g = 9.80665 m/s^2, and 1g = 1000 milli-g
+//const float GYRO_CONVERSION = DEG_TO_RAD; // radian/second | from deg/sec :  already defined by Arduino
 //const float MAG_CONVERSION = 0.000001f; // Tesla | from microTesla: 1,000,000  micro Tesla = 1 Tesla
+                                          // tested printing converted MAG, loose too much precision
 
-
-// ESP32 needs the pins and address? but the sparkfun ICM_20948.cpp/h object appaers to handle the wire part...
-//#define IMU_ADDR 0x68 
-//define SDA_PIN 21
-//#define SCL_PIN 22
+// ESP32 needs the pins. should be same as default, but let's be explicit
+#define SDA_PIN 21
+#define SCL_PIN 22
 
 /* Timing */
 const unsigned long IMU_PERIOD_MS = 10;    // 100 Hz
@@ -71,18 +71,8 @@ void setup() {
   Serial.println("# GPS serial started");
 
   // IMU setup
-  //Wire.begin(SDA_PIN, SCL_PIN); //if i manually set pins, but ICM_20948 object handles it
-  Wire.begin(); 
-  Wire.setClock(400000);
-   
-  //wake_mpu(), not required with ICM_20948_I2C object, i think
-  /*
-  Wire.beginTransmission(IMU_ADDR);
-  Wire.write(0x6B); //the PDF has more deets on the actual start sequence but man...
-  Wire.write(0x00);
-  Wire.endTransmission(); 
-  delay(50);
-  */
+  WIRE_PORT.begin(SDA_PIN, SCL_PIN, 400000);    
+
   setup_imu();
   
   Serial.println("# IMU + GPS streaming started");
@@ -95,14 +85,13 @@ void setup_imu(){
 
   bool initialized = false;
   while (!initialized){
-    myICM.begin(Wire, AD0_VAL); //handles the wake_mpu() stuff??? as well as some calibration apparently??? 
-     //its complex in there i aint touching it... esp with DMP involve, which we'll likely want for quartenionr or what its spelled
+    myICM.begin(Wire, AD0_VAL);  
 
     Serial.print(F("Initialization of the IMU sensor returned: "));
     Serial.println(myICM.statusString());
      
     if (myICM.status != ICM_20948_Stat_Ok){ // failed to start imu
-      Serial.println("Trying again...");
+      Serial.println("Trying IMU again...");
       delay(500);
     }
     else{
@@ -110,10 +99,8 @@ void setup_imu(){
     }
   }// END while loop  
    
-  // advanced has more setup but idc right now
-  // https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/blob/main/examples/Arduino/Example2_Advanced/Example2_Advanced.ino
-   
 } // END setup_imu()
+
 
 /* =========================
    LOOP
@@ -129,32 +116,47 @@ void loop() {
   /* -------- IMU OUTPUT -------- */
   if (now - last_imu_time >= IMU_PERIOD_MS) {
     //'header' field to indicate this is IMU data, and timestampe for topic info 
-    Serial.print("IMU,");
-    Serial.print(now); Serial.print(",");
      
     // start IMU serial print
     if (myICM.dataReady()){
       myICM.getAGMT();             // The values are only updated when you call 'getAGMT'
 
+      // IMU is does not appear to be ENU, but needs more testing
+      // might be due to the fact the MAG axes are different from ACC/GYR?
+      //    X_MAG = X_ACC;   Y = -Y_ACC;   Z_MAG = -Z_ACC (i.e. DOWN not UP) 
+      //    => I fliped the mag axes to match the acc/gyr axes
+
+      float acc_x = myICM.accX() * ACC_CONVERSION; // unit is now m/s^2
+      float acc_y = myICM.accY() * ACC_CONVERSION; 
+      float acc_z = myICM.accZ() * ACC_CONVERSION; 
+      
+      float gyr_x = myICM.gyrX() * DEG_TO_RAD; // unit is now radians/sec
+      float gyr_y = myICM.gyrY() * DEG_TO_RAD; 
+      float gyr_z = myICM.gyrZ() * DEG_TO_RAD; 
+
+      float mag_x = myICM.magX(); // unit is STILL uT, to preserve precision 
+      float mag_y = -myICM.magY();//   - will be converted to T in ROS2
+      float mag_z = -myICM.magZ();     
+
       //Print the data
       Serial.print("IMU,");
       Serial.print(now); Serial.print(",");
-      // via printRawAGMT( myICM.agmt ) -> void printRawAGMT(ICM_20948_AGMT_t agmt)
-      Serial.print(myICM.agmt.acc.axes.x*ACC_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.acc.axes.y*ACC_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.acc.axes.z*ACC_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.gyr.axes.x*GYRO_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.gyr.axes.y*GYRO_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.gyr.axes.z*GYRO_CONVERSION,6); Serial.print(",");
-      Serial.print(myICM.agmt.mag.axes.x,6); Serial.print(",");
-      Serial.print(myICM.agmt.mag.axes.y,6); Serial.print(",");
-      Serial.println(myICM.agmt.mag.axes.z,6); 
-      delay(30);
+      //Serial.print("ACC,"); // for testing
+      Serial.print(acc_x,  6); Serial.print(",");
+      Serial.print(acc_y,  6); Serial.print(",");
+      Serial.print(acc_z,  6); Serial.print(",");
+      //Serial.print("GYR,"); // for testing
+      Serial.print(gyr_x, 6); Serial.print(",");
+      Serial.print(gyr_y, 6); Serial.print(",");
+      Serial.print(gyr_z, 6); Serial.print(",");
+      //Serial.print("MAG,"); // for testing
+      Serial.print(mag_x, 6); Serial.print(",");
+      Serial.print(mag_y, 6); Serial.print(",");
+      Serial.println(mag_z, 6); 
     }
     else{
       Serial.print("nan,nan,nan,nan,nan,nan,nan,nan,nan,");
       SERIAL_PORT.println("Waiting for IMU data: myICM.dataReady() == False");
-      delay(500);
     }
   }//END imu if()
   
@@ -185,5 +187,3 @@ void loop() {
   }//END GPS if
   
 }//END loop()
-
-
