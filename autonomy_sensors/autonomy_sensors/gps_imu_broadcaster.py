@@ -113,14 +113,15 @@ class SerialImuGpsNode(Node):
     # Calculated from IMU
     # --------------------------------------------------
     def handle_imu(self, line: str):
-        ACCEL_CONVERSION = 0.001 # it will be coming in milli m/s^2, as it was converted from milli g's
+        #ACCEL_CONVERSION = 0.001 # it will be coming in milli m/s^2, as it was converted from milli g's
         MAG_CONVERSION = 0.000001 # it will be coming in micro Tesla, need Tesla
+                                  # tested in arduino, need to convert here to preserve precision
         try:
             _, ms, ax, ay, az, gx, gy, gz, mx, my, mz = line.split(',')
-            ax = float(ax) * ACCEL_CONVERSION
-            ay = float(ay) * ACCEL_CONVERSION
-            az = float(az) * ACCEL_CONVERSION
-            gx = float(gx) # should be radians/second
+            ax = float(ax) #* ACCEL_CONVERSION
+            ay = float(ay) #* ACCEL_CONVERSION
+            az = float(az) #* ACCEL_CONVERSION
+            gx = float(gx) # should already be radians/second
             gy = float(gy)
             gz = float(gz)
             mx = float(mx) * MAG_CONVERSION
