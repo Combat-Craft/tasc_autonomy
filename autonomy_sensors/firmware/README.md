@@ -72,6 +72,14 @@ This folder contains the firmware required for:
 
 
 # Notes/Logs
+### MArch 29th, 2026
+Calibrated and add quats to the firware code
+
+TODO: 
+  - add quats and heading to serial print
+  - rework broadcaster to read new serial print format, rework heading.
+  - figure out how to transform the NWU to ENU
+
 ### MArch 17th, 2026
 NEED TO TEST IF ENU OR NED due to robot_localization expecting it to be ENU, and MANY sensor fusion libraries, Arduino or Python, expecting NED.
 https://github.com/uutzinger/pyIMU
