@@ -27,9 +27,8 @@ class ScanChecker(Node):
         # Detection threshold
         self.threshold = 0.35  # meters
 
-        # Range sanity limits (adjust to your LiDAR)
-        self.min_valid_range = 0.1   # meters
-        self.max_valid_range = 8.0   # meters
+        self.min_valid_range = 0.1   
+        self.max_valid_range = 8.0   
 
         # Temporal smoothing
         self.history = deque(maxlen=5)
