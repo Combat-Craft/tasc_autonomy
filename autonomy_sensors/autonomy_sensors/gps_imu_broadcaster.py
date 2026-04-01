@@ -26,10 +26,10 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Imu, MagneticField, NavSatFix, NavSatStatus
 from geometry_msgs.msg import Quaternion
-from std_msgs.msg import Header
-from foxglove_msgs import TextAnnotation
+from std_msgs.msg import Header, Float32, String
+from foxglove_msgs.msg import TextAnnotation
 
-from math import atan2, PI, sqrt     # for heading, roll, pitch i.e. "compass" angles
+from math import atan2, pi as PI, sqrt     # for heading, roll, pitch i.e. "compass" angles
 
 def Cardinal_Direction_8(angle):
     if ((0 <= angle <= 22.5) or angle > 337.5):
