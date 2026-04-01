@@ -1,5 +1,27 @@
 # artemis branch
 
+## DATE: 2025/03/31 Tuesday 
+
+Upon reading my notes below and comparing packages, it looks I succeeded before because I removed many depreciated/troublesome packages. These are:
+  - asimov_description
+    - this thing got replaced by giskard_description anyways
+  - rviz
+    - also out of date
+  - package.xml
+    - removing it, as in main, apparently fixed many issues
+   
+Fixing some other packages from main branch:
+  - giskard_gazebo
+    - edited giskard_gazebo/CMakeLists.txt, line 13 removed the non-existing folders like ```include``` and ```src```
+   
+Regardless, the mix of CMAke and Python ROS2 packages is mildly infuriating. I will keep giskard_description and giskar_gazbo, and remake a new autonomy_sensors pacge with CMake.
+
+The other packages can go *bleep*, but I will make empty packages with their names and fill them with "working" code as we get to it.
+
+## DATE: 2025/03/30 Monday 
+
+During work session the *bleep* package would not build. My current task is now to ensur emy branch entiew thing can build, with instructions onto how.
+
 ## DATE: 2025/02/02 Monday 
 
 I cloned the entire main branch into a workspace, then worked inside ``` ~/tasc_autonomy_ws/src/tasc_autonomy ```
