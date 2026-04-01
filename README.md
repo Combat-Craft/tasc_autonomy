@@ -2,21 +2,25 @@
 
 ## Steps
 1) cloned this branch (artemis) into a workspace folder i.e. ```$ mkdir -p ~/YOUR_WORKSPACE_NAME_HERE/src```
-2) cd and then worked inside ```$  ~/YOUR_WORKSPACE_NAME_HERE/src/tasc_autonomy ```
-3) Source, build, source workspace.
-4) You can launch test.launch.py to see it in both rviz and gazebo 
-5) You can test out the imu gps boradcaster code
-
-```source /opt/ros/humble/setup.bash```
-
-``` colcon build```
-
-```source install/local_setup.bash```
-
-```ros2 launch giskard_description test.launch.py ```
+2) ```source /opt/ros/humble/setup.bash```
+3) ``` colcon build```
+4) You can CD and then worked inside ```YOUR_WORKSPACE_NAME_HERE/src/tasc_autonomy ```, but while testing and debugging, I rec you open another terminal, source humble (step 2), then go to  ```YOUR_WORKSPACE_NAME_HERE/src/tasc_autonomy```
+5) source workspace ```source install/local_setup.bash```
+6) You can ```ros2 launch giskard_description test.launch.py ```to see the model and sensors in both rviz and gazebo 
+7) You can test out the imu gps boradcaster code with ```ros2 run autonomy_sensors gps_imu_broadcaster ```, but don't forget to have the ESP32 connected and running! 
 
 
-```ros2 launch autonomy_sensors gps_imu_broadcaster.py ``` <--- needs to be tested!
+### GPS IMU node
+
+```ros2 run autonomy_sensors gps_imu_broadcaster ``` 
+
+Errors you may face:
+  - ```attributeError: module 'serial' has no attribute 'SerialException'```
+    -  system has the wrong serial module, so reinstall the right one
+    -  ```pip uninstall serial```
+    -  ```pip install pyserial```
+
+NOTE: currently don't have the ESP32 with GPS and IMU with me. So right now I can't test the rest of the code as i reach the error ```RuntimeError: Failed to open serial port /dev/ttyUSB0: [Errno 2] could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'```.
 
 ## DATE: 2025/03/31 Tuesday 
 
