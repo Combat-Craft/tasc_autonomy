@@ -1,5 +1,23 @@
 # artemis branch
 
+## Steps
+1) cloned this branch (artemis) into a workspace folder i.e. ```$ mkdir -p ~/YOUR_WORKSPACE_NAME_HERE/src```
+2) cd and then worked inside ```$  ~/YOUR_WORKSPACE_NAME_HERE/src/tasc_autonomy ```
+3) Source, build, source workspace.
+4) You can launch test.launch.py to see it in both rviz and gazebo 
+5) You can test out the imu gps boradcaster code
+
+```source /opt/ros/humble/setup.bash```
+
+``` colcon build```
+
+```source install/local_setup.bash```
+
+```ros2 launch giskard_description test.launch.py ```
+
+
+```ros2 launch autonomy_sensors gps_imu_broadcaster.py ``` <--- needs to be tested!
+
 ## DATE: 2025/03/31 Tuesday 
 
 Upon reading my notes below and comparing packages, it looks I succeeded before because I removed many depreciated/troublesome packages. These are:
@@ -13,10 +31,68 @@ Upon reading my notes below and comparing packages, it looks I succeeded before 
 Fixing some other packages from main branch:
   - giskard_gazebo
     - edited giskard_gazebo/CMakeLists.txt, line 13 removed the non-existing folders like ```include``` and ```src```
-   
-Regardless, the mix of CMAke and Python ROS2 packages is mildly infuriating. I will keep giskard_description and giskar_gazbo, and remake a new autonomy_sensors pacge with CMake.
 
-The other packages can go *bleep*, but I will make empty packages with their names and fill them with "working" code as we get to it.
+will be following the recomended [structure](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html):
+
+```
+workspace_folder/
+    src/
+      cpp_package_1/
+          CMakeLists.txt
+          include/cpp_package_1/
+          package.xml
+          src/
+
+      py_package_1/
+          package.xml
+          resource/py_package_1
+          setup.cfg
+          setup.py
+          py_package_1/
+      ...
+      cpp_package_n/
+          CMakeLists.txt
+          include/cpp_package_n/
+          package.xml
+          src/
+```
+
+Regardless, the mix of CMAke and Python ROS2 packages is mildly infuriating, but ROS2 themselves say its ok... I will keep giskard_description and giskar_gazbo. Since we use Python for our code, including custom nodes, I'll make our new packages in Python rather than cmake
+
+
+Ultimately, the structure should be as follows in your VM (replace ```YOUR_WORKSPACE_NAME_HERE``` with whatever folder name you use):
+
+```
+YOUR_WORKSPACE_NAME_HERE/
+    src/
+      autonomy_sensors/
+          package.xml
+          resource/autonomy_sensors
+          setup.cfg
+          setup.py
+          autonomy_sensors/
+          test/
+          firmware/
+
+      giskard_description/
+          CMakeLists.txt
+          include/giskard_description/
+          package.xml
+          src/
+          config/
+          launch/
+          meshes/orbbec_meshes/
+          rviz/
+
+      giskard_gazebo/
+          CMakeLists.txt
+          include/giskard_gazebo/
+          package.xml
+          src/
+          launch/
+          models/moon/
+          worlds/
+```
 
 ## DATE: 2025/03/30 Monday 
 
@@ -33,17 +109,7 @@ Overall:
    * I added the orbbec, and used the depth_camera gazbo plugin that was in the original giskard_base.urdf
  * replaced rviz file with test.rviz
 
-### Steps
-1) cloned the entire main branch into a workspace i.e. ```$ mkdir -p ~/YOUR_WORKSPACE_NAME_HERE/src```
-2) cd and then worked inside ```$  ~/YOUR_WORKSPACE_NAME_HERE/src/tasc_autonomy ```
-3) Replace the main branch's ``` giskard_description ``` folder with this one's - ONLY THE FOLDER/PACKAGE giskard_description; ignore the others inside artemis branch.
-4) Source, build, source workspace. You can then launch test.launch.py to see it in both rviz and gazebo
-```
-$ source /opt/ros/humble/setup.bash
-$ colcon build
-$ source install/local_setup.bash
-$ ros2 launch giskard_description test.launch.py
-```
+
 
 ### Extras if we have time
  * could make a seperate materials.xacro then include them to futher modular-ize
