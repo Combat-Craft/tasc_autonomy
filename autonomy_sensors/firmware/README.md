@@ -1,3 +1,15 @@
+# Instructions
+
+Currently, for firmware, On arduino
+  1) connect the ESP32 with a usb c cable to the jetson
+  2) Select the board to be the ```ESP32 Dev Module```
+  3) Load and compile```imu_gps_serial.ino```. It should be fine, but if the libraries poofed somehow, just add them back in.
+  4) Check on Serial Monitor 115200.
+     
+
+imu_gps_serial_ahrs.ino needs to be refactored. Right now, it has the calibrated stuff and quaternions from https://github.com/jremington/ICM_20948-AHRS, but honestly i can remove the sensor fusion and just keep the calibrated output. I asked the Maker if he could confirm the calibrated units, but atm I think they are 0.01*m/s^2, rad/sec, and microTesla.
+
+
 # Firmware Info
 ESP32 DEvkit Rev2, it seems, since Rx/TX are 16/17, and SDA/SLA were 21/22.
 
