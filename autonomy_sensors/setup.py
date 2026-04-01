@@ -13,9 +13,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ros2v2',
+    maintainer='ArtemisLee',
     maintainer_email='yr.lee@torontomu.com',
-    description='TODO: Package description',
+    description='Has all the sensor code, such as GPS, IMU, Orbbec, etc.',
     license='Apache-2.0',
     extras_require={
         'test': [
@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
         ],
     },
 )
