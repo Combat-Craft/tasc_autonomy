@@ -1,0 +1,3 @@
+This is where custom C++ nodes are placed, with their header files in the include/giskard_description.
+
+There are none, and we used python too...
