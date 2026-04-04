@@ -22,6 +22,7 @@ Errors you may face:
     -  ```pip uninstall serial```
     -  ```pip install pyserial```
   -  Check the USB port is correct! Should be USB0, but might change to USB1 or whatever.
+  -  make sure you install foxglove_msgs
 
 NOTE: currently don't have the ESP32 with GPS and IMU with me. So right now I can't test the rest of the code as i reach the error ```RuntimeError: Failed to open serial port /dev/ttyUSB0: [Errno 2] could not open port /dev/ttyUSB0: [Errno 2] No such file or directory: '/dev/ttyUSB0'```.
 
