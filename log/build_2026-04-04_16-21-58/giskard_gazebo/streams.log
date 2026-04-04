@@ -1,0 +1,71 @@
+[0.777s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo': CMAKE_PREFIX_PATH=/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision:/opt/ros/humble /usr/bin/cmake /home/mnt/Desktop/tasc_autonav_combined/tasc_autonomy/giskard_gazebo -DCMAKE_INSTALL_PREFIX=/home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo
+[1.293s] -- The C compiler identification is GNU 11.4.0
+[1.673s] -- The CXX compiler identification is GNU 11.4.0
+[1.739s] -- Detecting C compiler ABI info
+[2.227s] -- Detecting C compiler ABI info - done
+[2.244s] -- Check for working C compiler: /usr/bin/cc - skipped
+[2.245s] -- Detecting C compile features
+[2.245s] -- Detecting C compile features - done
+[2.245s] -- Detecting CXX compiler ABI info
+[2.621s] -- Detecting CXX compiler ABI info - done
+[2.652s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[2.654s] -- Detecting CXX compile features
+[2.657s] -- Detecting CXX compile features - done
+[2.677s] -- Found ament_cmake: 1.3.13 (/opt/ros/humble/share/ament_cmake/cmake)
+[3.276s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[3.792s] -- Configuring done
+[3.798s] -- Generating done
+[3.806s] -- Build files have been written to: /home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo
+[3.823s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo' returned '0': CMAKE_PREFIX_PATH=/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision:/opt/ros/humble /usr/bin/cmake /home/mnt/Desktop/tasc_autonav_combined/tasc_autonomy/giskard_gazebo -DCMAKE_INSTALL_PREFIX=/home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo
+[3.824s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo': CMAKE_PREFIX_PATH=/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision:/opt/ros/humble /usr/bin/cmake --build /home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo -- -j4 -l4
+[4.010s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo' returned '0': CMAKE_PREFIX_PATH=/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision:/opt/ros/humble /usr/bin/cmake --build /home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo -- -j4 -l4
+[4.014s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo': CMAKE_PREFIX_PATH=/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision:/opt/ros/humble /usr/bin/cmake --install /home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo
+[4.058s] -- Install configuration: ""
+[4.058s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models
+[4.058s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon
+[4.060s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.sdf:Zone.Identifier
+[4.060s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.sdf
+[4.060s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials
+[4.060s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap
+[4.061s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.xcf
+[4.061s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.png:Zone.Identifier
+[4.061s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.png
+[4.061s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.xcf:Zone.Identifier
+[4.062s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures
+[4.062s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_1.jpg:Zone.Identifier
+[4.062s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_1.jpg
+[4.062s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground.jpg:Zone.Identifier
+[4.062s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_normal.jpg
+[4.072s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground.jpg
+[4.072s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_normal.jpg:Zone.Identifier
+[4.072s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.config
+[4.073s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.config:Zone.Identifier
+[4.073s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/launch
+[4.078s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/launch/sim.launch.py
+[4.078s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds
+[4.078s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/my_moon_world.sdf
+[4.078s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/soccer.sdf
+[4.079s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/my_world.sdf
+[4.079s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/my_soccer_world.sdf
+[4.079s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/moon_world.sdf
+[4.079s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/src
+[4.079s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/src/README.md
+[4.080s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/include
+[4.080s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/include/giskard_gazebo
+[4.080s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/include/giskard_gazebo/README.md
+[4.080s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/ament_index/resource_index/package_run_dependencies/giskard_gazebo
+[4.081s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/ament_index/resource_index/parent_prefix_path/giskard_gazebo
+[4.081s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/ament_prefix_path.sh
+[4.081s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/ament_prefix_path.dsv
+[4.081s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/path.sh
+[4.081s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/path.dsv
+[4.082s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.bash
+[4.082s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.sh
+[4.083s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.zsh
+[4.083s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.dsv
+[4.086s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/package.dsv
+[4.092s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/ament_index/resource_index/packages/giskard_gazebo
+[4.092s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/cmake/giskard_gazeboConfig.cmake
+[4.092s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/cmake/giskard_gazeboConfig-version.cmake
+[4.092s] -- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/package.xml
+[4.093s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo' returned '0': CMAKE_PREFIX_PATH=/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision:/opt/ros/humble /usr/bin/cmake --install /home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo

@@ -1,0 +1,22 @@
+[0.966s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/build --no-deps symlink_data --force
+[1.298s] running develop
+[1.471s] running egg_info
+[1.471s] writing autonomy_sensors.egg-info/PKG-INFO
+[1.477s] writing dependency_links to autonomy_sensors.egg-info/dependency_links.txt
+[1.477s] writing entry points to autonomy_sensors.egg-info/entry_points.txt
+[1.477s] writing requirements to autonomy_sensors.egg-info/requires.txt
+[1.477s] writing top-level names to autonomy_sensors.egg-info/top_level.txt
+[1.477s] reading manifest file 'autonomy_sensors.egg-info/SOURCES.txt'
+[1.478s] writing manifest file 'autonomy_sensors.egg-info/SOURCES.txt'
+[1.480s] running build_ext
+[1.480s] Creating /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/lib/python3.10/site-packages/autonomy-sensors.egg-link (link to .)
+[1.480s] Installing gps_imu_broadcaster script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/lib/autonomy_sensors
+[1.481s] Installing gps_node script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/lib/autonomy_sensors
+[1.481s] Installing imu_node script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/lib/autonomy_sensors
+[1.481s] 
+[1.481s] Installed /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors
+[1.481s] running symlink_data
+[1.481s] symbolically linking /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/resource/autonomy_sensors -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/share/ament_index/resource_index/packages
+[1.481s] symbolically linking /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/package.xml -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/share/autonomy_sensors
+[1.482s] symbolically linking /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/launch/sensors.launch.py -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/share/autonomy_sensors/launch
+[1.525s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors' returned '0': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_sensors/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_sensors/build --no-deps symlink_data --force

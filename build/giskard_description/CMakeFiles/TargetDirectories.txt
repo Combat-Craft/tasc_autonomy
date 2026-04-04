@@ -1,0 +1,9 @@
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/uninstall.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/giskard_description_uninstall.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/test.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/edit_cache.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/rebuild_cache.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/list_install_components.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/install.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/install/local.dir
+/home/mnt/Desktop/tasc_autonav_combined/build/giskard_description/CMakeFiles/install/strip.dir

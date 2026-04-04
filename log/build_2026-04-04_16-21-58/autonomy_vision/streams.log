@@ -1,0 +1,42 @@
+[1.747s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --uninstall --editable --build-directory /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build
+[2.821s] running develop
+[3.391s] Removing /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy-vision.egg-link (link to .)
+[3.469s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision' returned '0': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --uninstall --editable --build-directory /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build
+[3.470s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/tasc_autonomy/autonomy_vision': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/autonomy_vision build --build-base /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build install --record /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/install.log --single-version-externally-managed install_data --force
+[3.930s] running egg_info
+[3.934s] writing ../../build/autonomy_vision/autonomy_vision.egg-info/PKG-INFO
+[3.936s] writing dependency_links to ../../build/autonomy_vision/autonomy_vision.egg-info/dependency_links.txt
+[3.939s] writing entry points to ../../build/autonomy_vision/autonomy_vision.egg-info/entry_points.txt
+[3.940s] writing requirements to ../../build/autonomy_vision/autonomy_vision.egg-info/requires.txt
+[3.940s] writing top-level names to ../../build/autonomy_vision/autonomy_vision.egg-info/top_level.txt
+[3.947s] reading manifest file '../../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[3.957s] writing manifest file '../../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[3.957s] running build
+[3.957s] running build_py
+[3.964s] creating /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build
+[3.965s] creating /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib
+[3.966s] creating /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision
+[3.966s] copying autonomy_vision/morse_code_detector.py -> /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision
+[3.966s] copying autonomy_vision/yolo_pc.py -> /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision
+[3.966s] copying autonomy_vision/__init__.py -> /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision
+[3.974s] running install
+[3.974s] running install_lib
+[3.978s] creating /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.991s] copying /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision/morse_code_detector.py -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.991s] copying /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision/yolo_pc.py -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.991s] copying /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build/lib/autonomy_vision/__init__.py -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[4.003s] byte-compiling /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/morse_code_detector.py to morse_code_detector.cpython-310.pyc
+[4.027s] byte-compiling /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/yolo_pc.py to yolo_pc.cpython-310.pyc
+[4.039s] byte-compiling /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/__init__.py to __init__.cpython-310.pyc
+[4.040s] running install_data
+[4.040s] copying resource/autonomy_vision -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/share/ament_index/resource_index/packages
+[4.042s] copying package.xml -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/share/autonomy_vision
+[4.047s] running install_egg_info
+[4.063s] Copying ../../build/autonomy_vision/autonomy_vision.egg-info to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision-0.0.0-py3.10.egg-info
+[4.093s] running install_scripts
+[4.147s] Installing morse_code_detector script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[4.156s] Installing webcam_detection2D script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[4.156s] Installing yolo_depth_v1 script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[4.156s] Installing yolo_pc script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[4.156s] writing list of installed files to '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/install.log'
+[4.203s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/tasc_autonomy/autonomy_vision' returned '0': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/autonomy_vision build --build-base /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build install --record /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/install.log --single-version-externally-managed install_data --force

@@ -1,0 +1,74 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.13 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/mnt/Desktop/tasc_autonav_combined/build/giskard_description
+-- Install configuration: ""
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/launch
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/launch/test.launch.py
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/rviz
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/rviz/test.rviz
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/navsat_transform.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/ekf_local_old.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/sam_bot_ros2_control.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/navsat_transform_old.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/nav2_params.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/ekf.yaml:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/ekf_global.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/ekf_local.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/ekf_global_old.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/config/ekf.yaml
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/orbbec_depth_camera.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/robot.urdf.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/giskard_base.urdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/lidar.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/inertial.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/giskard_base.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/gps.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/urdf/imu.xacro
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_botter_screw_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/gemini2_base_link.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_infra1_optical_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_color_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_depth_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_infra2_optical_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_infra2_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/base_link.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_infra1_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/meshes/orbbec_meshes/camera_color_optical_frame.STL
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/src
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/src/README.md
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/include
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/include/giskard_description
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/include/giskard_description/README.md
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/ament_index/resource_index/package_run_dependencies/giskard_description
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/ament_index/resource_index/parent_prefix_path/giskard_description
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/environment/ament_prefix_path.sh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/environment/ament_prefix_path.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/environment/path.sh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/environment/path.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/local_setup.bash
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/local_setup.sh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/local_setup.zsh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/local_setup.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/package.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/ament_index/resource_index/packages/giskard_description
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/cmake/giskard_descriptionConfig.cmake
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/cmake/giskard_descriptionConfig-version.cmake
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_description/share/giskard_description/package.xml

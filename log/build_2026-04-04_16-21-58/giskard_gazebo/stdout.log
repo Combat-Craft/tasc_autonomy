@@ -1,0 +1,65 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.13 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo
+-- Install configuration: ""
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.sdf:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.sdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.xcf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.png:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.png
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/heightmap/moon.xcf:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_1.jpg:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_1.jpg
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground.jpg:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_normal.jpg
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground.jpg
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/materials/textures/ground_normal.jpg:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.config
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/models/moon/model.config:Zone.Identifier
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/launch
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/launch/sim.launch.py
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/my_moon_world.sdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/soccer.sdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/my_world.sdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/my_soccer_world.sdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/worlds/moon_world.sdf
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/src
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/src/README.md
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/include
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/include/giskard_gazebo
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/include/giskard_gazebo/README.md
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/ament_index/resource_index/package_run_dependencies/giskard_gazebo
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/ament_index/resource_index/parent_prefix_path/giskard_gazebo
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/ament_prefix_path.sh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/ament_prefix_path.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/path.sh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/environment/path.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.bash
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.sh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.zsh
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/local_setup.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/package.dsv
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/ament_index/resource_index/packages/giskard_gazebo
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/cmake/giskard_gazeboConfig.cmake
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/cmake/giskard_gazeboConfig-version.cmake
+-- Installing: /home/mnt/Desktop/tasc_autonav_combined/install/giskard_gazebo/share/giskard_gazebo/package.xml

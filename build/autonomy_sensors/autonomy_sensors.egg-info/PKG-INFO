@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: autonomy-sensors
+Version: 0.0.0
+Summary: Has all the sensor code, such as GPS, IMU, Orbbec, etc.
+Home-page: UNKNOWN
+Maintainer: ArtemisLee
+Maintainer-email: yr.lee@torontomu.com
+License: Apache-2.0
+Platform: UNKNOWN
+Provides-Extra: test
+
+UNKNOWN
+

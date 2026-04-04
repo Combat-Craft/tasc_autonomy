@@ -1,0 +1,22 @@
+[0.789s] Invoking command in '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build --no-deps symlink_data --force
+[1.114s] running develop
+[1.284s] running egg_info
+[1.284s] writing autonomy_vision.egg-info/PKG-INFO
+[1.284s] writing dependency_links to autonomy_vision.egg-info/dependency_links.txt
+[1.285s] writing entry points to autonomy_vision.egg-info/entry_points.txt
+[1.288s] writing requirements to autonomy_vision.egg-info/requires.txt
+[1.288s] writing top-level names to autonomy_vision.egg-info/top_level.txt
+[1.288s] reading manifest file 'autonomy_vision.egg-info/SOURCES.txt'
+[1.288s] writing manifest file 'autonomy_vision.egg-info/SOURCES.txt'
+[1.290s] running build_ext
+[1.291s] Creating /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages/autonomy-vision.egg-link (link to .)
+[1.291s] Installing morse_code_detector script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[1.293s] Installing webcam_detection2D script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[1.293s] Installing yolo_depth_v1 script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[1.293s] Installing yolo_pc script to /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/autonomy_vision
+[1.293s] 
+[1.294s] Installed /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision
+[1.294s] running symlink_data
+[1.294s] symbolically linking /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/resource/autonomy_vision -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/share/ament_index/resource_index/packages
+[1.294s] symbolically linking /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/package.xml -> /home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/share/autonomy_vision
+[1.326s] Invoked command in '/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision' returned '0': PYTHONPATH=/home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mnt/Desktop/tasc_autonav_combined/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/mnt/Desktop/tasc_autonav_combined/build/autonomy_vision/build --no-deps symlink_data --force
