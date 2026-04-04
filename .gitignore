@@ -1,0 +1,25 @@
+# Repository-root generated artifacts
+.venv/
+build/
+install/
+log/
+
+# Python cache/artifacts at root
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+*~
+*.swp
+*.tmp
+
+# Windows metadata sidecar files
+*:Zone.Identifier

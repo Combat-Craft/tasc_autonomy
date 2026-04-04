@@ -1,9 +1,0 @@
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/uninstall.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/giskard_gazebo_uninstall.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/test.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/edit_cache.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/rebuild_cache.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/list_install_components.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/install.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/install/local.dir
-/home/mnt/Desktop/tasc_autonav_combined/build/giskard_gazebo/CMakeFiles/install/strip.dir
