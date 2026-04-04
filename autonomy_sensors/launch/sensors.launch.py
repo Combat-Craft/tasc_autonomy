@@ -5,6 +5,12 @@ import os
 
 def generate_launch_description():
     return LaunchDescription([
+        # Foxglove Bridge websocket server for ROS2,
+        #Node(
+        #    package="foxglove_bridge", 
+        #    executable="foxglove_bridge_launch", 
+        #    name="foxglove_bridge"
+        #),
     
         # ROS Bridge websocket server, for Foxglove
         Node(
