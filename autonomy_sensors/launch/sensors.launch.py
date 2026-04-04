@@ -5,13 +5,24 @@ import os
 
 def generate_launch_description():
     return LaunchDescription([
+
+        # look at this for finetuning: https://docs.ros.org/en/rolling/How-To-Guides/Launch-file-different-formats.html
+        # no humble ver sadly
+        
         # Foxglove Bridge websocket server for ROS2,
-        #Node(
-        #    package="foxglove_bridge", 
-        #    executable="foxglove_bridge_launch", 
-        #    name="foxglove_bridge"
+        #IncludeLaunchDescription(
+        #    PythonLaunchDescriptionSource(                            
+        #        PathJoinSubstitution([                                    
+        #            FindPackageShare("foxglove_bridge"),                                        
+        #            "launch",                                         
+        #            "foxglove_bridge_launch.xml"       
+        #        ])      
+        #    ),
+        #    launch_arguments={
+        #        'port': '8765',
+        #    }.items(),
         #),
-    
+
         # ROS Bridge websocket server, for Foxglove
         Node(
             package='rosbridge_server',
