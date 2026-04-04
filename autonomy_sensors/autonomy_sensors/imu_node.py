@@ -294,7 +294,7 @@ class IMUNode(Node):
         foxglove_msg.timestamp =  timestamp 
         foxglove_msg.position.x = 360.0 # origin is top left corner of the image
         foxglove_msg.position.y = 30.0
-        foxglove_msg.text = str(msg.data)
+        foxglove_msg.text = msg.data #already string
         foxglove_msg.font_size = 12.0
         foxglove_msg.text_color.r = 1.0
         foxglove_msg.text_color.g = 1.0
