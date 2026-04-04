@@ -10,6 +10,23 @@ def generate_launch_description():
         # no humble ver sadly
         
         # Foxglove Bridge websocket server for ROS2,
+        # include a xml launch file in the chatter_xml_ns namespace
+        GroupAction(
+            actions=[
+                # push_ros_namespace first to set namespace of included nodes for following actions
+                PushROSNamespace('foxglove_bridge'),
+                PathJoinSubstitution([                                    
+                    FindPackageShare("foxglove_bridge"),                                        
+                        "launch",                                         
+                        "foxglove_bridge_launch.xml"       
+                    ])      
+                ),
+                launch_arguments={
+                    'port': '8765',
+                }.items(),
+            ]
+        ),
+        
         #IncludeLaunchDescription(
         #    PythonLaunchDescriptionSource(                            
         #        PathJoinSubstitution([                                    
