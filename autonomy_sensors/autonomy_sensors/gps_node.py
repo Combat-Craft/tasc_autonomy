@@ -1,4 +1,4 @@
-# editing from antonia's gps_imu_broadcaster.py and MNTadro's imu_node.py, to work with current imu_gps_serial.ino 
+# editing from antonia's gps_imu_broadcaster.py to work with current imu_gps_serial.ino 
 #
 ## #  GPS,ms,lat,lon,alt,speed,hdop,sats,fix at 1Hz <- NO CHANGES  
 #
@@ -12,14 +12,14 @@
 import serial
 import threading
 
-from time import sleep
-
 import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import NavSatFix, NavSatStatus
-from std_msgs.msg import Header, Float32, String
+from std_msgs.msg import Header
 from foxglove_msgs.msg import TextAnnotation
+
+from time import sleep # for simulated data, firmware publishes at certain Hz
 
 class GPSNode(Node):
     def __init__(self):
@@ -85,6 +85,8 @@ class GPSNode(Node):
                 ]
         msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
         
+        sleep(1) #  for 1 HZ
+        
         return msg
         
      
@@ -147,9 +149,7 @@ class GPSNode(Node):
         foxglove_msg.background_color.r = 0.0
         foxglove_msg.background_color.g = 0.0
         foxglove_msg.background_color.b = 0.0
-        foxglove_msg.background_color.a = 0.1 #0 = transparent
-        
-        sleep(0.2)
+        foxglove_msg.background_color.a = 0.1 #0 = transparent      
         
         return foxglove_msg
          
@@ -181,9 +181,9 @@ class GPSNode(Node):
             if navsatfix_msg:
                 self.NavSatFix_pub.publish(navsatfix_msg)
                 
-                foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)
-                
+                foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)            
                 self.latlonfox_pub.publish(foxglove_msg)
+                
                 self.get_logger().info(
                     f"Published: Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
                     f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status}"

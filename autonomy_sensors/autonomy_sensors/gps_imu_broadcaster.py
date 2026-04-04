@@ -127,126 +127,129 @@ class SerialImuGpsNode(Node):
             mx = float(mx) * MAG_CONVERSION
             my = float(my) * MAG_CONVERSION
             mz = float(mz) * MAG_CONVERSION
+            
+            # Publish IMU data ==============================================================================
+            imu_msg = Imu()
+            imu_msg.header = Header()
+            imu_msg.header.stamp = self.get_clock().now().to_msg()
+            imu_msg.header.frame_id = self.get_parameter('frame_id_imu').value
+
+            imu_msg.linear_acceleration.x = ax
+            imu_msg.linear_acceleration.y = ay
+            imu_msg.linear_acceleration.z = az
+
+            imu_msg.angular_velocity.x = gx
+            imu_msg.angular_velocity.y = gy
+            imu_msg.angular_velocity.z = gz
+
+            ## -- Orientation unknown --
+            imu_msg.orientation.w = 1.0
+            imu_msg.orientation.x = 0.0
+            imu_msg.orientation.y = 0.0
+            imu_msg.orientation.z = 0.0
+            
+            imu_msg.orientation_covariance[0] = -1.0  # unknown orientation
+            imu_msg.linear_acceleration_covariance = [
+                4.5359e-4, 0.0, 0.0,
+                0.0, 4.5359e-4, 0.0,
+                0.0, 0.0, 1.81434e-3
+            ]
+            imu_msg.angular_velocity_covariance = [
+                9.98194e-6, 0.0, 0.0,
+                0.0, 6.59392e-6, 0.0,
+                0.0, 0.0, 4.71762e-6
+            ]
+            self.imu_pub.publish(imu_msg)
+
+            # Publish magnetometer ===========================================================================
+            mag_msg = MagneticField()
+            mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
+            mag_msg.header.frame_id = self.get_parameter('frame_id_imu').value # same frame ids for both mag and imu in imu_node.py
+          
+            mag_msg.magnetic_field.x = mx
+            mag_msg.magnetic_field.y = my
+            mag_msg.magnetic_field.z = mz
+            mag_msg.magnetic_field_covariance[0] = -1.0  # unknown orientation
+            self.mag_pub.publish(mag_msg)
+
+            # Publish Heading (commented out: pitch and roll) ================================================
+            DECLINATION = 10.05 # Declination (degrees) in Boulder, CO.
+            
+            #roll = atan2(ay, az)
+            #pitch = atan2(-ax, sqrt(ay * ay + az * az))
+            
+            heading = 0
+            if (my == 0):
+                # C++ code is heading = (mx < 0) ? PI : 0;
+                if (mx < 0):
+                    heading = PI
+                else:
+                    heading = 0
+            else:
+                heading = atan2(mx, my)
+            
+            heading -= DECLINATION * PI / 180
+            
+            if (heading > PI):
+                heading -= (2 * PI)
+            elif (heading < -PI):
+                heading += (2 * PI)
+            
+            # Convert everything from radians to degrees:
+            heading *= 180.0 / PI
+            #pitch *= 180.0 / PI
+            #roll  *= 180.0 / PI
+
+            heading_msg = Float32()
+            heading_msg.data = heading
+            self.heading_pub.publish(heading_msg)
+
+            # Publish Foxglove Text Annotation for heading =====================
+            headingFoxglove_msg = TextAnnotation()
+            headingFoxglove_msg.timestamp = imu_msg.header.stamp
+            headingFoxglove_msg.position.x = 360.0 # origin is top left corner of the image
+            headingFoxglove_msg.position.y = 15.0
+            headingFoxglove_msg.text = str(heading)
+            headingFoxglove_msg.font_size = 12.0
+            headingFoxglove_msg.text_color.r = 1.0
+            headingFoxglove_msg.text_color.g = 1.0
+            headingFoxglove_msg.text_color.b = 1.0
+            headingFoxglove_msg.text_color.a = 1.0 #opaque
+            headingFoxglove_msg.background_color.r = 0.0
+            headingFoxglove_msg.background_color.g = 0.0
+            headingFoxglove_msg.background_color.b = 0.0
+            headingFoxglove_msg.background_color.a = 0.01 #0 is transparent
+            self.headfox_pub.publish(headingFoxglove_msg)
+
+            # Publish Cardinal Compass  ======================================================================
+            ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
+            cardinal_dir = Cardinal_Direction_8(heading)
+
+            compass_msg = String()
+            compass_msg.data = cardinal_dir
+            self.compass_pub.publish(compass_msg)
+
+            # Publish Foxglove Text Annotation for cardinal compass =====================
+            cardinalcompassFoxglove_msg = TextAnnotation()
+            cardinalcompassFoxglove_msg.timestamp = imu_msg.header.stamp
+            cardinalcompassFoxglove_msg.position.x = 360.0 # origin is top left corner of the image
+            cardinalcompassFoxglove_msg.position.y = 30.0
+            cardinalcompassFoxglove_msg.text = cardinal_dir
+            cardinalcompassFoxglove_msg.font_size = 12.0
+            cardinalcompassFoxglove_msg.text_color.r = 1.0
+            cardinalcompassFoxglove_msg.text_color.g = 1.0
+            cardinalcompassFoxglove_msg.text_color.b = 1.0
+            cardinalcompassFoxglove_msg.text_color.a = 1.0 #opaque
+            cardinalcompassFoxglove_msg.background_color.r = 0.0
+            cardinalcompassFoxglove_msg.background_color.g = 0.0
+            cardinalcompassFoxglove_msg.background_color.b = 0.0
+            cardinalcompassFoxglove_msg.background_color.a = 0.1 #0 = transparent
+            self.cardinalcompassfox_pub.publish(cardinalcompassFoxglove_msg)
+                        
         except ValueError:
             return
           
-        # Publish IMU data ==============================================================================
-        imu_msg = Imu()
-        imu_msg.header = Header()
-        imu_msg.header.stamp = self.get_clock().now().to_msg()
-        imu_msg.header.frame_id = self.get_parameter('frame_id_imu').value
-
-        imu_msg.linear_acceleration.x = ax
-        imu_msg.linear_acceleration.y = ay
-        imu_msg.linear_acceleration.z = az
-
-        imu_msg.angular_velocity.x = gx
-        imu_msg.angular_velocity.y = gy
-        imu_msg.angular_velocity.z = gz
-
-        ## -- Orientation unknown --
-        imu_msg.orientation.w = 1.0
-        imu_msg.orientation.x = 0.0
-        imu_msg.orientation.y = 0.0
-        imu_msg.orientation.z = 0.0
         
-        imu_msg.orientation_covariance[0] = -1.0  # unknown orientation
-        imu_msg.linear_acceleration_covariance = [
-            4.5359e-4, 0.0, 0.0,
-            0.0, 4.5359e-4, 0.0,
-            0.0, 0.0, 1.81434e-3
-        ]
-        imu_msg.angular_velocity_covariance = [
-            9.98194e-6, 0.0, 0.0,
-            0.0, 6.59392e-6, 0.0,
-            0.0, 0.0, 4.71762e-6
-        ]
-        self.imu_pub.publish(imu_msg)
-
-        # Publish magnetometer ===========================================================================
-        mag_msg = MagneticField()
-        mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
-        mag_msg.header.frame_id = self.get_parameter('frame_id_imu').value # same frame ids for both mag and imu in imu_node.py
-      
-        mag_msg.magnetic_field.x = mx
-        mag_msg.magnetic_field.y = my
-        mag_msg.magnetic_field.z = mz
-            
-        self.mag_pub.publish(mag_msg)
-
-        # Publish Heading (commented out: pitch and roll) ================================================
-        DECLINATION = 10.05 # Declination (degrees) in Boulder, CO.
-        
-        #roll = atan2(ay, az)
-        #pitch = atan2(-ax, sqrt(ay * ay + az * az))
-        
-        heading = 0
-        if (my == 0):
-            # C++ code is heading = (mx < 0) ? PI : 0;
-            if (mx < 0):
-                heading = PI
-            else:
-                heading = 0
-        else:
-            heading = atan2(mx, my)
-        
-        heading -= DECLINATION * PI / 180
-        
-        if (heading > PI):
-            heading -= (2 * PI)
-        elif (heading < -PI):
-            heading += (2 * PI)
-        
-        # Convert everything from radians to degrees:
-        heading *= 180.0 / PI
-        #pitch *= 180.0 / PI
-        #roll  *= 180.0 / PI
-
-        heading_msg = Float32()
-        heading_msg.data = heading
-        self.heading_pub.publish(heading_msg)
-
-        # Publish Foxglove Text Annotation for heading =====================
-        headingFoxglove_msg = TextAnnotation()
-        headingFoxglove_msg.timestamp = imu_msg.header.stamp
-        headingFoxglove_msg.position.x = 360.0 # origin is top left corner of the image
-        headingFoxglove_msg.position.y = 15.0
-        headingFoxglove_msg.text = str(heading)
-        headingFoxglove_msg.font_size = 12.0
-        headingFoxglove_msg.text_color.r = 1.0
-        headingFoxglove_msg.text_color.g = 1.0
-        headingFoxglove_msg.text_color.b = 1.0
-        headingFoxglove_msg.text_color.a = 1.0 #opaque
-        headingFoxglove_msg.background_color.r = 0.0
-        headingFoxglove_msg.background_color.g = 0.0
-        headingFoxglove_msg.background_color.b = 0.0
-        headingFoxglove_msg.background_color.a = 0.01 #0 is transparent
-        self.headfox_pub.publish(headingFoxglove_msg)
-
-        # Publish Cardinal Compass  ======================================================================
-        ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
-        cardinal_dir = Cardinal_Direction_8(heading)
-
-        compass_msg = String()
-        compass_msg.data = cardinal_dir
-        self.compass_pub.publish(compass_msg)
-
-        # Publish Foxglove Text Annotation for cardinal compass =====================
-        cardinalcompassFoxglove_msg = TextAnnotation()
-        cardinalcompassFoxglove_msg.timestamp = imu_msg.header.stamp
-        cardinalcompassFoxglove_msg.position.x = 360.0 # origin is top left corner of the image
-        cardinalcompassFoxglove_msg.position.y = 30.0
-        cardinalcompassFoxglove_msg.text = cardinal_dir
-        cardinalcompassFoxglove_msg.font_size = 12.0
-        cardinalcompassFoxglove_msg.text_color.r = 1.0
-        cardinalcompassFoxglove_msg.text_color.g = 1.0
-        cardinalcompassFoxglove_msg.text_color.b = 1.0
-        cardinalcompassFoxglove_msg.text_color.a = 1.0 #opaque
-        cardinalcompassFoxglove_msg.background_color.r = 0.0
-        cardinalcompassFoxglove_msg.background_color.g = 0.0
-        cardinalcompassFoxglove_msg.background_color.b = 0.0
-        cardinalcompassFoxglove_msg.background_color.a = 0.1 #0 = transparent
-        self.cardinalcompassfox_pub.publish(cardinalcompassFoxglove_msg)
 
         # END handle_imu()
 

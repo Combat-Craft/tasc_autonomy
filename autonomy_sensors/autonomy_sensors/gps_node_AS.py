@@ -18,6 +18,7 @@ class GPSNode(Node):
         self.timer = self.create_timer(1.0, self.publish_data)
         self.get_logger().info("GPS node started!")
 
+
     def init_serial_connection(self):
         port = self.get_parameter('port').value
         baudrate = self.get_parameter('baudrate').value
@@ -30,6 +31,7 @@ class GPSNode(Node):
                 self.get_logger().info("Using simulated data fallback")
             else:
                 self.get_logger().error("No GPS connection and no simulation enabled")
+
 
     def parse_nmea(self, nmea):
         if not nmea.startswith('$GNGGA'):
