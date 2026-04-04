@@ -69,9 +69,9 @@ class SerialImuGpsNode(Node):
         self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
         self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
 
-        self.latlon_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)
+        self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)
         self.headfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/heading', 10)
-        self.cardinalcompass_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
+        self.cardinalcompassfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
                                                
         # Serial
         try:
@@ -209,17 +209,17 @@ class SerialImuGpsNode(Node):
         # Publish Foxglove Text Annotation for heading =====================
         headingFoxglove_msg = TextAnnotation()
         headingFoxglove_msg.timestamp = imu_msg.header.stamp
-        headingFoxglove_msg.position.x = 360 # origin is top left corner of the image
-        headingFoxglove_msg.position.y = 15
+        headingFoxglove_msg.position.x = 360.0 # origin is top left corner of the image
+        headingFoxglove_msg.position.y = 15.0
         headingFoxglove_msg.text = str(heading)
-        headingFoxglove_msg.fontsize = 12
-        headingFoxglove_msg.text_color.r = 1
-        headingFoxglove_msg.text_color.g = 1
-        headingFoxglove_msg.text_color.b = 1
-        headingFoxglove_msg.text_color.a = 1 #opaque
-        headingFoxglove_msg.background_color.r = 0
-        headingFoxglove_msg.background_color.g = 0
-        headingFoxglove_msg.background_color.b = 0
+        headingFoxglove_msg.font_size = 12.0
+        headingFoxglove_msg.text_color.r = 1.0
+        headingFoxglove_msg.text_color.g = 1.0
+        headingFoxglove_msg.text_color.b = 1.0
+        headingFoxglove_msg.text_color.a = 1.0 #opaque
+        headingFoxglove_msg.background_color.r = 0.0
+        headingFoxglove_msg.background_color.g = 0.0
+        headingFoxglove_msg.background_color.b = 0.0
         headingFoxglove_msg.background_color.a = 0.01 #0 is transparent
         self.headfox_pub.publish(headingFoxglove_msg)
 
@@ -232,21 +232,21 @@ class SerialImuGpsNode(Node):
         self.compass_pub.publish(compass_msg)
 
         # Publish Foxglove Text Annotation for cardinal compass =====================
-        cardinalcompass_pub = TextAnnotation()
-        cardinalcompass_pub.timestamp = imu_msg.header.stamp
-        cardinalcompass_pub.position.x = 360 # origin is top left corner of the image
-        cardinalcompass_pub.position.y = 30
-        cardinalcompass_pub.text = cardinal_dir
-        cardinalcompass_pub.fontsize = 12
-        cardinalcompass_pub.text_color.r = 1
-        cardinalcompass_pub.text_color.g = 1
-        cardinalcompass_pub.text_color.b = 1
-        cardinalcompass_pub.text_color.a = 1 #opaque
-        cardinalcompass_pub.background_color.r = 0
-        cardinalcompass_pub.background_color.g = 0
-        cardinalcompass_pub.background_color.b = 0
-        cardinalcompass_pub.background_color.a = 0.1 #0 = transparent
-        self.headfox_pub.publish(headingFoxglove_msg)
+        cardinalcompassFoxglove_msg = TextAnnotation()
+        cardinalcompassFoxglove_msg.timestamp = imu_msg.header.stamp
+        cardinalcompassFoxglove_msg.position.x = 360.0 # origin is top left corner of the image
+        cardinalcompassFoxglove_msg.position.y = 30.0
+        cardinalcompassFoxglove_msg.text = cardinal_dir
+        cardinalcompassFoxglove_msg.font_size = 12.0
+        cardinalcompassFoxglove_msg.text_color.r = 1.0
+        cardinalcompassFoxglove_msg.text_color.g = 1.0
+        cardinalcompassFoxglove_msg.text_color.b = 1.0
+        cardinalcompassFoxglove_msg.text_color.a = 1.0 #opaque
+        cardinalcompassFoxglove_msg.background_color.r = 0.0
+        cardinalcompassFoxglove_msg.background_color.g = 0.0
+        cardinalcompassFoxglove_msg.background_color.b = 0.0
+        cardinalcompassFoxglove_msg.background_color.a = 0.1 #0 = transparent
+        self.cardinalcompassfox_pub.publish(cardinalcompassFoxglove_msg)
 
         # END handle_imu()
 
@@ -287,22 +287,22 @@ class SerialImuGpsNode(Node):
     
             self.gps_pub.publish(msg)
     
-            # Publish Foxglove Text Annotation for cardinal compass =====================
-            latlon_pub = TextAnnotation()
-            latlon_pub.timestamp = imu_msg.header.stamp
-            latlon_pub.position.x = 360 # origin is top left corner of the image
-            latlon_pub.position.y = 15
-            latlon_pub.text = "lat: " + lat + "            " + "lon: " + lon #12 spaces   
-            latlon_pub.fontsize = 12
-            latlon_pub.text_color.r = 1
-            latlon_pub.text_color.g = 1
-            latlon_pub.text_color.b = 1
-            latlon_pub.text_color.a = 1 #opaque
-            latlon_pub.background_color.r = 0
-            latlon_pub.background_color.g = 0
-            latlon_pub.background_color.b = 0
-            latlon_pub.background_color.a = 0.1 #0 = transparent
-            self.headfox_pub.publish(headingFoxglove_msg)
+            # Publish Foxglove Text Annotation for Lat and Long =====================
+            latlonfox_msg = TextAnnotation()
+            latlonfox_msg.timestamp = imu_msg.header.stamp
+            latlonfox_msg.position.x = 360.0 # origin is top left corner of the image
+            latlonfox_msg.position.y = 15.0
+            latlonfox_msg.text = "lat: " + str(msg.latitude) + "            " + "lon: " + str(msg.longitude) #12 spaces   
+            latlonfox_msg.font_size = 12.0
+            latlonfox_msg.text_color.r = 1.0
+            latlonfox_msg.text_color.g = 1.0
+            latlonfox_msg.text_color.b = 1.0
+            latlonfox_msg.text_color.a = 1.0 #opaque
+            latlonfox_msg.background_color.r = 0.0
+            latlonfox_msg.background_color.g = 0.0
+            latlonfox_msg.background_color.b = 0.0
+            latlonfox_msg.background_color.a = 0.1 #0 = transparent
+            self.latlon_pub.publish(latlonfox_msg)
             
         except ValueError:
             return
