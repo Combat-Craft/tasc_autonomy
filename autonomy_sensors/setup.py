@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'gemini2_camera = autonomy_sensors.gemini2_camera:main',
             'gps_broadcaster = autonomy_sensors.gps_broadcaster:main',
             'gps_frame_fixer = autonomy_sensors.gps_frame_fixer:main',
             'path_publisher = autonomy_sensors.path_publisher:main',
