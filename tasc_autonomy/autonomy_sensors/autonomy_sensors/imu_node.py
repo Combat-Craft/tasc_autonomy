@@ -316,20 +316,21 @@ class IMUNode(Node):
             
             if self.serial_port and self.serial_port.is_open:
                 try:
-                    line = self.ser.readline().decode('ascii', errors='ignore').strip()
+                    line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
                     
                     if not line:
                         continue
                     
                     if line.startswith('GPS,'):
                         msg_list = self.handle_imu(line)
-                
-                except Exception:
+
+                except Exception as e:
                     self.get_logger().error(f"Serial read error: {e}")
                     self.serial_port = None
                     continue
                     
             if msg_list is None and self.get_parameter('simulated_data').value:
+                self.get_logger().warning("No serial data, using simulated data")
                 msg_list = self.get_simulated_data()
 
             if msg_list:
