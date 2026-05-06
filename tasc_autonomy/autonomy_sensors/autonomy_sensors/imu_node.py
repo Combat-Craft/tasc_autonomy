@@ -58,13 +58,14 @@ class IMUNode(Node):
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
-        self.get_logger().info("IMU node started!")
+        self.get_logger().info("imu_node.py: IMU node started!")
                  
    
     # --------------------------------------------------
     # Serial Read Try function
     # --------------------------------------------------
     def init_serial_connection(self):
+        self.get_logger().info(f"imu_node.py: Trying to connect to serial port {self.port} at {self.baud} baud")
         try:
             self.serial_port = serial.Serial(port=self.port, baudrate=self.baud, timeout=1.0)
             self.get_logger().info(f"imu_node.py: Connected to {self.port} at {self.baud} baud")
@@ -316,34 +317,39 @@ class IMUNode(Node):
             
             if self.serial_port and self.serial_port.is_open:
                 try:
+                    self.get_logger().info(f"imu_node.py: Trying to obtain IMU serial read in publish_data()")
                     line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
                     
                     if not line:
                         continue
                     
-                    if line.startswith('GPS,'):
+                    if line.startswith('IMU,'):
                         msg_list = self.handle_imu(line)
+                        self.get_logger().info(f"imu_node.py: Handling IMU serial read")
 
                 except Exception as e:
-                    self.get_logger().error(f"Serial read error: {e}")
+                    self.get_logger().error(f"imu_node.py: Serial read error: {e}")
                     self.serial_port = None
                     continue
-                    
-            if msg_list is None and self.get_parameter('simulated_data').value:
-                self.get_logger().warning("No serial data, using simulated data")
-                msg_list = self.get_simulated_data()
 
+            # check for serial print first, then go for simulated data
             if msg_list:
                 # grab the msgs out of list
                 imu_msg, mag_msg, heading_msg, compass_msg = msg_list 
                 
                 # publish the ros2 msgs
+                self.get_logger().info(
+                    f"imu_node.py: Publishing IMU msgs - imu_msg, mag_msg, heading_msg, compass_msg"
+                )
                 self.imu_pub.publish(imu_msg)
                 self.mag_pub.publish(mag_msg)
                 self.heading_pub.publish(heading_msg)
                 self.compass_pub.publish(compass_msg)
                 
                 #publish the foxglove textannotation msgs
+                self.get_logger().info(
+                    f"imu_node.py: Publishing IMU foxglove msgs - headingfoxglove_msg, compassfoxglove_msg"
+                )
                 headingfoxglove_msg = self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp) 
                 self.headingfox_pub.publish(headingfoxglove_msg)               
                 compassfoxglove_msg = self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)
@@ -351,8 +357,12 @@ class IMUNode(Node):
 
                 
                 self.get_logger().info(
-                    f"Published: Heading={heading_msg.data:.1f}, Compass={compass_msg.data} "
+                    f"Published Sample: Heading={heading_msg.data:.1f}, Compass={compass_msg.data} "
                 )
+                
+            elif msg_list is None and self.get_parameter('simulated_data').value:
+                self.get_logger().warning("imu_node.py: No serial data, using simulated data")
+                msg_list = self.get_simulated_data()
 
 
 def main():
