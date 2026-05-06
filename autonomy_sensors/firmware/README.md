@@ -80,7 +80,7 @@ Refer to this [course/tutorial](https://github.com/FastRobotsCornell/FastRobots-
 
 # Package and Code 
 
-Currently, the main code is **imu_gps_serial.ino**. Eventually, will developed **imu_gps_serial.ino**, which is similar but hopefully we can use the DMP to get the 
+Currently, the main code is **imu_gps_serial.in_calibratedo**. Eventually, will developed **imu_gps_serial.ino**, which is similar but hopefully we can use the DMP to get the 
 This folder contains the firmware required for:
  - **SparkFun 9DoF IMU Breakout - ICM-20948 (Qwiic)**
    -  ICM_20948.h, ICM_20948.cpp, 
