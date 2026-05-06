@@ -44,13 +44,17 @@ class GPSNode(Node):
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
-        self.get_logger().info("GPS node started!")
+        self.get_logger().info("gps_node.py: GPS node started!")
                  
    
     # --------------------------------------------------
     # Serial Read Try function
     # --------------------------------------------------
     def init_serial_connection(self):
+        self.get_logger().info(
+            f"gps_node.py: Trying to connect to serial port {self.port} at {self.baud} baud"
+        )
+        
         try:
             self.serial_port = serial.Serial(port=self.port, baudrate=self.baud, timeout=1.0)
             self.get_logger().info(f"gps_node.py: Connected to {self.port} at {self.baud} baud")
@@ -162,32 +166,44 @@ class GPSNode(Node):
             
             if self.serial_port and self.serial_port.is_open:
                 try:
-                    line = self.ser.readline().decode('ascii', errors='ignore').strip()
+                    self.get_logger().info(
+                        f"gps_node.py: Trying to obtain GPS serial read in publish_data()"
+                    )
+                    line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
                     
                     if not line:
                         continue
                     
                     if line.startswith('GPS,'):
                         navsatfix_msg = self.handle_gps(line)
+                        self.get_logger().info(f"gps_node.py: Handling GPS serial read")
                 
                 except Exception:
-                    self.get_logger().error(f"Serial read error: {e}")
+                    self.get_logger().error(f"gps_node.py: Serial read error: {e}")
                     self.serial_port = None
                     continue
-                    
-            if navsatfix_msg is None and self.get_parameter('simulated_data').value:
-                navsatfix_msg = self.get_simulated_data()
 
+            # check for serial print first, then go for simulated data
             if navsatfix_msg:
+                # publish the NavSatFix msg
+                self.get_logger().info(f"gps_node.py: Publishing GPS msg - navsatfix_msg")
                 self.NavSatFix_pub.publish(navsatfix_msg)
-                
+
+                # publish the foxglove textannotation msgs
+                self.get_logger().info(f"gps_node.py: Publishing GPS foxglove msg - latlonfox_pub")
                 foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)            
                 self.latlonfox_pub.publish(foxglove_msg)
                 
                 self.get_logger().info(
-                    f"Published: Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
+                    f"Published Sample: Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
                     f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status}"
                 )
+                    
+            if navsatfix_msg is None and self.get_parameter('simulated_data').value:
+                self.get_logger().warning("gps_node.py: No serial data, using simulated data")
+                navsatfix_msg = self.get_simulated_data()
+
+            
 
 
 def main():
