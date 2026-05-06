@@ -3,13 +3,21 @@
 Currently, for firmware, On arduino
   1) connect the ESP32 with a usb c cable to the jetson
   2) Select the board to be the ```ESP32 Dev Module```
-  3) Load and compile```imu_gps_serial.ino```. It should be fine, but if the libraries poofed somehow, just add them back in.
-  4) Check on Serial Monitor 115200.
+  3) Load and compile```imu_gps_serial_calibrated.ino```. It should be fine, but if the libraries poofed somehow, just add them back in.
+  4) Check on Serial Monitor 115200 via Arduino IDE.
      
+We likely need to recalibrated once mounted, in particularily the magnetometer tho the difficulting of getting that true sphere of points will be difficult.
 
-imu_gps_serial_ahrs.ino needs to be refactored. Right now, it has the calibrated stuff and quaternions from https://github.com/jremington/ICM_20948-AHRS, but honestly i can remove the sensor fusion and just keep the calibrated output. I asked the Maker if he could confirm the calibrated units, but atm I think they are 0.01*m/s^2, rad/sec, and microTesla.
+**DECLINATION WILL NEED TO BE UPDATED TO COMPETITION LOCATION WHEN WE GET THERE**
 
+~~imu_gps_serial_ahrs.ino needs to be refactored. Right now, it has the calibrated stuff and quaternions from https://github.com/jremington/ICM_20948-AHRS, but honestly i can remove the sensor fusion and just keep the calibrated output. I asked the Maker if he could confirm the calibrated units, but atm I think they are 0.01*m/s^2, rad/sec, and microTesla.~~
 
+# To-Do (IF TIME):
+  1) Add Low-pass filters as per example2_advanced to reduce the variance
+  2) figure out what to do with covariance
+  3) Add teh calibrate code and steps
+
+     
 # Firmware Info
 ESP32 DEvkit Rev2, it seems, since Rx/TX are 16/17, and SDA/SLA were 21/22.
 
@@ -43,45 +51,11 @@ Address of the I2C in client/slave mode is 0x68 as per Sparkfun. (The ICM chip n
 The code uses [sparkfun's arduino library](https://github.com/mikalhart/TinyGPSPlus/tree/master) to handle pretty much all the Wire.h based connection, handshaking, and read/write, and DMP access.
 
 ### Note on DMP:
-Considering using to gain access to quaternion, 6 axis or 9 axis, or game vector data, etc. however, per doc. However because of the note below in the ICM-20948's document
-
-> 4.3 DMP MEMORY ACCESS
-> Reading/writing DMP memory and FIFO through I2C in a multithreaded environment can cause wrong data being read.
-> To avoid the issue, one may use SPI instead of I2C, or use I2C with mutexes
-
-If we do, we likely have to avoid using myICM.getAGMT() for accel, gyro, magneto, temp values and instead pull all of those from DMP instead.
-As well, there aren't example code on all DMP sensors, let alone information on the format each spits out, just their data size. Pages 11-13 gives some info for the a,g,m,t but the rest are ????.
-I'm assuming these are in scientific notation... maybe??? we'll have to test the ones we want if do use these.
-
-```
-  // DMP sensor options are defined in ICM_20948_DMP.h
-  //    INV_ICM20948_SENSOR_ACCELEROMETER               (16-bit accel)
-  //    INV_ICM20948_SENSOR_GYROSCOPE                   (16-bit gyro + 32-bit calibrated gyro)
-  //    INV_ICM20948_SENSOR_RAW_ACCELEROMETER           (16-bit accel)
-  //    INV_ICM20948_SENSOR_RAW_GYROSCOPE               (16-bit gyro + 32-bit calibrated gyro)
-  //    INV_ICM20948_SENSOR_MAGNETIC_FIELD_UNCALIBRATED (16-bit compass)
-  //    INV_ICM20948_SENSOR_GYROSCOPE_UNCALIBRATED      (16-bit gyro)
-  //    INV_ICM20948_SENSOR_STEP_DETECTOR               (Pedometer Step Detector)
-  //    INV_ICM20948_SENSOR_STEP_COUNTER                (Pedometer Step Detector)
-  //    INV_ICM20948_SENSOR_GAME_ROTATION_VECTOR        (32-bit 6-axis quaternion)
-  //    INV_ICM20948_SENSOR_ROTATION_VECTOR             (32-bit 9-axis quaternion + heading accuracy)
-  //    INV_ICM20948_SENSOR_GEOMAGNETIC_ROTATION_VECTOR (32-bit Geomag RV + heading accuracy)
-  //    INV_ICM20948_SENSOR_GEOMAGNETIC_FIELD           (32-bit calibrated compass)
-  //    INV_ICM20948_SENSOR_GRAVITY                     (32-bit 6-axis quaternion)
-  //    INV_ICM20948_SENSOR_LINEAR_ACCELERATION         (16-bit accel + 32-bit 6-axis quaternion)
-  //    INV_ICM20948_SENSOR_ORIENTATION                 (32-bit 9-axis quaternion + heading accuracy)
-```
-Refer to this [course/tutorial](https://github.com/FastRobotsCornell/FastRobots-2026/blob/main/docs/tutorials/dmp.md) for some extra refinement on DMP code, in particular the publishing rate cause the FIFO can't handle overflow i.e. it crashes the whole chip. 
+Ignore it for now, not worth the effort at the moment.
 
 # Package and Code 
 
-Currently, the main code is **imu_gps_serial.ino**. Eventually, will developed **imu_gps_serial.ino**, which is similar but hopefully we can use the DMP to get the 
-This folder contains the firmware required for:
- - **SparkFun 9DoF IMU Breakout - ICM-20948 (Qwiic)**
-   -  ICM_20948.h, ICM_20948.cpp, 
-   -  and the /util folder required for the previous two code files
- - the GPS unit
-
+*needs to be updated
 
 # Notes/Logs
 ### MArch 29th, 2026
