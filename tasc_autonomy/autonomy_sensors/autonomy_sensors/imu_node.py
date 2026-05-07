@@ -206,6 +206,8 @@ class IMUNode(Node):
             mx = float(mx) * MAG_CONVERSION
             my = float(my) * MAG_CONVERSION
             mz = float(mz) * MAG_CONVERSION
+            
+            self.get_logger().info(f"imu_node.py: Line split success!!")
         
           
             # IMU data ==============================================================================
@@ -251,16 +253,17 @@ class IMUNode(Node):
 
             # Heading Calculation ========================================================================
             heading_msg = Float32()
-            heading_msg.data = get_heading_simple(mx, my) # in 360deg
+            heading_msg.data = self.get_heading_simple( mx, my) # in 360deg
             
             # Cardinal Compass  ======================================================================
             ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
             compass_msg = String()
-            compass_msg.data = Cardinal_Direction_8(heading) # i.e.N NE E SE S SW W NW
+            compass_msg.data = self.Cardinal_Direction_8(heading_msg.data) # i.e.N NE E SE S SW W NW
             
             return [imu_msg, mag_msg, heading_msg, compass_msg]
             
         except ValueError:
+            self.get_logger().error(f"imu_node.py: Failed try in handlu_imu()")
             return
 
             
@@ -320,10 +323,14 @@ class IMUNode(Node):
                     self.get_logger().info(f"imu_node.py: Trying to obtain IMU serial read in publish_data()")
                     line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
                     
+                    self.get_logger().info(f"imu_node.py: {line}")
+                    
                     if not line:
+                        self.get_logger().info(f"imu_node.py: Serial line unobtained in publish_data()")
                         continue
                     
-                    if line.startswith('IMU,'):
+                    if line.startswith("IMU"):
+                        self.get_logger().info(f"imu_node.py: Starting to go to handle_imu() in publish_data()")
                         msg_list = self.handle_imu(line)
                         self.get_logger().info(f"imu_node.py: Handling IMU serial read")
 
