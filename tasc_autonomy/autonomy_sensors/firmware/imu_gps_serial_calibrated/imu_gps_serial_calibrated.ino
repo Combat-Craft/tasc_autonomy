@@ -29,8 +29,8 @@
 #define WIRE_PORT Wire  
 
 /* Print Timing */
-const unsigned long IMU_PERIOD_MS = 10;    // 100 Hz = 10
-const unsigned long GPS_PERIOD_MS = 1000;  // 1 Hz
+const unsigned long IMU_PERIOD_MS = 100;    // 100 Hz = 10
+const unsigned long GPS_PERIOD_MS = 100;  // 1 Hz
 
 unsigned long last_imu_time = 0;
 unsigned long last_gps_time = 0;
