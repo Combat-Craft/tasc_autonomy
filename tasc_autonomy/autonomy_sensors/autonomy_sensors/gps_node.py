@@ -171,10 +171,13 @@ class GPSNode(Node):
                     )
                     line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
                     
+                    #self.get_logger().info(f"gps_node.py: {line}")
+                    
                     if not line:
                         continue
                     
                     if line.startswith('GPS,'):
+                        self.get_logger().info(f"gps_node.py: {line}")
                         navsatfix_msg = self.handle_gps(line)
                         self.get_logger().info(f"gps_node.py: Handling GPS serial read")
                 
