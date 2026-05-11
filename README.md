@@ -19,4 +19,15 @@ python3 -m pip show pyorbbecsdk2
 
 
 
+Examples:
+
+python3 -m pip install -r ~/.local/lib/python3.10/site-packages/pyorbbecsdk/examples/requirements.txt
+
+
+cd ~/pyorbbecsdk
+
+
+python3 ~/.local/lib/python3.10/site-packages/pyorbbecsdk/examples/color.py
+
+
 
