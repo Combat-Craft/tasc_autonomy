@@ -1876,3 +1876,15 @@
 [05/11 14:27:37.100832][info][29796][DeviceManager.cpp:34] 	- Name: Gemini2, PID: 0x0670, SN/ID: AY6G6530174, Connection: USB3.0
 [05/11 14:27:37.100846][info][29796][DeviceManager.cpp:25] Current device(s) list: (0)
 [05/11 14:27:40.026037][warning][29783][HidDevicePort.cpp:77] interrupt transfer failed, error: No such device (it may have been disconnected) [**4503 logs in 3026ms, last: 14:27:37.083198**]
+[05/11 14:28:14.607773][warning][29723][Pipeline.cpp:295] [AY6G6530174] Output frameset queue is full, drop oldest frameset! [**4304 logs in 60003ms, last: 14:27:36.228298**]
+[05/11 14:28:15.131403][warning][29726][Pipeline.cpp:295] [AY6G6530174] Output frameset queue is full, drop oldest frameset! [**629 logs in 60033ms, last: 14:27:36.236737**]
+[05/11 14:28:31.451961][warning][29459][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100
+[05/11 14:28:32.270271][warning][29459][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100
+[05/11 14:28:34.562126][warning][29967][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**18 logs in 3110ms, last: 14:28:34.392656**]
+[05/11 14:28:35.301912][warning][29459][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**15 logs in 3031ms**]
+[05/11 14:28:40.595154][warning][29976][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**30 logs in 6033ms, last: 14:28:40.455393**]
+[05/11 14:28:41.364840][warning][29459][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**30 logs in 6062ms**]
+[05/11 14:28:52.658220][warning][29990][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**60 logs in 12063ms, last: 14:28:52.576886**]
+[05/11 14:28:53.486037][warning][29459][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**60 logs in 12121ms**]
+[05/11 14:29:16.779226][warning][30031][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**119 logs in 24121ms, last: 14:29:16.628166**]
+[05/11 14:29:17.536566][warning][29459][Pipeline.cpp:305] [AY6G6530174] Wait for frame timeout, you can try to increase the wait time! current timeout=100 [**119 logs in 24050ms**]
