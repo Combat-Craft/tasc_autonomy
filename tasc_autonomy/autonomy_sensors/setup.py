@@ -30,6 +30,8 @@ setup(
             # 'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
             'gps_node = autonomy_sensors.gps_node:main',
             'imu_node = autonomy_sensors.imu_node:main',
+            'gps_frame_fixer = autonomy_sensors.gps_frame_fixer:main',
+            'path_publisher = autonomy_sensors.path_publisher:main',
         ],
     },
 )
