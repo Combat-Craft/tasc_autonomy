@@ -1,210 +1,165 @@
 #!/usr/bin/env python3
+# Quick Note:
+# Terminal 1: ros2 run autonomy_vision webcam_detection2D
+# Terminal 2 (Command used for running usb_cam to get raw image data):
+# ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:=/dev/video0   -p pixel_format:=mjpeg2rgb   -p image_width:=640   -p image_height:=480   -p framerate:=10.0 
 import rclpy
 from rclpy.node import Node
-
-from sensor_msgs.msg import Image, CameraInfo
-from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
-
+from sensor_msgs.msg import Image
+from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithPose
 import numpy as np
 import cv2
-from ultralytics import YOLO #TODO: add to the install list in the README
-from message_filters import ApproximateTimeSynchronizer, Subscriber
-
-
-class YoloSizeNode(Node):
+from ultralytics import YOLO
+import time
+ 
+ 
+class webcam_detection2D(Node):
     def __init__(self):
-        super().__init__("yolov11_object_size_node")
-
-        # YOLOv11 model
+        # Initialize node
+        super().__init__("webcam_detector")
+ 
+        # Load YOLO11
         self.model = YOLO("yolo11n.pt")
-
-        # Time-synchronized subscribers
-        rgb_sub = Subscriber(self, Image, "/depth_camera/image_raw")
-        depth_sub = Subscriber(self, Image, "/depth_camera/depth/image_raw")
-        info_sub = Subscriber(self, CameraInfo, "/depth_camera/camera_info")
-
-        self.ts = ApproximateTimeSynchronizer(
-            [rgb_sub, depth_sub, info_sub],
-            queue_size=10,
-            slop=0.1
+        self.get_logger().info("YOLOv11n model loaded")
+ 
+        # Subscribes to webcam topic published by usb_cam
+        self.subscription = self.create_subscription(
+            Image,
+            "/image_raw",           #usb_cam publishes webcam feed to /image_raw
+            self.image_callback,
+            10
         )
-        self.ts.registerCallback(self.callback)
-
+ 
         # Publishers
-        self.pub_det = self.create_publisher(Detection3DArray, "/detected_objects", 10)
-        self.pub_debug = self.create_publisher(Image, "/debug_image", 10)
-
-        self.get_logger().info("YOLOv11 + Depth Size Estimation Node Started")
-
-    # -----------------------------------------------------------
-    # Convert ROS2 Image message → BGR np.ndarray (your function)
-    # -----------------------------------------------------------
+        self.pub_det   = self.create_publisher(Detection2DArray, "/detections", 10) # detection results
+        self.pub_debug = self.create_publisher(Image, "/debug_image", 10) # bounding boxes
+ 
+        # FPS tracking
+        self._fps_start = time.time()
+        self._fps_count = 0
+ 
+        self.get_logger().info("Webcam Detector is active")
+ 
+    # Convert ROS2 image message to BGR numpy array
     def image_msg_to_bgr(self, msg: Image):
         encoding = msg.encoding.lower()
+ 
         channels_map = {'bgr8': 3, 'rgb8': 3, 'mono8': 1}
-        dtype_map = {'bgr8': np.uint8, 'rgb8': np.uint8, 'mono8': np.uint8}
-
-        channels = channels_map.get(encoding)
-        dtype = dtype_map.get(encoding)
-
-        if channels is None:
-            self.get_logger().warn(f"Unsupported color encoding: {msg.encoding}")
+        dtype_map    = {'bgr8': np.uint8, 'rgb8': np.uint8, 'mono8': np.uint8}
+ 
+        ch = channels_map.get(encoding)
+        dt = dtype_map.get(encoding)
+ 
+        if ch is None:
+            self.get_logger().warn(f"Unsupported encoding: {msg.encoding}")
             return None
-
-        frame = np.frombuffer(msg.data, dtype=dtype).reshape(msg.height, msg.width, channels)
-
+ 
+        frame = np.frombuffer(msg.data, dtype=dt).reshape(msg.height, msg.width, ch)
+ 
+        # Convert to BGR so it can be used by OpenCV
         if encoding == 'rgb8':
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if encoding == 'mono8':
             frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-
+ 
         return frame
+ 
 
-    # -----------------------------------------------------------
-    # Convert depth image msg → float32 numpy array (meters)
-    # Works for: 16UC1, 32FC1, 8UC1 (rare)
-    # -----------------------------------------------------------
-    def depth_msg_to_array(self, msg: Image):
-        enc = msg.encoding.lower()
-
-        if enc in ("16uc1", "mono16"):
-            depth = np.frombuffer(msg.data, dtype=np.uint16).reshape(msg.height, msg.width)
-            depth = depth.astype(np.float32) / 1000.0  # convert mm → meters
-
-        elif enc in ("32fc1",):
-            depth = np.frombuffer(msg.data, dtype=np.float32).reshape(msg.height, msg.width)
-
-        else:
-            self.get_logger().warn(f"Unsupported depth encoding: {msg.encoding}")
-            return None
-
-        return depth
-
-    # -----------------------------------------------------------
-    # Main callback
-    # -----------------------------------------------------------
-    def callback(self, rgb_msg, depth_msg, info_msg):
-        rgb = self.image_msg_to_bgr(rgb_msg)
-        depth = self.depth_msg_to_array(depth_msg)
-        im_h, im_w, _ = rgb.shape
-        if rgb is None or depth is None:
-            return
-
-        # Camera intrinsics
-        fx = info_msg.k[0]
-        fy = info_msg.k[4]
-        cx = info_msg.k[2]
-        cy = info_msg.k[5]
-
-        # YOLOv11 inference
-        results = self.model(rgb, verbose=False)
-
-        detections_msg = Detection3DArray()
-        detections_msg.header = rgb_msg.header
-
-        debug_img = rgb.copy()
-
-        for i, det in enumerate(results[0].boxes):
-            x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
-            cls_id = int(det.cls.cpu().numpy()[0])
-            conf = float(det.conf.cpu().numpy()[0])
-
-            # Depth crop for median filtering
-            crop = depth[y1:y2, x1:x2]
-            valid = crop[crop > 0.1]  # ignore zeros / invalid
-
-            if len(valid) == 0:
-                continue
-
-            Z = float(np.median(valid))  # meters
-
-            # Pixel size
-            w_px = x2 - x1
-            h_px = y2 - y1
-
-            # Convert pixel → metric using pinhole camera model
-            W = Z * w_px / fx
-            H = Z * h_px / fy
-
-
-            # Debug drawing
-            if i==0:
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 0.6
-                thickness = 2
-                colour = (0,255,0)
-                message = f"{self.model.names[cls_id]} {W:.2f}m x {H:.2f}m"
-                (text_width, text_height), baseline = cv2.getTextSize(message, font, font_scale, thickness)
-                
-                y_t = y1 - 15 
-                if y_t < text_height+10:
-                    y_t = y2 + 15
-                
-                cv2.rectangle(debug_img, (x1, y1), (x2, y2), colour, thickness)
-                cv2.putText(
-                    debug_img,
-                    message,
-                    (x1, y_t),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    font_scale,
-                    colour,
-                    thickness
-                )
-            
-
-            # Create ROS2 Detection3D message
-            det3d = Detection3D()
-            hypothesis = ObjectHypothesisWithPose()
-            hypothesis.hypothesis.class_id = self.model.names[cls_id]   # must be a string
-            hypothesis.hypothesis.score = float(conf)                   # confidence
-
-            det3d.results.append(hypothesis)
-
-            # Object center pixel
-            u = (x1 + x2) / 2.0
-            v = (y1 + y2) / 2.0
-
-            # Back-project to 3D camera coordinates
-            X = (u - cx) * Z / fx
-            Y = (v - cy) * Z / fy
-
-            det3d.bbox.center.position.x = float(X)
-            det3d.bbox.center.position.y = float(Y)
-            det3d.bbox.center.position.z = float(Z)
-            det3d.bbox.size.x = float(W)
-            det3d.bbox.size.y = float(H)
-            det3d.bbox.size.z = 0.05  # thin-box approximation
-
-            detections_msg.detections.append(det3d)
-        cv2.imshow("Resultant Image", debug_img)
-        cv2.waitKey(1)
-        # Publish results
-        self.pub_det.publish(detections_msg)
-
-        # Publish debug image (we must convert np.array → raw ROS2 Image)
-        debug_msg = self.ndarray_to_image_msg(debug_img, rgb_msg)
-        self.pub_debug.publish(debug_msg)
-
-    # -----------------------------------------------------------
-    # Convert numpy BGR → ROS2 Image message
-    # -----------------------------------------------------------
+    # Convert BGR numpy array to ROS2 image message
     def ndarray_to_image_msg(self, img, ref_msg):
         msg = Image()
-        msg.header = ref_msg.header
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = ref_msg.header.frame_id
         msg.height, msg.width = img.shape[:2]
         msg.encoding = "bgr8"
-        msg.step = msg.width * 3
+        msg.step = msg.width * 3 
         msg.data = img.tobytes()
         return msg
-
-
+ 
+    # Main callback is triggered each time a new frame is published by usb_cam
+    def image_callback(self, msg: Image):
+ 
+        #Convert ROS2 image message to OpenCV frame
+        frame = self.image_msg_to_bgr(msg)
+        if frame is None:
+            return
+ 
+        stamp = self.get_clock().now().to_msg()
+ 
+        # run YOLO11n on the frame
+        results = self.model(frame, verbose=False)
+ 
+        # Detection2DArray ROS2 message
+        det_array = Detection2DArray()
+        det_array.header.stamp = stamp
+        det_array.header.frame_id = msg.header.frame_id
+ 
+        # Copy frame for adding bounding boxes
+        debug_img = frame.copy()
+ 
+        # Identify each detected object
+        for det in results[0].boxes:
+ 
+            # Bounding box pixel coordinates
+            x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
+ 
+            # Class index, confidence score, and human readable label
+            cls_id = int(det.cls.cpu().numpy()[0])
+            conf   = float(det.conf.cpu().numpy()[0])
+            label  = self.model.names[cls_id]
+ 
+            # Individual Detection2D message
+            detection = Detection2D()
+            detection.header.stamp = stamp
+            detection.header.frame_id = msg.header.frame_id
+ 
+            # Bounding box defined by center point and width/height
+            detection.bbox.center.position.x = float((x1 + x2) / 2)
+            detection.bbox.center.position.y = float((y1 + y2) / 2)
+            detection.bbox.size_x = float(x2 - x1)
+            detection.bbox.size_y = float(y2 - y1)
+ 
+            # Attach class label and confidence score
+            hypo = ObjectHypothesisWithPose()
+            hypo.hypothesis.class_id = label
+            hypo.hypothesis.score    = conf
+            detection.results.append(hypo)
+ 
+            det_array.detections.append(detection)
+ 
+            # Draw bounding box and label the image
+            cv2.rectangle(debug_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(
+                debug_img,
+                f"{label} {conf:.2f}",
+                (x1, max(0, y1 - 10)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6, (0, 255, 0), 2
+            )
+ 
+        # Publish detection results and image with bounding boxes
+        self.pub_det.publish(det_array)
+        self.pub_debug.publish(self.ndarray_to_image_msg(debug_img, msg))
+ 
+        # Log FPS every 3 seconds
+        self._fps_count += 1
+        elapsed = time.time() - self._fps_start
+        if elapsed >= 3.0:
+            fps = self._fps_count / elapsed
+            self.get_logger().info(
+                f"FPS: {fps:.1f}  |  Resolution: {msg.width}x{msg.height}"
+            )
+            self._fps_count = 0
+            self._fps_start = time.time()
+ 
+ 
 def main(args=None):
     rclpy.init(args=args)
-    node = YoloSizeNode()
+    node = webcam_detection2D()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
-
-
+ 
+ 
 if __name__ == "__main__":
     main()
