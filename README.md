@@ -1,18 +1,22 @@
 # tasc_autonomy
 Sub-packages: `autonomy_sensors`, `autonomy_vision`
 
-3 terminals:
 
-sudo snap install foxglove-studio
-DISPLAY=:0 foxglove-studio --ozone-platform=x11
-open connection to localhost:8765 on foxglove-studio
+pyorbbecsdk::
 
-cd ~/AN_combined_ws 
-colcon build --packages-select autonomy_sensors
-source install/setup.bash
-ros2 run autonomy_sensors gemini2_camera
+sudo apt update
 
-sudo apt install ros-$ROS_DISTRO-foxglove-bridge
-ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
+sudo apt install -y python3-pip python3-dev cmake libusb-1.0-0-dev
 
-foxglove-studio --no-sandbox --ozone-platform=x11 --disable-gpu --swiftshader
+pip3 install pyorbbecsdk2
+
+python3 -m pip show pyorbbecsdk2
+# Should show: Name, Version, Location fields
+ 
+# Note your site-packages path from the Location field, e.g.:
+# /home/stabeeb/.local/lib/python3.10/site-packages
+
+
+
+
+
