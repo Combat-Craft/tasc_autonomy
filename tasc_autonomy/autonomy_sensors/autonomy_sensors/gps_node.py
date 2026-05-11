@@ -207,7 +207,7 @@ class GPSNode(Node):
             self.latlonfox_pub.publish(foxglove_msg)   
 
             self.get_logger().info(
-                    f"Published Sample: Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
+                    f"gps_node.py: Published Sample - Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
                     f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status}"
                 )
 

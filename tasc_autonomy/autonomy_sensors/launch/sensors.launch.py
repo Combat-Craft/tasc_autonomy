@@ -1,58 +1,52 @@
 from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription   #this and the next 2 are for launch files of another package
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
 import os
 
+# look at this for finetuning: 
+# https://docs.ros.org/en/humble/How-To-Guides/Launch-file-different-formats.html
+
+# I used this to include foxglove
+# https://docs.ros.org/en/humble/Tutorials/Intermediate/Launch/Using-Substitutions.html
+
 def generate_launch_description():
     return LaunchDescription([
 
-        # look at this for finetuning: https://docs.ros.org/en/rolling/How-To-Guides/Launch-file-different-formats.html
-        # no humble ver sadly
-        
         # Foxglove Bridge websocket server for ROS2,
-        # include a xml launch file in the chatter_xml_ns namespace
-        GroupAction(
-            actions=[
-                # push_ros_namespace first to set namespace of included nodes for following actions
-                PushROSNamespace('foxglove_bridge'),
-                PathJoinSubstitution([                                    
-                    FindPackageShare("foxglove_bridge"),                                        
-                        "launch",                                         
-                        "foxglove_bridge_launch.xml"       
-                    ])      
-                ),
-                launch_arguments={
-                    'port': '8765',
-                }.items(),
-            ]
+        IncludeLaunchDescription(
+            PathJoinSubstitution([
+              FindPackageShare('foxglove_bridge'),
+                  'launch',
+                  "foxglove_bridge_launch.xml"
+            ]),
+            launch_arguments={
+                'port': '8765',
+                #'default_call_service_timeout': 5.0,
+                #'call_services_in_new_thread': True,
+                #'send_action_goals_in_new_thread': True
+            }.items()
+            
         ),
-        
-        #IncludeLaunchDescription(
-        #    PythonLaunchDescriptionSource(                            
-        #        PathJoinSubstitution([                                    
-        #            FindPackageShare("foxglove_bridge"),                                        
-        #            "launch",                                         
-        #            "foxglove_bridge_launch.xml"       
-        #        ])      
-        #    ),
-        #    launch_arguments={
-        #        'port': '8765',
-        #    }.items(),
-        #),
 
+        # we're not supposed to use this 
+        #
         # ROS Bridge websocket server, for Foxglove
-        Node(
-            package='rosbridge_server',
-            executable='rosbridge_websocket.py',
-            name='rosbridge_websocket',
-            output='screen',
-            parameters=[
-                {'port': 9090},
-                {'default_call_service_timeout': 5.0},
-                {'call_services_in_new_thread': True},
-                {'send_action_goals_in_new_thread': True}
-            ]
-        ),
+        #Node(
+        #    package='rosbridge_server',
+        #    executable='rosbridge_websocket.py',
+        #    name='rosbridge_websocket',
+        #    output='screen',
+        #    parameters=[
+        #        {'port': 9090},
+        #        {'default_call_service_timeout': 5.0},
+        #        {'call_services_in_new_thread': True},
+        #        {'send_action_goals_in_new_thread': True}
+        #    ]
+        #),
+        
         # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
         Node(
             package='autonomy_sensors', # Replace with your GPS driver package name
