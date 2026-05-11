@@ -27,7 +27,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
+            # 'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
             'gps_node = autonomy_sensors.gps_node:main',
             'imu_node = autonomy_sensors.imu_node:main',
         ],

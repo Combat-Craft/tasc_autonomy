@@ -341,36 +341,40 @@ class IMUNode(Node):
 
             # check for serial print first, then go for simulated data
             if msg_list:
-                # grab the msgs out of list
-                imu_msg, mag_msg, heading_msg, compass_msg = msg_list 
-                
-                # publish the ros2 msgs
-                self.get_logger().info(
-                    f"imu_node.py: Publishing IMU msgs - imu_msg, mag_msg, heading_msg, compass_msg"
-                )
-                self.imu_pub.publish(imu_msg)
-                self.mag_pub.publish(mag_msg)
-                self.heading_pub.publish(heading_msg)
-                self.compass_pub.publish(compass_msg)
-                
-                #publish the foxglove textannotation msgs
-                self.get_logger().info(
-                    f"imu_node.py: Publishing IMU foxglove msgs - headingfoxglove_msg, compassfoxglove_msg"
-                )
-                headingfoxglove_msg = self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp) 
-                self.headingfox_pub.publish(headingfoxglove_msg)               
-                compassfoxglove_msg = self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)
-                self.compassfox_pub.publish(compassfoxglove_msg)
-
-                
-                self.get_logger().info(
-                    f"Published Sample: Heading={heading_msg.data:.1f}, Compass={compass_msg.data} "
-                )
-                
+                self.get_logger().info(f"gps_node.py: Publishing serial GPS data msg - navsatfix_msg")   
+       
             elif msg_list is None and self.get_parameter('simulated_data').value:
                 self.get_logger().warning("imu_node.py: No serial data, using simulated data")
                 msg_list = self.get_simulated_data()
+                
+            # in case msg_list is some weird ass thing
+            else:
+                continue
 
+            # whether it is real serial or simulated, grab the msgs out of list
+            imu_msg, mag_msg, heading_msg, compass_msg = msg_list 
+                
+            # publish the ros2 msgs
+            self.get_logger().info(
+                f"imu_node.py: Publishing IMU msgs - imu_msg, mag_msg, heading_msg, compass_msg"
+            )
+            self.imu_pub.publish(imu_msg)
+            self.mag_pub.publish(mag_msg)
+            self.heading_pub.publish(heading_msg)
+            self.compass_pub.publish(compass_msg)     
+            
+            #publish the foxglove textannotation msgs
+            self.get_logger().info(
+                f"imu_node.py: Publishing IMU foxglove msgs - headingfoxglove_msg, compassfoxglove_msg"
+            )
+            headingfoxglove_msg = self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp) 
+            self.headingfox_pub.publish(headingfoxglove_msg)               
+            compassfoxglove_msg = self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)
+            self.compassfox_pub.publish(compassfoxglove_msg)
+            
+            self.get_logger().info(
+                f"Published Sample: Heading={heading_msg.data:.1f}, Compass={compass_msg.data} "
+            ) 
 
 def main():
     rclpy.init()

@@ -186,27 +186,30 @@ class GPSNode(Node):
                     self.serial_port = None
                     continue
 
-            # check for serial print first, then go for simulated data
-            if navsatfix_msg:
-                # publish the NavSatFix msg
-                self.get_logger().info(f"gps_node.py: Publishing GPS msg - navsatfix_msg")
-                self.NavSatFix_pub.publish(navsatfix_msg)
-
-                # publish the foxglove textannotation msgs
-                self.get_logger().info(f"gps_node.py: Publishing GPS foxglove msg - latlonfox_pub")
-                foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)            
-                self.latlonfox_pub.publish(foxglove_msg)
-                
-                self.get_logger().info(
-                    f"Published Sample: Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
-                    f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status}"
-                )
-                    
+            # check for serial print first, then grab simulated data
+            if navsatfix_msg:                
+                self.get_logger().info(f"gps_node.py: Publishing serial GPS data msg - navsatfix_msg")
+                                                 
             if navsatfix_msg is None and self.get_parameter('simulated_data').value:
                 self.get_logger().warning("gps_node.py: No serial data, using simulated data")
                 navsatfix_msg = self.get_simulated_data()
-
+                
+            # in case navsatfix_msg is some weird ass thing
+            else:
+                continue
+                
+            # publish the NavSatFix msg, whether it froms serial or simulated
+            self.NavSatFix_pub.publish(navsatfix_msg)
             
+            # publish the foxglove textannotation msgs
+            self.get_logger().info(f"gps_node.py: Publishing GPS foxglove msg - latlonfox_pub")
+            foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)            
+            self.latlonfox_pub.publish(foxglove_msg)   
+
+            self.get_logger().info(
+                    f"Published Sample: Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
+                    f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status}"
+                )
 
 
 def main():
