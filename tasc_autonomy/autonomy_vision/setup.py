@@ -30,6 +30,7 @@ setup(
             'webcam_detection2D = autonomy_vision.webcam_detection2D:main',
             'morse_code_detector = autonomy_vision.morse_code_detector:main',
             'multi_camera_streamer = autonomy_vision.multi_camera_streamer:main',
+            
         ],
     },
 )
