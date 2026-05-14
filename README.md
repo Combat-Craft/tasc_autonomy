@@ -14,8 +14,10 @@ python3 -m pip show pyorbbecsdk2
 
 
 # FOR GETTING ORBBEC ROS2 SDK GEMINI LAUNCH FILE WORKING: 
-possible source of error: 
+possible sources of error: 
 Firmware VERSION 
+Rviz2 visualization vs. Foxglove 
+https://github.com/orbbec/OrbbecFirmware/releases/tag/Gemini2-Firmware
 
 
 https://github.com/orbbec/OrbbecSDK_ROS2/tree/v2-main
