@@ -31,7 +31,22 @@ Replace gemini330 series launch command with:
 
 ros2 launch orbbec_camera gemini2.launch.py uvc_backend:=v4l2 color_format:=RGB enable_point_cloud:=false enable_colored_point_cloud:=false
 
-uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
+# uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
+
+find ~/ros2_ws -name "OrbbecSDKConfig_v1.0.xml" 2>/dev/null
+
+micro <path_you_found>/OrbbecSDKConfig_v1.0.xml
+
+
+Look for LinuxUVCBackend, change libuvc to v4l2
+
+then:
+
+cd ~/<your_workspace>
+
+colcon build orbbec_camera
+
+source install/setup.bash
 
 # killing instances 
 
