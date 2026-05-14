@@ -37,33 +37,33 @@ def generate_launch_description():
         # who is using the exact same lidar as we are
         ## Use the official RPLidar A1 launch file from rplidar_ros package
         ## This is the recommended approach for A1M8 models
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([os.path.join(
-                get_package_share_directory('rplidar_ros'), 'launch', 'rplidar_a1_launch.py'
-            )]),
-            launch_arguments={
-                'channel_type': 'serial',
-                'serial_port': '/dev/ttyUSB0',
-                'serial_baudrate': '115200',
-                'frame_id': 'laser',
-                'inverted': 'false',
-                'angle_compensate': 'true',
-                'scan_mode': 'Sensitivity'  # Optimal for A1M8
-            }.items()
-        ),
+        #IncludeLaunchDescription(
+        #    PythonLaunchDescriptionSource([os.path.join(
+        #        get_package_share_directory('rplidar_ros'), 'launch', 'rplidar_a1_launch.py'
+        #    )]),
+        #    launch_arguments={
+        #        'channel_type': 'serial',
+        #        'serial_port': '/dev/ttyUSB0',
+        #        'serial_baudrate': '115200',
+        #        'frame_id': 'laser',
+        #        'inverted': 'false',
+        #        'angle_compensate': 'true',
+        #        'scan_mode': 'Sensitivity'  # Optimal for A1M8
+        #    }.items()
+        #),
         
         # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
-        Node(
-            package='autonomy_sensors', # Replace with your GPS driver package name
-            executable='gps_node', # Replace with your GPS driver executable
-            name='gps_node',
-            output='screen',
-            parameters=[
-                # Add any GPS specific parameters here (e.g., port, baud_rate)
-                {'port': '/dev/ttyUSB1'},
-                {'baud_rate': 115200},           
-            ]
-        ),
+        #Node(
+        #    package='autonomy_sensors', # Replace with your GPS driver package name
+        #    executable='gps_node', # Replace with your GPS driver executable
+        #    name='gps_node',
+        #    output='screen',
+        #    parameters=[
+        #        # Add any GPS specific parameters here (e.g., port, baud_rate)
+        #        {'port': '/dev/ttyUSB1'},
+        #        {'baud_rate': 115200},           
+        #    ]
+        #),
         # IMU node, for IMU ms, g and foxglove TextAnnotation msg (latitude and longitude)
         Node(
             package='autonomy_sensors', 
