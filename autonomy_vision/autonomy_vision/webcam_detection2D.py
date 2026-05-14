@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-# Quick Note:
-# Terminal 1: ros2 run autonomy_vision webcam_detection2D
-# Terminal 2 (Command used for running usb_cam to get raw image data):
-# ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:=/dev/video0   -p pixel_format:=mjpeg2rgb   -p image_width:=640   -p image_height:=480   -p framerate:=10.0 
+# Terminal Command: ros2 launch autonomy_vision detection.launch.py
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -19,9 +16,19 @@ class webcam_detection2D(Node):
         super().__init__("webcam_detector")
  
         # Load YOLO11
-        self.model = YOLO("yolo11n.pt")
-        self.get_logger().info("YOLOv11n model loaded")
+        # Load OpenVINO model
+        self.model = YOLO("/home/hq/tasc_ws/src/tasc_autonomy/yolo11n_openvino_model", task="detect")
+        self.get_logger().info("YOLOv11n OpenVINO model loaded")
  
+        # Warm-up run
+        dummy = np.zeros((320, 320, 3), dtype=np.uint8)
+        self.model(dummy, imgsz=320, verbose=False)
+        self.get_logger().info("Warm-up complete")
+
+        self.frame_id = 0
+        self.frame_skip = 5  # run YOLO every 5 frames
+        self.last_results = None
+
         # Subscribes to webcam topic published by usb_cam
         self.subscription = self.create_subscription(
             Image,
@@ -79,6 +86,8 @@ class webcam_detection2D(Node):
     # Main callback is triggered each time a new frame is published by usb_cam
     def image_callback(self, msg: Image):
  
+        self.frame_id += 1
+
         #Convert ROS2 image message to OpenCV frame
         frame = self.image_msg_to_bgr(msg)
         if frame is None:
@@ -86,9 +95,19 @@ class webcam_detection2D(Node):
  
         stamp = self.get_clock().now().to_msg()
  
-        # run YOLO11n on the frame
-        results = self.model(frame, verbose=False)
- 
+        # Run YOLO on every 5 frames
+        if self.last_results is None or self.frame_id % self.frame_skip == 0:
+            # run YOLO11n on the frame
+            # Resize to 320x320 before inference
+            small = cv2.resize(frame, (320, 320), interpolation=cv2.INTER_LINEAR)
+            results = self.model(small, imgsz=320, conf=0.4, verbose=False)
+            self.last_results = (results, frame.shape)  # store shape for scaling
+        
+        results, orig_shape = self.last_results
+        orig_h, orig_w = orig_shape[:2]
+        scale_x = orig_w / 320
+        scale_y = orig_h / 320
+
         # Detection2DArray ROS2 message
         det_array = Detection2DArray()
         det_array.header.stamp = stamp
@@ -103,6 +122,10 @@ class webcam_detection2D(Node):
             # Bounding box pixel coordinates
             x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
  
+            # Scale boxes back to original resolution
+            x1 = int(x1 * scale_x); x2 = int(x2 * scale_x)
+            y1 = int(y1 * scale_y); y2 = int(y2 * scale_y)
+
             # Class index, confidence score, and human readable label
             cls_id = int(det.cls.cpu().numpy()[0])
             conf   = float(det.conf.cpu().numpy()[0])
