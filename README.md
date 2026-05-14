@@ -26,7 +26,9 @@ https://github.com/orbbec/OrbbecFirmware/releases/tag/Gemini2-Firmware
 https://github.com/orbbec/OrbbecSDK_ROS2/tree/v2-main
 
 FOLLOW README IN THIS REPO ^^
+
 Replace gemini330 series launch command with:
+
 ros2 launch orbbec_camera gemini2.launch.py uvc_backend:=v4l2 color_format:=RGB enable_point_cloud:=false enable_colored_point_cloud:=false
 
 uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
