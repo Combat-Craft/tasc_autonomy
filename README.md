@@ -63,6 +63,19 @@ Follow the instructions in this link:
 https://github.com/orbbec/OrbbecSDK_ROS2/blob/main/docs/fastdds_tuning.md
 
 
+# Available color profiles
+
+All available color profiles (Orbbec ROS2 SDK):
+
+[component_container-1] [INFO] [1778778982.239264256] [camera.camera]: Available profiles:
+
+[component_container-1] [INFO] [1778778982.239426945] [camera.camera]: color profile: 1920x1080 30fps RGB888
+
+[component_container-1] [INFO] [1778778982.239439199] [camera.camera]: color profile: 1920x1080 30fps MJPG
+
+[component_container-1] [INFO] [1778778982.239446111] [camera.camera]: color profile: 1920x1080 30fps YUYV
+
+
 
 
 
