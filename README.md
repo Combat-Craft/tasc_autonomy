@@ -31,6 +31,16 @@ ros2 launch orbbec_camera gemini2.launch.py uvc_backend:=v4l2 color_format:=RGB 
 
 uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
 
+# killing instances 
+
+sudo pkill -9 -f "orbbec_camera"
+
+sudo pkill -9 -f "component_container"
+
+# Test for framerate detection and USB connection type
+
+ros2 topic echo /camera/device_status | grep -E "connection_type|color_frame_rate_cur"
+
 # Fast DDS Tuning
 Follow the instructions in this link:
 https://github.com/orbbec/OrbbecSDK_ROS2/blob/main/docs/fastdds_tuning.md
