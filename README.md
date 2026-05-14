@@ -77,7 +77,7 @@ All available color profiles (Orbbec ROS2 SDK):
 
 # Explicit force formatting
 
-ros2 launch orbbec_camera gemini2.launch.py \ color_format:=RGB888 \ color_width:=1920 \ color_height:=1080 \ color_fps:=30 \  depth_width = 1920 \ depth_height = 1080 \ depth_fps = 30 \ enable_point_cloud:=false \ enable_colored_point_cloud:=false \
+ros2 launch orbbec_camera gemini2.launch.py \ color_format:=RGB888 \ color_width:=1920 \ color_height:=1080 \ color_fps:=30 \  depth_width: = 1920 \ depth_height: = 1080 \ depth_fps := 30 \ enable_point_cloud:=false \ enable_colored_point_cloud:=false \
 
 
 
