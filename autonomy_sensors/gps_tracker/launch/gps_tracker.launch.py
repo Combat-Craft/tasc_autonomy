@@ -66,23 +66,26 @@ def generate_launch_description():
         executable='fake_gps',
         name='fake_gps',
         output='screen',
-        condition=IfCondition(PythonExpression([mode, " == 'fake'"]))
+        condition=IfCondition(PythonExpression(["'", mode, "' == 'fake'"]))
     )
     
     # ================================================================
     # REAL GPS MODE (Hardware serial)
     # ================================================================
     
-    # Note: Requires gps_broadcaster_improved.py in package
+    # Note: gps_broadcaster is a separate node for real hardware.
+    # To use real GPS, add a gps_broadcaster executable to this package
+    # or install the nmea_navsat_driver package:
+    #   sudo apt install ros-$ROS_DISTRO-nmea-navsat-driver
     real_gps_node = Node(
-        package='gps_tracker',
-        executable='gps_broadcaster_improved.py',
+        package='nmea_navsat_driver',
+        executable='nmea_serial_driver',
         name='gps_broadcaster',
         output='screen',
-        condition=UnlessCondition(PythonExpression([mode, " == 'fake'"])),
+        condition=UnlessCondition(PythonExpression(["'", mode, "' == 'fake'"])),
         parameters=[
             {'port': port},
-            {'baudrate': baudrate},
+            {'baud': baudrate},
         ]
     )
     
@@ -137,7 +140,7 @@ def generate_launch_description():
             '║    - Plot (showing X/Y coordinates)                  ║\n',
             '╚═══════════════════════════════════════════════════════╝\n',
         ],
-        condition=IfCondition(PythonExpression([mode, " == 'fake'"]))
+        condition=IfCondition(PythonExpression(["'", mode, "' == 'fake'"]))
     )
     
     real_mode_msg = LogInfo(
@@ -157,7 +160,7 @@ def generate_launch_description():
             '║  Connect:  ws://localhost:8765                        ║\n',
             '╚═══════════════════════════════════════════════════════╝\n',
         ],
-        condition=UnlessCondition(PythonExpression([mode, " == 'fake'"]))
+        condition=UnlessCondition(PythonExpression(["'", mode, "' == 'fake'"]))
     )
     
     # ================================================================
