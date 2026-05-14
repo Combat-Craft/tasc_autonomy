@@ -2,6 +2,8 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription   #this and the next 2 are for launch files of another package
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch.launch_description_sources import PythonLaunchDescriptionSource # for rplidar
+from ament_index_python.packages import get_package_share_directory # for rplidar
 from launch_ros.actions import Node
 
 import os
@@ -31,21 +33,24 @@ def generate_launch_description():
             
         ),
 
-        # we're not supposed to use this 
-        #
-        # ROS Bridge websocket server, for Foxglove
-        #Node(
-        #    package='rosbridge_server',
-        #    executable='rosbridge_websocket.py',
-        #    name='rosbridge_websocket',
-        #    output='screen',
-        #    parameters=[
-        #        {'port': 9090},
-        #        {'default_call_service_timeout': 5.0},
-        #        {'call_services_in_new_thread': True},
-        #        {'send_action_goals_in_new_thread': True}
-        #    ]
-        #),
+        # copied from https://github.com/mvipin/perceptor/blob/main/launch/rplidar.launch.py
+        # who is using the exact same lidar as we are
+        ## Use the official RPLidar A1 launch file from rplidar_ros package
+        ## This is the recommended approach for A1M8 models
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('rplidar_ros'), 'launch', 'rplidar_a1_launch.py'
+            )]),
+            launch_arguments={
+                'channel_type': 'serial',
+                'serial_port': '/dev/ttyUSB0',
+                'serial_baudrate': '115200',
+                'frame_id': 'laser',
+                'inverted': 'false',
+                'angle_compensate': 'true',
+                'scan_mode': 'Sensitivity'  # Optimal for A1M8
+            }.items()
+        ),
         
         # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
         Node(
@@ -55,7 +60,7 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 # Add any GPS specific parameters here (e.g., port, baud_rate)
-                {'port': '/dev/ttyUSB0'},
+                {'port': '/dev/ttyUSB1'},
                 {'baud_rate': 115200},           
             ]
         ),
@@ -66,7 +71,7 @@ def generate_launch_description():
             name='imu_node',
             output='screen',
             parameters=[
-                {'port': '/dev/ttyUSB0'},
+                {'port': '/dev/ttyUSB1'},
                 {'baud_rate': 115200},           
             ]
         ),
