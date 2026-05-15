@@ -33,7 +33,7 @@ ros2 launch orbbec_camera gemini2.launch.py uvc_backend:=v4l2 color_format:=RGB 
 
 # uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
 
-find ~/ros2_ws -name "OrbbecSDKConfig_v1.0.xml" 2>/dev/null
+find ~/<your_workspace> -name "OrbbecSDKConfig_v1.0.xml" 2>/dev/null
 
 micro <path_you_found>/OrbbecSDKConfig_v1.0.xml
 
