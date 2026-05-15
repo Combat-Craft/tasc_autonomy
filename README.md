@@ -2,17 +2,6 @@
 Sub-packages: `autonomy_sensors`, `autonomy_vision`
 
 
-pyorbbecsdk::
-
-sudo apt update
-
-sudo apt install -y python3-pip python3-dev cmake libusb-1.0-0-dev
-
-pip3 install pyorbbecsdk2
-
-python3 -m pip show pyorbbecsdk2
-
-
 # FOR GETTING ORBBEC ROS2 SDK GEMINI LAUNCH FILE WORKING: 
 
 https://github.com/orbbec/OrbbecFirmware/releases/tag/Gemini2-Firmware
@@ -28,22 +17,6 @@ FOLLOW README IN THIS REPO ^^
 ros2 launch orbbec_camera gemini2.launch.py
 ```
 
-# uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
-
-find ~/<your_workspace> -name "OrbbecSDKConfig_v1.0.xml" 2>/dev/null
-
-micro <path_you_found>/OrbbecSDKConfig_v1.0.xml
-
-
-Look for LinuxUVCBackend, change libuvc to v4l2
-
-then:
-
-cd ~/<your_workspace>
-
-colcon build orbbec_camera
-
-source install/setup.bash
 
 # killing instances 
 
@@ -83,10 +56,10 @@ All available color profiles (Orbbec ROS2 SDK):
 
 .
 
-# Explicit force formatting
+# Explicit force formatting 
 
-``` ros2 launch orbbec_camera gemini2.launch.py \ color_format:=RGB888 \ color_width:=1280 \ color_height:=720 \ color_fps:=30 \  depth_width: = 1920 \ depth_height: = 1080 \ depth_fps := 30 \ enable_point_cloud:=false \ enable_colored_point_cloud:=false  ```
+``` ros2 launch orbbec_camera gemini2.launch.py \ color_format:=RGB888 \ color_width:=1280 \ color_height:=720 \ color_fps:=40 \  depth_width: = 1920 \ depth_height: = 1080 \ depth_fps := 40 \ enable_point_cloud:=false \ enable_colored_point_cloud:=false  ```
 
-
+Set to 720p for higher framerate.
 
 
