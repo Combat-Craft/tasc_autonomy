@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+
+"""
+ROS2 Launch file
+
+# Launch Command: ros2 launch autonomy_vision detection.launch.py
+
+1. USB Camera Node
+2. YOLO Detection Node
+
+System flow: USB Camera (/dev/video0) --> usb_cam node --> image topic (/image_raw) --> webcam_detection2D mode (YOLO) --> detection output
+
+"""
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, TimerAction
 from launch.substitutions import LaunchConfiguration
@@ -7,29 +19,33 @@ from launch_ros.actions import Node
  
 def generate_launch_description():
  
-    # ------------------------------------------------------------------ #
-    #  Launch Arguments                                                    #
-    # ------------------------------------------------------------------ #
+    # LAUNCH ARGUMENTS
+    # Camera device path (default: /dev/video0)
     camera_device_arg = DeclareLaunchArgument(
         'camera_device', default_value='/dev/video0',
         description='Camera device path'
     )
+
+    # Camera resolution width
     image_width_arg = DeclareLaunchArgument(
         'image_width', default_value='640',
         description='Camera image width'
     )
+
+    # Camera resolution height
     image_height_arg = DeclareLaunchArgument(
         'image_height', default_value='480',
         description='Camera image height'
     )
+
+    # Camera frame rate
     framerate_arg = DeclareLaunchArgument(
         'framerate', default_value='30.0',
         description='Camera framerate'
     )
  
-    # ------------------------------------------------------------------ #
-    #  1. USB Camera Node                                                  #
-    # ------------------------------------------------------------------ #
+    #  1. USB Camera Node:
+    # Captures raw images from USB camera and publishes them to ROS2 image topics for downstream processing.
     usb_cam_node = Node(
         package='usb_cam',
         executable='usb_cam_node_exe',
@@ -44,12 +60,11 @@ def generate_launch_description():
         }]
     )
  
-    # ------------------------------------------------------------------ #
-    #  2. YOLO Detector Node                                               #
-    #     Delayed 2 s to give usb_cam time to initialise                  #
-    # ------------------------------------------------------------------ #
+    #  2. YOLO Detector Node
+    # Runs object detection on incoming camera frames.
+    # Delayed start ensures usb_cam is fully initialized before detection begins to prevent empty frame errors.
     detector_node = TimerAction(
-        period=2.0,
+        period=2.0, # 2 sec delay before starting detector
         actions=[
             Node(
                 package='autonomy_vision',
@@ -60,6 +75,7 @@ def generate_launch_description():
         ]
     )
  
+    # Launch description
     return LaunchDescription([
         camera_device_arg,
         image_width_arg,

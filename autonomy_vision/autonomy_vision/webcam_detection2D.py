@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 # Terminal Command: ros2 launch autonomy_vision detection.launch.py
+
+"""
+ROS2 Node
+
+This node subscribes to a camera stream from usb_cam (/image_raw), runs YOLO object detection on incoming frames, and publishes:
+1. /detections     → structured Detection2DArray results
+2. /debug_image    → annotated image with bounding boxes
+
+System flow: usb_cam (/image_raw) --> webcam_detection2D node --> YOLO inference (every 5 frames) --> bounding boxes & class labels --> /detections & /debug_image topics
+
+
+- YOLO runs every 5 frames to reduce CPU load
+- Input images are resized to 320x320 for faster inference
+- OpenVINO model used for CPU acceleration
+"""
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image

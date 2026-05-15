@@ -43,6 +43,8 @@ setup(
             'yolo_depth_v2 = autonomy_vision.yolo_depth_v2:main',
             'webcam_detection2D = autonomy_vision.webcam_detection2D:main',
             'morse_code_detector = autonomy_vision.morse_code_detector:main',
+            'motor_controller = autonomy_vision.motor_controller:main',
+            'motor_input = autonomy_vision.motor_input:main',
         ],
     },
 )
