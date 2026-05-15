@@ -51,19 +51,19 @@ def generate_launch_description():
         #        'scan_mode': 'Sensitivity'  # Optimal for A1M8
         #    }.items()
         #),
-        
+        """
         # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
-        #Node(
-        #    package='autonomy_sensors', # Replace with your GPS driver package name
-        #    executable='gps_node', # Replace with your GPS driver executable
-        #    name='gps_node',
-        #    output='screen',
-        #    parameters=[
-        #        # Add any GPS specific parameters here (e.g., port, baud_rate)
-        #        {'port': '/dev/ttyUSB1'},
-        #        {'baud_rate': 115200},           
-        #    ]
-        #),
+        Node(
+           package='autonomy_sensors', # Replace with your GPS driver package name
+           executable='gps_node', # Replace with your GPS driver executable
+           name='gps_node',
+           output='screen',
+           parameters=[
+               # Add any GPS specific parameters here (e.g., port, baud_rate)
+               {'port': '/dev/ttyUSB0'},
+               {'baud_rate': 115200},           
+           ]
+        ),
         # IMU node, for IMU ms, g and foxglove TextAnnotation msg (latitude and longitude)
         Node(
             package='autonomy_sensors', 
@@ -71,11 +71,11 @@ def generate_launch_description():
             name='imu_node',
             output='screen',
             parameters=[
-                {'port': '/dev/ttyUSB1'},
+                {'port': '/dev/ttyUSB0'},
                 {'baud_rate': 115200},           
             ]
         ),
-        
+        """
         # Examples if needed
         
         # Node(
