@@ -24,7 +24,9 @@ FOLLOW README IN THIS REPO ^^
 
   Replace gemini330 series launch command with:
 
-```  ros2 launch orbbec_camera gemini2.launch.py  ```
+``` bash
+ros2 launch orbbec_camera gemini2.launch.py
+```
 
 # uvc_backend param might be necessary, if so LinuxUVCBackend XML config file will need to be edited
 
