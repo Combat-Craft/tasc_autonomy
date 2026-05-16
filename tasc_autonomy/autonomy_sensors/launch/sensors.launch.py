@@ -51,7 +51,37 @@ def generate_launch_description():
         #        'scan_mode': 'Sensitivity'  # Optimal for A1M8
         #    }.items()
         #),
-        """
+
+        #IncludeLaunchDescription(
+        #    PathJoinSubstitution([
+        #      FindPackageShare('rplidar_ros'),
+        #          'launch',
+        #          "rplidar_a1_launch.py"
+        #    ]),
+        #    launch_arguments={
+        #        'channel_type': 'serial',
+        #        'serial_port': '/dev/ttyUSB1',
+        #        'serial_baudrate': '115200',
+        #        'frame_id': 'laser',
+        #        'inverted': 'false',
+        #        'angle_compensate': 'true',
+        #        'scan_mode': 'Sensitivity'  # Optimal for A1M8
+        #    }.items()
+            
+        #),
+
+        # orbbec launch test
+        IncludeLaunchDescription(
+            PathJoinSubstitution([
+              FindPackageShare('orbbec_camera'),   
+                  'launch',
+                  "gemini2_edited2.launch.py"
+            ]),
+            launch_arguments={
+
+            }.items()
+        ),
+        
         # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
         Node(
            package='autonomy_sensors', # Replace with your GPS driver package name
@@ -75,7 +105,7 @@ def generate_launch_description():
                 {'baud_rate': 115200},           
             ]
         ),
-        """
+        
         # Examples if needed
         
         # Node(

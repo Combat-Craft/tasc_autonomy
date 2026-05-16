@@ -28,9 +28,21 @@ class MultiCameraStreamer(Node):
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
-                "appsink name=sink0 emit-signals=true sync=false drop=true",
+                "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/arm_cam/h264"
-            }
+            },
+                "poe_cam": {
+                "pipeline":
+                "v4l2src device=/dev/video6 ! "
+                "image/jpeg,width=640,height=480,framerate=30/1 ! "
+                "jpegparse ! "
+                "jpegdec ! "
+                "videoconvert ! "
+                f"{encoder_block}"
+                "video/x-h264,stream-format=byte-stream,alignment=au ! "
+                "appsink name={sink_name} emit-signals=true sync=false drop=true",
+                "topic": "/poe_cam/h264"
+            },
         }
 
         self.camera_publishers = {}
@@ -46,7 +58,8 @@ class MultiCameraStreamer(Node):
                 qos_profile_sensor_data
             )
 
-            pipeline = Gst.parse_launch(config["pipeline"])
+            # create pipeline with a unique appsink name for this camera
+            pipeline = Gst.parse_launch(config["pipeline"].format(sink_name=f"sink{i}"))
 
             sink = pipeline.get_by_name(f"sink{i}")
             sink.set_property("max-buffers", 1)
