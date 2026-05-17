@@ -6,22 +6,31 @@
   <description>TODO: Package description</description>
   <maintainer email="yr.lee@torontomu.com">ArtemisLee</maintainer>
   <license>Apache-2.0</license>
-  
+
+  <!-- ros2 packages-->
   <exec_depend>ros2launch</exec_depend>
-    
   <exec_depend>rclpy</exec_depend>
+  
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  
+  <!-- 3rd party ros2 packages-->
   <exec_depend>foxglove_msgs</exec_depend>
+  <exec_depend>rplidar_ros</exec_depend>
+  <exec_depend>orbbec_camera_v2</exec_depend>
+  
+  <!-- python packages --> 
   <exec_depend>serial</exec_depend>
   <exec_depend>threading</exec_depend>
+  <test_depend>python3-pytest</test_depend>
+  <!-- ubuntu apt packages-->
   
-
+  <!-- ament packages -->
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
+  
 
   <export>
     <build_type>ament_python</build_type>
