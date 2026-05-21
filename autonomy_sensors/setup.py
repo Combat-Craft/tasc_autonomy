@@ -18,7 +18,7 @@ setup(
     zip_safe=True,
     maintainer='ArtemisLee',
     maintainer_email='yr.lee@torontomu.com',
-    description='Has all the sensor code, such as GPS, IMU, Orbbec, etc.',
+    description='Has all the sensor code, such as GPS, IMU, etc.',
     license='Apache-2.0',
     extras_require={
         'test': [

@@ -17,71 +17,25 @@ import os
 def generate_launch_description():
     return LaunchDescription([
 
-        # Foxglove Bridge websocket server for ROS2,
+        # RPLidar A1M8
         IncludeLaunchDescription(
             PathJoinSubstitution([
-              FindPackageShare('foxglove_bridge'),
+              FindPackageShare('rplidar_ros'),
                   'launch',
-                  "foxglove_bridge_launch.xml"
+                  "rplidar_a1_launch.py"
             ]),
             launch_arguments={
-                'port': '8765',
-                #'default_call_service_timeout': 5.0,
-                #'call_services_in_new_thread': True,
-                #'send_action_goals_in_new_thread': True
+                'channel_type': 'serial',
+                'serial_port': '/dev/ttyUSB1',
+                'serial_baudrate': '115200',
+                'frame_id': 'laser',
+                'inverted': 'false',
+                'angle_compensate': 'true',
+                'scan_mode': 'Sensitivity'  # Optimal for A1M8
             }.items()
             
         ),
-
-        # copied from https://github.com/mvipin/perceptor/blob/main/launch/rplidar.launch.py
-        # who is using the exact same lidar as we are
-        ## Use the official RPLidar A1 launch file from rplidar_ros package
-        ## This is the recommended approach for A1M8 models
-        #IncludeLaunchDescription(
-        #    PythonLaunchDescriptionSource([os.path.join(
-        #        get_package_share_directory('rplidar_ros'), 'launch', 'rplidar_a1_launch.py'
-        #    )]),
-        #    launch_arguments={
-        #        'channel_type': 'serial',
-        #        'serial_port': '/dev/ttyUSB0',
-        #        'serial_baudrate': '115200',
-        #        'frame_id': 'laser',
-        #        'inverted': 'false',
-        #        'angle_compensate': 'true',
-        #        'scan_mode': 'Sensitivity'  # Optimal for A1M8
-        #    }.items()
-        #),
-
-        #IncludeLaunchDescription(
-        #    PathJoinSubstitution([
-        #      FindPackageShare('rplidar_ros'),
-        #          'launch',
-        #          "rplidar_a1_launch.py"
-        #    ]),
-        #    launch_arguments={
-        #        'channel_type': 'serial',
-        #        'serial_port': '/dev/ttyUSB1',
-        #        'serial_baudrate': '115200',
-        #        'frame_id': 'laser',
-        #        'inverted': 'false',
-        #        'angle_compensate': 'true',
-        #        'scan_mode': 'Sensitivity'  # Optimal for A1M8
-        #    }.items()
-            
-        #),
-
-        # orbbec launch test
-        IncludeLaunchDescription(
-            PathJoinSubstitution([
-              FindPackageShare('orbbec_camera'),   
-                  'launch',
-                  "gemini2_edited2.launch.py"
-            ]),
-            launch_arguments={
-
-            }.items()
-        ),
-        
+     
         # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
         Node(
            package='autonomy_sensors', # Replace with your GPS driver package name

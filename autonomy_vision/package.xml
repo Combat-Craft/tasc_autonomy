@@ -4,14 +4,20 @@
   <name>autonomy_vision</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="tadrosm003@gmail.com">mnt</maintainer>
-  <maintainer email="yalian@orbbec.com">yalian</maintainer>
+  <maintainer email="yr.lee@torontomu.com">ArtemisLee</maintainer>
   <license>Apache-2.0</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
+  
+  <!-- 3rd party ros2 packages-->
+  
+  <!-- orbbec_camera_v2 has 3 packages-->
+  <exec_depend>orbbec_camera</exec_depend>
+  <exec_depend>orbbec_camera_msgs</exec_depend>
+  <exec_depend>orbbec_camera_description</exec_depend>
 
   <depend>ament_lint_auto</depend>
   <depend>ament_lint_common</depend>
