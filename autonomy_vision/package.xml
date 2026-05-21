@@ -17,7 +17,7 @@
   <!-- orbbec_camera_v2 has 3 packages-->
   <exec_depend>orbbec_camera</exec_depend>
   <!--<exec_depend>orbbec_camera_msgs</exec_depend>-->
-  <!--<exec_depend>orbbec_camera_description</exec_depend>-->
+  <exec_depend>orbbec_description</exec_depend>
 
   <depend>ament_lint_auto</depend>
   <depend>ament_lint_common</depend>
