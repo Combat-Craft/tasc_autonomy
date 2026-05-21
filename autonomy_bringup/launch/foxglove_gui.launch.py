@@ -44,12 +44,23 @@ def generate_launch_description():
         ),
         
         # Launch all cameras/visions
+        #IncludeLaunchDescription(
+        #    PathJoinSubstitution([
+        #      FindPackageShare("autonomy_vision"),
+         #         "launch",
+        #          "vision.launch.py"
+        #    ])    
+        #),
+        
+        # orbbec gemini2 - FOR NOW, DIRECT AS ^LAUNCH IS BAD
         IncludeLaunchDescription(
             PathJoinSubstitution([
-              FindPackageShare("autonomy_vision"),
-                  "launch",
-                  "vision.launch.py"
-            ])    
+              FindPackageShare('orbbec_camera'),   
+                  'launch',
+                  #"gemini.launch.py"
+                  "gemini2_edited2.launch.py"
+            ]),
+            # launch_arguments={}.items()
         ),
 
     ])

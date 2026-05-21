@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
 package_name = 'autonomy_bringup'
@@ -15,8 +17,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='ros2v2',
-    maintainer_email='96yrlee@gmail.com',
+    maintainer='ArtemisLee',
+    maintainer_email='yr.lee@torontomu.com',
     description='TODO: Package description',
     license='Apache-2.0',
     extras_require={

@@ -27,12 +27,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            # 'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
+            'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
             'gps_node = autonomy_sensors.gps_node:main',
             'imu_node = autonomy_sensors.imu_node:main',
-            'gps_frame_fixer = autonomy_sensors.gps_frame_fixer:main',
-            'path_publisher = autonomy_sensors.path_publisher:main',
-            'gemini2_camera = autonomy_sensors.gemini2_camera:main',
         ],
     },
 )

@@ -15,6 +15,7 @@
   
   <!-- 3rd party ros2 packages-->
   <exec_depend>foxglove_bridge</exec_depend> 
+  <exec_depend>orbbec_camera</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>

@@ -20,10 +20,10 @@
   <exec_depend>rplidar_ros</exec_depend>
   
   <!-- python packages --> 
-  <exec_depend>serial</exec_depend>
-  <exec_depend>threading</exec_depend>
   <test_depend>python3-pytest</test_depend>
-  
+  <!-- dont need bc default python? also failed rosdep --> 
+  <!--<exec_depend>serial</exec_depend>--> 
+  <!--<exec_depend>threading</exec_depend>--> 
   
   
   <!-- ament packages i.e. came with-->

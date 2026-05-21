@@ -13,15 +13,16 @@ import os
 # https://docs.ros.org/en/humble/Tutorials/Intermediate/Launch/Using-Substitutions.html
 
 def generate_launch_description():
+    # for calling other launch files within the autonomy_vision package
+    vision_launch_dir = PathJoinSubstitution([FindPackageShare('autonomy_vision'), 'launch'])
     return LaunchDescription([
-        # for calling other launch files within the autonomy_vision package
-        vision_launch_dir = PathJoinSubstitution([FindPackageShare('autonomy_vision'), 'launch'])
+        
         
         ## call other launch files in this package
         
         # for panorama / fish-eye
         IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'motor.launch.py'])
+            PathJoinSubstitution([vision_launch_dir, 'motor.launch.py'])
         ),
 
         ## for calling 3rd party launch files
@@ -31,7 +32,8 @@ def generate_launch_description():
             PathJoinSubstitution([
               FindPackageShare('orbbec_camera'),   
                   'launch',
-                  "gemini2_edited2.launch.py"
+                  "gemini.launch.py"
+                  #"gemini2_edited2.launch.py"
             ]),
             # launch_arguments={}.items()
         ),
