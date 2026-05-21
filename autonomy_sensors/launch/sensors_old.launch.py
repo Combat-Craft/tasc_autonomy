@@ -26,7 +26,7 @@ def generate_launch_description():
             ]),
             launch_arguments={
                 'channel_type': 'serial',
-                'serial_port': '/dev/ttyUSB1',
+                'serial_port': '/dev/rplidar_usb',
                 'serial_baudrate': '115200',
                 'frame_id': 'laser',
                 'inverted': 'false',
@@ -35,12 +35,12 @@ def generate_launch_description():
             }.items()
             
         ),
-     
-        # IMU and GPS node
+
+ # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
         Node(
            package='autonomy_sensors', # Replace with your GPS driver package name
-           executable='gps_imu_broadcaster', # Replace with your GPS driver executable
-           name='gps_imu_node',
+           executable='gps_node', # Replace with your GPS driver executable
+           name='gps_node',
            output='screen',
            parameters=[
                # Add any GPS specific parameters here (e.g., port, baud_rate)
@@ -48,7 +48,30 @@ def generate_launch_description():
                {'baud_rate': 115200},           
            ]
         ),
-
+     
+        # GPS node, for NavSatFix msg and foxglove TextAnnotation msg (latitude and longitude)
+        Node(
+           package='autonomy_sensors', # Replace with your GPS driver package name
+           executable='gps_node', # Replace with your GPS driver executable
+           name='gps_node',
+           output='screen',
+           parameters=[
+               # Add any GPS specific parameters here (e.g., port, baud_rate)
+               {'port': '/dev/ttyUSB2'},
+               {'baud_rate': 115200},           
+           ]
+        ),
+        # IMU node, for IMU ms, g and foxglove TextAnnotation msg (latitude and longitude)
+        Node(
+            package='autonomy_sensors', 
+            executable='imu_node', 
+            name='imu_node',
+            output='screen',
+            parameters=[
+                {'port': '/dev/ttyUSB2'},
+                {'baud_rate': 115200},           
+            ]
+        ),
         
         # Examples if needed
         

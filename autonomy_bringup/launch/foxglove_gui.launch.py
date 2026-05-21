@@ -57,10 +57,11 @@ def generate_launch_description():
             PathJoinSubstitution([
               FindPackageShare('orbbec_camera'),   
                   'launch',
-                  #"gemini.launch.py"
-                  "gemini2_edited2.launch.py"
+                  "gemini2.launch.py"
             ]),
-            # launch_arguments={}.items()
+            launch_arguments=
+
+            }.items()
         ),
 
     ])

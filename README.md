@@ -148,6 +148,13 @@ ros2 run autonomy_vision morse_code_detector
 
 ## Troubleshooting
 
+
+### udev
+
+SUBSYSTEM=="tty", SUBSYSTEMS=="usb", DRIVERS=="usb",ATTRS{idProduct}=="0002",ATTRS{idVendor}=="1d6b", SYMLINK+="imugps_esp32_usb"
+
+sadly, LIDAR and ESP32 both use UART serial outputting, which appears to look the same to linux regard;less. we cannot apply static names as they do not give any unique attributes.
+
 ### Serial errors on GPS/IMU
 
 If you see serial open failures:
