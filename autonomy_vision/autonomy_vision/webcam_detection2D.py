@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-# Quick Note:
-# Terminal 1: ros2 run autonomy_vision webcam_detection2D
-# Terminal 2 (Command used for running usb_cam to get raw image data):
-# ros2 run usb_cam usb_cam_node_exe --ros-args   -p video_device:=/dev/video0   -p pixel_format:=mjpeg2rgb   -p image_width:=640   -p image_height:=480   -p framerate:=10.0 
+# Terminal Command: ros2 launch autonomy_vision detection.launch.py
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -19,13 +16,15 @@ class webcam_detection2D(Node):
         super().__init__("webcam_detector")
  
         # Load YOLO11
-        self.model = YOLO("yolo11n.pt")
-        self.get_logger().info("YOLOv11n model loaded")
+        self.model = YOLO("yolo11n.pt", task="detect")
+        self.model.to("cuda")
+        self.get_logger().info("YOLOv11n GPU model loaded")
  
-        self.frame_id = 0
-        self.frame_skip = 5
-        self.last_results = None
- 
+        # Warm-up run (first inference compiles kernels, do it now not live)
+        dummy = np.zeros((320, 320, 3), dtype=np.uint8)
+        self.model(dummy, imgsz=320, verbose=False)
+        self.get_logger().info("Warm-up complete")
+
         # Subscribes to webcam topic published by usb_cam
         self.subscription = self.create_subscription(
             Image,
@@ -82,74 +81,82 @@ class webcam_detection2D(Node):
  
     # Main callback is triggered each time a new frame is published by usb_cam
     def image_callback(self, msg: Image):
- 
-        self.frame_id +=1
- 
+
         #Convert ROS2 image message to OpenCV frame
         frame = self.image_msg_to_bgr(msg)
         if frame is None:
             return
  
         stamp = self.get_clock().now().to_msg()
+
+        orig_h, orig_w = frame.shape[:2]
+
+        # Pad to square first to preserve aspect ratio
+        size = max(orig_h, orig_w)
+        padded = np.zeros((size, size, 3), dtype=np.uint8)
+        padded[:orig_h, :orig_w] = frame
+
+        small = cv2.resize(padded, (320, 320), interpolation=cv2.INTER_LINEAR)
+        results = self.model(small, imgsz=320, conf=0.4, verbose=False) # Only keep detections with confidence score >= 0.4
+
+        scale_x = orig_w / 320
+        scale_y = orig_h / 320
+
+        # Detection2DArray ROS2 message
+        det_array = Detection2DArray()
+        det_array.header.stamp = stamp
+        det_array.header.frame_id = msg.header.frame_id
  
-     	#Run yolo model for every 5 frames
-     	
-        if self.frame_id % self.frame_skip == 0:
-     	
-	        # run YOLO11n on the frame
-	        results = self.model(frame, verbose=False)
+        # Copy frame for adding bounding boxes
+        debug_img = frame.copy()
+ 
+        # Identify each detected object
+        for det in results[0].boxes:
+ 
+            # Bounding box pixel coordinates
+            x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
+ 
+            # Scale boxes back to original resolution
+            x1 = int(x1 * scale_x); x2 = int(x2 * scale_x)
+            y1 = int(y1 * scale_y); y2 = int(y2 * scale_y)
 
-	        # Detection2DArray ROS2 message
-	        det_array = Detection2DArray()
-	        det_array.header.stamp = stamp
-	        det_array.header.frame_id = msg.header.frame_id
-
-	        # Copy frame for adding bounding boxes
-	        debug_img = frame.copy()
-         
-	        # Identify each detected object
-	        for det in results[0].boxes:
-         
-	            # Bounding box pixel coordinates
-	            x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
-         
-	            # Class index, confidence score, and human readable label
-	            cls_id = int(det.cls.cpu().numpy()[0])
-	            conf   = float(det.conf.cpu().numpy()[0])
-	            label  = self.model.names[cls_id]
-         
-	            # Individual Detection2D message
-	            detection = Detection2D()
-	            detection.header.stamp = stamp
-	            detection.header.frame_id = msg.header.frame_id
-         
-	            # Bounding box defined by center point and width/height
-	            detection.bbox.center.position.x = float((x1 + x2) / 2)
-	            detection.bbox.center.position.y = float((y1 + y2) / 2)
-	            detection.bbox.size_x = float(x2 - x1)
-	            detection.bbox.size_y = float(y2 - y1)
-         
-	            # Attach class label and confidence score
-	            hypo = ObjectHypothesisWithPose()
-	            hypo.hypothesis.class_id = label
-	            hypo.hypothesis.score    = conf
-	            detection.results.append(hypo)
-         
-	            det_array.detections.append(detection)
-         
-	            # Draw bounding box and label the image
-	            cv2.rectangle(debug_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-	            cv2.putText(
-	                debug_img,
-	                f"{label} {conf:.2f}",
-	                (x1, max(0, y1 - 10)),
-	                cv2.FONT_HERSHEY_SIMPLEX,
-	                0.6, (0, 255, 0), 2
-	            )
-     
-	        # Publish detection results and image with bounding boxes
-	        self.pub_det.publish(det_array)
-	        self.pub_debug.publish(self.ndarray_to_image_msg(debug_img, msg))
+            # Class index, confidence score, and human readable label
+            cls_id = int(det.cls.cpu().numpy()[0])
+            conf   = float(det.conf.cpu().numpy()[0])
+            label  = self.model.names[cls_id]
+ 
+            # Individual Detection2D message
+            detection = Detection2D()
+            detection.header.stamp = stamp
+            detection.header.frame_id = msg.header.frame_id
+ 
+            # Bounding box defined by center point and width/height
+            detection.bbox.center.position.x = float((x1 + x2) / 2)
+            detection.bbox.center.position.y = float((y1 + y2) / 2)
+            detection.bbox.size_x = float(x2 - x1)
+            detection.bbox.size_y = float(y2 - y1)
+ 
+            # Attach class label and confidence score
+            hypo = ObjectHypothesisWithPose()
+            hypo.hypothesis.class_id = label
+            hypo.hypothesis.score    = conf
+            detection.results.append(hypo)
+ 
+            det_array.detections.append(detection)
+ 
+            # Draw bounding box and label the image
+            cv2.rectangle(debug_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(
+                debug_img,
+                f"{label} {conf:.2f}",
+                (x1, max(0, y1 - 10)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6, (0, 255, 0), 2
+            )
+ 
+        # Publish detection results and image with bounding boxes
+        self.pub_det.publish(det_array)
+        self.pub_debug.publish(self.ndarray_to_image_msg(debug_img, msg))
  
         # Log FPS every 3 seconds
         self._fps_count += 1
