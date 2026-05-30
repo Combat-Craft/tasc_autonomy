@@ -1,3 +1,6 @@
+# NOTES:
+currently, the rover does not have the LIDAR attached, so the sensors.launch.py will not include it
+
 # Instructions
 
 Set up RPlidar:
