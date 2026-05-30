@@ -87,12 +87,12 @@ class IMUGPSNode(Node):
     def __init__(self):
         super().__init__('imu_gps_node')
         
-        self.file_name("imu_gps_broadcaster.py") # for logging
+        self.file_name = "imu_gps_broadcaster.py" # for logging
 
         # Parameters (easy to override in launch files)
         self.declare_parameter('port', '/dev/ttyUSB0')
         self.declare_parameter('baud', 115200) #still matches with new arduino sketch
-        self.declare_parameter('frame_id_gps', 'gps_imu_link')
+        self.declare_parameter('frame_id', 'gps_imu_link')
         self.declare_parameter('simulated_data', True)
 
         # other internal paramaters
@@ -237,7 +237,7 @@ class IMUGPSNode(Node):
         msg = NavSatFix()
         msg.header = Header()
         msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = self.get_parameter('frame_id_gps').value
+        msg.header.frame_id = self.get_parameter('frame_id').value
         
         msg.status.status = NavSatStatus.STATUS_FIX
         msg.status.service = NavSatStatus.SERVICE_GPS
@@ -265,7 +265,7 @@ class IMUGPSNode(Node):
         imu_msg = Imu()       
         imu_msg.header = Header()
         imu_msg.header.stamp = self.get_clock().now().to_msg()
-        imu_msg.header.frame_id = self.get_parameter('frame_id_imu').value
+        imu_msg.header.frame_id = self.get_parameter('frame_id').value
         imu_msg.linear_acceleration.x = -0.0647
         imu_msg.linear_acceleration.y = 0.0125
         imu_msg.linear_acceleration.z = 9.8055
@@ -290,7 +290,7 @@ class IMUGPSNode(Node):
         
         mag_msg = MagneticField()
         mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
-        mag_msg.header.frame_id = self.get_parameter('frame_id_imu').value # same frame ids for both mag and imu in imu_node.py        
+        mag_msg.header.frame_id = self.get_parameter('frame_id').value # same frame ids for both mag and imu in imu_node.py        
         mag_msg.magnetic_field.x = 0.0000711 #sample from log
         mag_msg.magnetic_field.y = 0.00013935
         mag_msg.magnetic_field.z = 0.0001338
@@ -318,7 +318,7 @@ class IMUGPSNode(Node):
             msg = NavSatFix()
             msg.header = Header()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = self.get_parameter('frame_id_gps').value
+            msg.header.frame_id = self.get_parameter('frame_id').value
     
             if fix == 1:
                 msg.status.status = NavSatStatus.STATUS_FIX
@@ -375,7 +375,7 @@ class IMUGPSNode(Node):
             imu_msg = Imu()
             imu_msg.header = Header()
             imu_msg.header.stamp = self.get_clock().now().to_msg()
-            imu_msg.header.frame_id = self.get_parameter('frame_id_imu').value
+            imu_msg.header.frame_id = self.get_parameter('frame_id').value
 
             imu_msg.linear_acceleration.x = ax
             imu_msg.linear_acceleration.y = ay
@@ -405,7 +405,7 @@ class IMUGPSNode(Node):
             # Magnetometer data ==========================================================================
             mag_msg = MagneticField()
             mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
-            mag_msg.header.frame_id = self.get_parameter('frame_id_imu').value # same frame ids for both mag and imu in imu_node.py
+            mag_msg.header.frame_id = self.get_parameter('frame_id').value # same frame ids for both mag and imu in imu_node.py
           
             mag_msg.magnetic_field.x = mx
             mag_msg.magnetic_field.y = my
