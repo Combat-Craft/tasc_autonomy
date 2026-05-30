@@ -1,3 +1,24 @@
+"""
+currently not attached to the rover, so placed here for later ease
+# RPLidar A1M8
+        IncludeLaunchDescription(
+            PathJoinSubstitution([
+              FindPackageShare('rplidar_ros'),
+                  'launch',
+                  "rplidar_a1_launch.py"
+            ]),
+            launch_arguments={
+                'channel_type': 'serial',
+                'serial_port': '/dev/ttyUSB1',
+                'serial_baudrate': '115200',
+                'frame_id': 'laser',
+                'inverted': 'false',
+                'angle_compensate': 'true',
+                'scan_mode': 'Sensitivity'  # Optimal for A1M8
+            }.items()
+            
+        ),
+"""
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription   #this and the next 2 are for launch files of another package
 from launch.substitutions import PathJoinSubstitution
@@ -16,60 +37,17 @@ import os
 
 def generate_launch_description():
     return LaunchDescription([
-
-        # RPLidar A1M8
-        IncludeLaunchDescription(
-            PathJoinSubstitution([
-              FindPackageShare('rplidar_ros'),
-                  'launch',
-                  "rplidar_a1_launch.py"
-            ]),
-            launch_arguments={
-                'channel_type': 'serial',
-                'serial_port': '/dev/ttyUSB1',
-                'serial_baudrate': '115200',
-                'frame_id': 'laser',
-                'inverted': 'false',
-                'angle_compensate': 'true',
-                'scan_mode': 'Sensitivity'  # Optimal for A1M8
-            }.items()
-            
-        ),
-     
-        # IMU and GPS node
+        # IMU and GPS, shared node version
         Node(
-           package='autonomy_sensors', # Replace with your GPS driver package name
-           executable='gps_imu_broadcaster', # Replace with your GPS driver executable
+           package='autonomy_sensors', 
+           executable='gps_imu_broadcaster', 
            name='gps_imu_node',
            output='screen',
            parameters=[
-               # Add any GPS specific parameters here (e.g., port, baud_rate)
-               {'port': '/dev/ttyUSB2'},
+               {'port': '/dev/ttyUSB0'}, # when with LIDAR, double check
                {'baud_rate': 115200},           
            ]
         ),
-
-        
-        # Examples if needed
-        
-        # Node(
-        #     package='navigation',
-        #     executable='multi_camera_publisher',
-        #     name='camera1_node',
-        #     arguments=['1'] #The media stream for the camera (eg. '/dev/video2')
-        # ),
-        
-        #Node(
-        #    package='navigation', 
-        #    executable='gps_display',
-        #    name='gps_display',
-        #    output='screen',
-        #    # You can remap topics here if your script uses different topic names
-        #    # remappings=[
-        #    #     ('/image_raw', '/camera/image_raw'),
-        #    #     ('/gps/fix', '/your_gps_topic'),
-        #    # ]
-        #),
     ])
     
 
