@@ -51,7 +51,7 @@ def cardinal_Direction_8(angle):
     if (292.5 < angle <= 337.5):
         return "NW"
         
-def get_heading_simple(self, mx, my): #ax, ay, az, 
+def get_heading_simple(mx, my): #ax, ay, az, 
     #has the code for roll and yaw, just in case
     
     DECLINATION = 10.05 # Declination (degrees) in Toronto
@@ -87,8 +87,6 @@ class IMUGPSNode(Node):
     def __init__(self):
         super().__init__('imu_gps_node')
         
-        self.file_name = "imu_gps_broadcaster.py" # for logging
-
         # Parameters (easy to override in launch files)
         self.declare_parameter('port', '/dev/ttyUSB0')
         self.declare_parameter('baud', 115200) #still matches with new arduino sketch
@@ -120,31 +118,31 @@ class IMUGPSNode(Node):
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
-        self.get_logger().info("{self.file_name}: GPS node started!")
+        self.get_logger().info("imu_gps_node: GPS node started!")
 
     # ----------------------------------------------------------------------------------------------------
     # Serial Read Try function
     # ----------------------------------------------------------------------------------------------------
     def init_serial_connection(self):
         self.get_logger().info(
-            f"{self.file_name}: Trying to connect to ESP32 serial port {self.port} at {self.baud} baud"
+            f"imu_gps_node: Trying to connect to ESP32 serial port {self.port} at {self.baud} baud"
         )      
         try:
             self.serial_port = serial.Serial(port=self.port, baudrate=self.baud, timeout=1.0)
             self.get_logger().info(
-                f"{self.file_name}: Connected to {self.port} at {self.baud} baud"
+                f"imu_gps_node: Connected to {self.port} at {self.baud} baud"
             )
         except Exception as e:
             self.get_logger().warning(
-                f"{self.file_name}: Failed to connect to {self.port} at {self.baud} baud: {e}"
+                f"imu_gps_node: Failed to connect to {self.port} at {self.baud} baud: {e}"
             )
             if self.get_parameter('simulated_data').value:
                 self.get_logger().info(
-                    "{self.file_name}: Using simulated data fallback"
+                    f"imu_gps_node: Using simulated data fallback"
                 )
             else:
                 self.get_logger().error(
-                    "{self.file_name}: No ESP32 serial connection and no simulated data enabled"
+                    f"imu_gps_node: No ESP32 serial connection and no simulated data enabled"
                 )
         # END init_serial_connection()
         
@@ -158,28 +156,26 @@ class IMUGPSNode(Node):
             
             if self.serial_port and self.serial_port.is_open:
                 try:
-                    self.get_logger().info(
-                        f"{self.file_name}: Trying to obtain ESP32 serial read in publish_data()"
-                    )
+                    #self.get_logger().info( f"imu_gps_node: Trying to obtain ESP32 serial read in publish_data()")
                     line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
                     
-                    #self.get_logger().info(f"{self.file_name}: {line}")
+                    #self.get_logger().info(f"imu_gps_node: {line}")
                     
                     if not line:
                         continue
                     
                     if line.startswith('GPS'):
-                        #self.get_logger().info(f"{self.file_name}: {line}")
+                        #self.get_logger().info(f"imu_gps_node: {line}")
                         navsatfix_msg = self.handle_gps(line)
-                        self.get_logger().info(f"{self.file_name}: Handling GPS serial read")
+                        #self.get_logger().info(f"imu_gps_node: Handling GPS serial read")
                         
                     elif line.startswith("IMU"):
-                        #self.get_logger().info(f"{self.file_name}: Starting to go to handle_imu() in publish_data()")
+                        #self.get_logger().info(f"imu_gps_node: Starting to go to handle_imu() in publish_data()")
                         imu_msg_list = self.handle_imu(line)
-                        self.get_logger().info(f"{self.file_name}: Handling IMU serial read")
+                        #self.get_logger().info(f"imu_gps_node: Handling IMU serial read")
                 
                 except Exception:
-                    self.get_logger().error(f"{self.file_name}: Serial read error: {e}")
+                    self.get_logger().error(f"imu_gps_node: Serial read error: {e}")
                     self.serial_port = None
                     continue
 
@@ -187,20 +183,20 @@ class IMUGPSNode(Node):
             
             ## GPS
             if navsatfix_msg:                
-                self.get_logger().info(f"{self.file_name}: Retrieved serial GPS data msg")
+                #self.get_logger().info(f"imu_gps_node: Retrieved serial GPS data msg")
                 self.simulated_data = False # the moment it detects real data disable simulated as it will add false data irl
             elif navsatfix_msg is None and self.get_parameter('simulated_data').value:
-                self.get_logger().warning("{self.file_name}: No serial GPS data, using simulated data")
+                #self.get_logger().warning("imu_gps_node: No serial GPS data, using simulated data")
                 navsatfix_msg = self.get_simulated_gps_data()                 
             else: # in case navsatfix_msg is some weird ass thing
                 continue
             
             ## IMU
             if imu_msg_list:
-                self.get_logger().info(f"{self.file_name}: Retrieved serial IMU data msgs")    
+                #self.get_logger().info(f"imu_gps_node: Retrieved serial IMU data msgs")    
                 self.simulated_data = False # the moment it detects real data disable simulated as it will add false data irl      
             elif imu_msg_list is None and self.get_parameter('simulated_data').value:
-                self.get_logger().warning("{self.file_name}: No serial IMU data, using simulated data")
+                self.get_logger().warning("imu_gps_node: No serial IMU data, using simulated data")
                 imu_msg_list = self.get_simulated_imu_data()               
             else: # in case imu_msg_list is some weird ass thing
                 continue
@@ -208,7 +204,7 @@ class IMUGPSNode(Node):
             imu_msg, mag_msg, heading_msg, compass_msg = imu_msg_list     
             
             # publish the ros2 msgs
-            self.get_logger().info(f"{self.file_name}: Publishing navsatfix_msg, imu_msg, mag_msg, heading_msg, compass_msg")
+            #self.get_logger().info(f"imu_gps_node: Publishing navsatfix_msg, imu_msg, mag_msg, heading_msg, compass_msg")
             self.NavSatFix_pub.publish(navsatfix_msg)
             self.imu_pub.publish(imu_msg)
             self.mag_pub.publish(mag_msg)
@@ -216,7 +212,7 @@ class IMUGPSNode(Node):
             self.compass_pub.publish(compass_msg) 
             
             # publish the foxglove textannotation msgs
-            self.get_logger().info(f"{self.file_name}: Publishing foxglove msgs - latlonfox, headingfoxglove, compassfoxglove")
+            #self.get_logger().info(f"imu_gps_node: Publishing foxglove msgs - latlonfox, headingfoxglove, compassfoxglove")
             foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)            
             self.latlonfox_pub.publish(foxglove_msg)  
             headingfoxglove_msg = self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp) 
@@ -225,7 +221,7 @@ class IMUGPSNode(Node):
             self.compassfox_pub.publish(compassfoxglove_msg) 
 
             self.get_logger().info(
-                    f"{self.file_name}: Published Sample - Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
+                    f"imu_gps_node: Published Sample - Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
                     f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status},"
                     f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}"
                 )
