@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'autonomy_vision'
 
@@ -7,6 +9,7 @@ setup(
     version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
@@ -37,6 +40,10 @@ setup(
             'yolo_pc = autonomy_vision.yolo_pc:main',
             'yolo_depth_v1 = autonomy_vision.yolo_depth_v1:main',
             'yolo_depth_v2 = autonomy_vision.yolo_depth_v2:main',
+            'morse_detector = autonomy_vision.morse_code_detector:main',
+            'morse_detector_screen = autonomy_vision.morse_code_detector_screen:main',  
+
+            'morse_detector = autonomy_vision.morse_code_detector:main',
         ],
     },
 )
