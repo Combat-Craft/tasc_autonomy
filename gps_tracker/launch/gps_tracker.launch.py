@@ -1,3 +1,15 @@
+"""
+# removeed as already called in bringup's launch
+    foxglove_bridge_node = Node(
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        name='foxglove_bridge',
+        output='screen',
+        condition=IfCondition(foxglove),
+        parameters=[{'port': 8765}]
+    )
+"""
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, LogInfo
 from launch.conditions import IfCondition, UnlessCondition
@@ -38,18 +50,9 @@ def generate_launch_description():
         output='screen'
     )
 
-    foxglove_bridge_node = Node(
-        package='foxglove_bridge',
-        executable='foxglove_bridge',
-        name='foxglove_bridge',
-        output='screen',
-        condition=IfCondition(foxglove),
-        parameters=[{'port': 8765}]
-    )
-
     return LaunchDescription([
         mode_arg, foxglove_arg, port_arg, baudrate_arg,
         fake_gps_node,
         route_logger_node,
-        foxglove_bridge_node,
+        # foxglove_bridge_node,
     ])
