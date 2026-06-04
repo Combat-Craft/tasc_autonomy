@@ -8,6 +8,11 @@ This repository is a ROS 2 Humble workspace for the TASC autonomy stack. It curr
 - `autonomy_vision` (Python package): YOLO and camera streaming nodes, and Orbbec Gemini2 is externally called
 - `gps_tracker` (C++ package): GPS path tracking code
 
+
+[Current Progress Snapshot](#Current-Progress-Snapshot)
+
+
+
 ## Current Progress Snapshot
 
 Implemented and present in source:
