@@ -139,6 +139,16 @@ v4l2-ctl --list-devices
 
 You can view my notes/test logs [here](https://docs.google.com/document/d/1xLJX_WVMZnSbE76I1YRzUpV9hlwl_LD-Z_N9sYjofT8/edit?usp=sharing)
 
+## ROS2 Based Multi-camera-streamer
+
+Currently uses gstreamer, with software endocing xh264, and sinks ???. Has raw, default Orbbec, webcams.
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run autonomy_vision multi_camera_streamer
+```
+
 ## IP Camera
 Note: IP Camera is set to static at 192.168.117 and I think it's network is 192.168.1.0/24 from other users' comments.
 Can change IP and change from static to DHCP (auto) at [its setting page](http://192.168.1.117)
@@ -251,6 +261,13 @@ Object Detection Node **In progress, currently 1-5FPS**
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 ros2 run autonomy_vision webcam_detection2D
+```
+
+Gstreamer based gstreamer
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run autonomy_vision multi_camera_streamer
 ```
 
 Other available executables:
