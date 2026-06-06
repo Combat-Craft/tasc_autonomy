@@ -1,0 +1,239 @@
+[0.340s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-skip', 'gps_tracker']
+[0.340s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=6, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=['gps_tracker'], packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0xffffb882f100>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0xffffb8c43a30>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0xffffb8c43a30>>, mixin_verb=('build',))
+[0.823s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.823s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.823s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.823s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.823s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.824s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.824s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/tasc/autonav_merge2/src/tasc_autonomy'
+[0.824s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.824s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.824s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.824s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.825s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.825s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.825s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.825s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.825s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.851s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.851s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.851s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.851s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.851s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.852s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extensions ['ignore', 'ignore_ament_install']
+[0.852s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extension 'ignore'
+[0.852s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extension 'ignore_ament_install'
+[0.852s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extensions ['colcon_pkg']
+[0.852s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extension 'colcon_pkg'
+[0.852s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extensions ['colcon_meta']
+[0.853s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extension 'colcon_meta'
+[0.853s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extensions ['ros']
+[0.853s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_bringup) by extension 'ros'
+[0.858s] DEBUG:colcon.colcon_core.package_identification:Package 'autonomy_bringup' with type 'ros.ament_python' and name 'autonomy_bringup'
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extensions ['ignore', 'ignore_ament_install']
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extension 'ignore'
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extension 'ignore_ament_install'
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extensions ['colcon_pkg']
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extension 'colcon_pkg'
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extensions ['colcon_meta']
+[0.859s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extension 'colcon_meta'
+[0.860s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extensions ['ros']
+[0.860s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_sensors) by extension 'ros'
+[0.861s] DEBUG:colcon.colcon_core.package_identification:Package 'autonomy_sensors' with type 'ros.ament_python' and name 'autonomy_sensors'
+[0.861s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extensions ['ignore', 'ignore_ament_install']
+[0.861s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extension 'ignore'
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extension 'ignore_ament_install'
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extensions ['colcon_pkg']
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extension 'colcon_pkg'
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extensions ['colcon_meta']
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extension 'colcon_meta'
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extensions ['ros']
+[0.862s] Level 1:colcon.colcon_core.package_identification:_identify(autonomy_vision) by extension 'ros'
+[0.868s] DEBUG:colcon.colcon_core.package_identification:Package 'autonomy_vision' with type 'ros.ament_python' and name 'autonomy_vision'
+[0.869s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.869s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.869s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.869s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extensions ['ignore', 'ignore_ament_install']
+[0.869s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extension 'ignore'
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extension 'ignore_ament_install'
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extensions ['colcon_pkg']
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extension 'colcon_pkg'
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extensions ['colcon_meta']
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extension 'colcon_meta'
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extensions ['ros']
+[0.870s] Level 1:colcon.colcon_core.package_identification:_identify(gps_tracker) by extension 'ros'
+[0.872s] DEBUG:colcon.colcon_core.package_identification:Package 'gps_tracker' with type 'ros.ament_cmake' and name 'gps_tracker'
+[0.872s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.872s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.872s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.873s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.873s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.873s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.873s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extensions ['ignore', 'ignore_ament_install']
+[0.873s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'ignore'
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'ignore_ament_install'
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extensions ['colcon_pkg']
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'colcon_pkg'
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extensions ['colcon_meta']
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'colcon_meta'
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extensions ['ros']
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'ros'
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extensions ['cmake', 'python']
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'cmake'
+[0.874s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'python'
+[0.875s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extensions ['python_setup_py']
+[0.875s] Level 1:colcon.colcon_core.package_identification:_identify(test) by extension 'python_setup_py'
+[0.875s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.875s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.875s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.875s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.875s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.920s] INFO:colcon.colcon_core.package_selection:Skipping package 'gps_tracker' in 'gps_tracker'
+[0.921s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.922s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.926s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 4 installed packages in /home/tasc/autonav_merge2/install
+[0.928s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 5 installed packages in /home/tasc/asimov/install
+[0.931s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 347 installed packages in /opt/ros/humble
+[0.934s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'cmake_args' from command line to 'None'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'cmake_target' from command line to 'None'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'cmake_clean_cache' from command line to 'False'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'cmake_clean_first' from command line to 'False'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'cmake_force_configure' from command line to 'False'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'ament_cmake_args' from command line to 'None'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'catkin_cmake_args' from command line to 'None'
+[1.032s] Level 5:colcon.colcon_core.verb:set package 'autonomy_bringup' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.032s] DEBUG:colcon.colcon_core.verb:Building package 'autonomy_bringup' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup', 'merge_install': False, 'path': '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup', 'symlink_install': False, 'test_result_base': None}
+[1.033s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'cmake_args' from command line to 'None'
+[1.033s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'cmake_target' from command line to 'None'
+[1.033s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.033s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'cmake_clean_cache' from command line to 'False'
+[1.033s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'cmake_clean_first' from command line to 'False'
+[1.033s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'cmake_force_configure' from command line to 'False'
+[1.034s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'ament_cmake_args' from command line to 'None'
+[1.034s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'catkin_cmake_args' from command line to 'None'
+[1.034s] Level 5:colcon.colcon_core.verb:set package 'autonomy_sensors' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.034s] DEBUG:colcon.colcon_core.verb:Building package 'autonomy_sensors' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors', 'merge_install': False, 'path': '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_sensors', 'symlink_install': False, 'test_result_base': None}
+[1.034s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'cmake_args' from command line to 'None'
+[1.034s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'cmake_target' from command line to 'None'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'cmake_clean_cache' from command line to 'False'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'cmake_clean_first' from command line to 'False'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'cmake_force_configure' from command line to 'False'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'ament_cmake_args' from command line to 'None'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'catkin_cmake_args' from command line to 'None'
+[1.035s] Level 5:colcon.colcon_core.verb:set package 'autonomy_vision' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.035s] DEBUG:colcon.colcon_core.verb:Building package 'autonomy_vision' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision', 'merge_install': False, 'path': '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision', 'symlink_install': False, 'test_result_base': None}
+[1.035s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[1.037s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[1.038s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup' with build type 'ament_python'
+[1.039s] Level 1:colcon.colcon_core.shell:create_environment_hook('autonomy_bringup', 'ament_prefix_path')
+[1.043s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.044s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/hook/ament_prefix_path.ps1'
+[1.045s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/hook/ament_prefix_path.dsv'
+[1.047s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/hook/ament_prefix_path.sh'
+[1.048s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.048s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.057s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_sensors' with build type 'ament_python'
+[1.058s] Level 1:colcon.colcon_core.shell:create_environment_hook('autonomy_sensors', 'ament_prefix_path')
+[1.058s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/hook/ament_prefix_path.ps1'
+[1.060s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/hook/ament_prefix_path.dsv'
+[1.060s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/hook/ament_prefix_path.sh'
+[1.062s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.062s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.070s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision' with build type 'ament_python'
+[1.070s] Level 1:colcon.colcon_core.shell:create_environment_hook('autonomy_vision', 'ament_prefix_path')
+[1.071s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/hook/ament_prefix_path.ps1'
+[1.072s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/hook/ament_prefix_path.dsv'
+[1.073s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/hook/ament_prefix_path.sh'
+[1.074s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.074s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.757s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup'
+[1.758s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.758s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.452s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_sensors'
+[2.453s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.453s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[3.156s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision'
+[3.157s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[3.157s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[4.115s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_vision build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/install.log --single-version-externally-managed install_data
+[4.143s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_bringup build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/install.log --single-version-externally-managed install_data
+[4.147s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_sensors': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_sensors build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors/install.log --single-version-externally-managed install_data
+[4.938s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision' returned '0': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_vision build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/install.log --single-version-externally-managed install_data
+[4.944s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision' for CMake module files
+[4.945s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision' for CMake config files
+[4.947s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib'
+[4.948s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/bin'
+[4.948s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/pkgconfig/autonomy_vision.pc'
+[4.949s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages'
+[4.949s] Level 1:colcon.colcon_core.shell:create_environment_hook('autonomy_vision', 'pythonpath')
+[4.950s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/hook/pythonpath.ps1'
+[4.951s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/hook/pythonpath.dsv'
+[4.952s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/hook/pythonpath.sh'
+[4.953s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/bin'
+[4.954s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(autonomy_vision)
+[4.954s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/package.ps1'
+[4.956s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/package.dsv'
+[4.958s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/package.sh'
+[4.960s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/package.bash'
+[4.961s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/package.zsh'
+[4.963s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/colcon-core/packages/autonomy_vision)
+[4.968s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors' for CMake module files
+[4.970s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_sensors' returned '0': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_sensors build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_sensors/install.log --single-version-externally-managed install_data
+[4.970s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors' for CMake config files
+[4.972s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/lib'
+[4.973s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/bin'
+[4.973s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/lib/pkgconfig/autonomy_sensors.pc'
+[4.974s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/lib/python3.10/site-packages'
+[4.974s] Level 1:colcon.colcon_core.shell:create_environment_hook('autonomy_sensors', 'pythonpath')
+[4.975s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/hook/pythonpath.ps1'
+[4.977s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/hook/pythonpath.dsv'
+[4.978s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/hook/pythonpath.sh'
+[4.979s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/bin'
+[4.980s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(autonomy_sensors)
+[4.981s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/package.ps1'
+[4.982s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/package.dsv'
+[4.983s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/package.sh'
+[4.985s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/package.bash'
+[4.986s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/autonomy_sensors/package.zsh'
+[4.987s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_sensors/share/colcon-core/packages/autonomy_sensors)
+[4.988s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup' for CMake module files
+[4.991s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup' returned '0': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_bringup build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/install.log --single-version-externally-managed install_data
+[4.991s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup' for CMake config files
+[4.993s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib'
+[4.993s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/bin'
+[4.993s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/pkgconfig/autonomy_bringup.pc'
+[4.994s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages'
+[4.994s] Level 1:colcon.colcon_core.shell:create_environment_hook('autonomy_bringup', 'pythonpath')
+[4.995s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/hook/pythonpath.ps1'
+[4.996s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/hook/pythonpath.dsv'
+[4.997s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/hook/pythonpath.sh'
+[4.999s] Level 1:colcon.colcon_core.environment:checking '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/bin'
+[4.999s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(autonomy_bringup)
+[5.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/package.ps1'
+[5.001s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/package.dsv'
+[5.003s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/package.sh'
+[5.004s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/package.bash'
+[5.005s] INFO:colcon.colcon_core.shell:Creating package script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/autonomy_bringup/package.zsh'
+[5.006s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/share/colcon-core/packages/autonomy_bringup)
+[5.007s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[5.007s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[5.008s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[5.008s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[5.024s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[5.024s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[5.024s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[5.051s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[5.052s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/local_setup.ps1'
+[5.055s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/tasc/autonav_merge2/src/tasc_autonomy/install/_local_setup_util_ps1.py'
+[5.059s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/setup.ps1'
+[5.063s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/local_setup.sh'
+[5.065s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/tasc/autonav_merge2/src/tasc_autonomy/install/_local_setup_util_sh.py'
+[5.067s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/setup.sh'
+[5.071s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/local_setup.bash'
+[5.072s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/setup.bash'
+[5.076s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/local_setup.zsh'
+[5.077s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/tasc/autonav_merge2/src/tasc_autonomy/install/setup.zsh'

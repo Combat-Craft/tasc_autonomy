@@ -1,0 +1,68 @@
+[3.045s] Invoking command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_vision build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/install.log --single-version-externally-managed install_data
+[3.687s] running egg_info
+[3.689s] creating ../build/autonomy_vision/autonomy_vision.egg-info
+[3.689s] writing ../build/autonomy_vision/autonomy_vision.egg-info/PKG-INFO
+[3.690s] writing dependency_links to ../build/autonomy_vision/autonomy_vision.egg-info/dependency_links.txt
+[3.690s] writing entry points to ../build/autonomy_vision/autonomy_vision.egg-info/entry_points.txt
+[3.690s] writing requirements to ../build/autonomy_vision/autonomy_vision.egg-info/requires.txt
+[3.691s] writing top-level names to ../build/autonomy_vision/autonomy_vision.egg-info/top_level.txt
+[3.691s] writing manifest file '../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[3.696s] reading manifest file '../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[3.698s] writing manifest file '../build/autonomy_vision/autonomy_vision.egg-info/SOURCES.txt'
+[3.698s] running build
+[3.698s] running build_py
+[3.699s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build
+[3.699s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib
+[3.699s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.699s] copying autonomy_vision/multi_camera_streamer_old.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.700s] copying autonomy_vision/multi_camera_streamer.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.700s] copying autonomy_vision/yolo_depth_v1.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.700s] copying autonomy_vision/motor_input.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.701s] copying autonomy_vision/morse_code_detector.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.701s] copying autonomy_vision/motor_controller.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.702s] copying autonomy_vision/webcam_detection2D.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.702s] copying autonomy_vision/__init__.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.702s] copying autonomy_vision/yolo_pc.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision
+[3.703s] running install
+[3.704s] running install_lib
+[3.706s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.706s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/multi_camera_streamer_old.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.706s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/multi_camera_streamer.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.706s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/yolo_depth_v1.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.707s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/motor_input.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.707s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/morse_code_detector.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.707s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/motor_controller.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.707s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/webcam_detection2D.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.708s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/__init__.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.708s] copying /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build/lib/autonomy_vision/yolo_pc.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision
+[3.709s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/multi_camera_streamer_old.py to multi_camera_streamer_old.cpython-310.pyc
+[3.712s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/multi_camera_streamer.py to multi_camera_streamer.cpython-310.pyc
+[3.714s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/yolo_depth_v1.py to yolo_depth_v1.cpython-310.pyc
+[3.716s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/motor_input.py to motor_input.cpython-310.pyc
+[3.717s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/morse_code_detector.py to morse_code_detector.cpython-310.pyc
+[3.723s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/motor_controller.py to motor_controller.cpython-310.pyc
+[3.724s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/webcam_detection2D.py to webcam_detection2D.cpython-310.pyc
+[3.727s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/__init__.py to __init__.cpython-310.pyc
+[3.728s] byte-compiling /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision/yolo_pc.py to yolo_pc.cpython-310.pyc
+[3.730s] running install_data
+[3.730s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/ament_index
+[3.731s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/ament_index/resource_index
+[3.731s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/ament_index/resource_index/packages
+[3.731s] copying resource/autonomy_vision -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/ament_index/resource_index/packages
+[3.731s] copying package.xml -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision
+[3.732s] creating /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/launch
+[3.732s] copying launch/gemini2_edited2.launch.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/launch
+[3.732s] copying launch/vision.launch.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/launch
+[3.732s] copying launch/motor.launch.py -> /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/share/autonomy_vision/launch
+[3.733s] running install_egg_info
+[3.737s] Copying ../build/autonomy_vision/autonomy_vision.egg-info to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages/autonomy_vision-0.0.0-py3.10.egg-info
+[3.739s] running install_scripts
+[3.787s] Installing morse_code_detector script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.788s] Installing motor_controller script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.788s] Installing motor_input script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.788s] Installing multi_camera_streamer script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.788s] Installing webcam_detection2D script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.789s] Installing yolo_depth_v1 script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.789s] Installing yolo_pc script to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/autonomy_vision
+[3.790s] writing list of installed files to '/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/install.log'
+[3.867s] Invoked command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_vision' returned '0': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_vision/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_vision build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_vision/install.log --single-version-externally-managed install_data

@@ -1,0 +1,22 @@
+[ 50%] Built target route_logger
+[100%] Built target fake_gps
+-- Install configuration: ""
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/lib/gps_tracker/fake_gps
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/lib/gps_tracker/route_logger
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker//launch
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker//launch/gps_tracker.launch.py
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/ament_index/resource_index/package_run_dependencies/gps_tracker
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/ament_index/resource_index/parent_prefix_path/gps_tracker
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/environment/ament_prefix_path.sh
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/environment/path.sh
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/environment/path.dsv
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/local_setup.bash
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/local_setup.sh
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/local_setup.zsh
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/local_setup.dsv
+-- Installing: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/package.dsv
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/ament_index/resource_index/packages/gps_tracker
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/cmake/gps_trackerConfig.cmake
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/cmake/gps_trackerConfig-version.cmake
+-- Up-to-date: /home/tasc/autonav_merge2/src/tasc_autonomy/install/gps_tracker/share/gps_tracker/package.xml

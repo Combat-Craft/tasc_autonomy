@@ -1,0 +1,21 @@
+[3.258s] Invoking command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_bringup build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/install.log --single-version-externally-managed install_data
+[3.941s] running egg_info
+[3.943s] writing ../build/autonomy_bringup/autonomy_bringup.egg-info/PKG-INFO
+[3.946s] writing dependency_links to ../build/autonomy_bringup/autonomy_bringup.egg-info/dependency_links.txt
+[3.948s] writing entry points to ../build/autonomy_bringup/autonomy_bringup.egg-info/entry_points.txt
+[3.950s] writing requirements to ../build/autonomy_bringup/autonomy_bringup.egg-info/requires.txt
+[3.951s] writing top-level names to ../build/autonomy_bringup/autonomy_bringup.egg-info/top_level.txt
+[3.953s] reading manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+[3.955s] adding license file 'LICENSE'
+[3.955s] writing manifest file '../build/autonomy_bringup/autonomy_bringup.egg-info/SOURCES.txt'
+[3.956s] running build
+[3.956s] running build_py
+[3.958s] running install
+[3.962s] running install_lib
+[3.962s] running install_data
+[3.964s] running install_egg_info
+[3.965s] removing '/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup-0.0.0-py3.10.egg-info' (and everything under it)
+[3.965s] Copying ../build/autonomy_bringup/autonomy_bringup.egg-info to /home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages/autonomy_bringup-0.0.0-py3.10.egg-info
+[3.967s] running install_scripts
+[4.023s] writing list of installed files to '/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/install.log'
+[4.136s] Invoked command in '/home/tasc/autonav_merge2/src/tasc_autonomy/autonomy_bringup' returned '0': PYTHONPATH=/home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/tasc/autonav_merge2/src/tasc_autonomy/install/autonomy_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/autonomy_bringup build --build-base /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/build install --record /home/tasc/autonav_merge2/src/tasc_autonomy/build/autonomy_bringup/install.log --single-version-externally-managed install_data
