@@ -21,6 +21,19 @@ orbbec_gemini2/
     └── cpp_node.cpp
 ```
 
+## Running and Build
+
+Go cd to your main workspace folder, it holds src, build, install, etc
+```bash
+cd ~autonav_ws/
+```
+Colcon build
+```bash
+colcon build --packages-select orbbec_gemini2
+```
+
+if you need any depencies, use rosdep
+
 ## Goals
 
 Eventually, going to combine this with autonomy vision. but that's later, since I want to orbbec SDK dev and gstreamer/camera general stuff to work simulataneously withouth merge conflicts mucking around
