@@ -1,9 +1,7 @@
 # gps_tracker
-hi
+ROS 2 package for GPS source testing and route logging.
 
-Subscribes to `/gps/fix` and logs an accumulated path to `/gps/path`.
-
-For real GPS data, use `gps_imu_broadcaster` from `autonomy_sensors` it handles the ESP32 serial connection and publishes `/gps/fix` + `/imu/data_raw`
+It can publish fake GPS waypoints, synthesize GPS from IP geolocation, or use the real ESP32 GPS/IMU serial node from `autonomy_sensors`. It also subscribes to `/gps/fix` and logs an accumulated path to `/gps/path`.
 
 ---
 
@@ -11,7 +9,7 @@ For real GPS data, use `gps_imu_broadcaster` from `autonomy_sensors` it handles 
 
 ```bash
 cd ~/ros2_ws
-colcon build --packages-select gps_tracker
+colcon build --packages-select autonomy_sensors gps_tracker
 source install/setup.bash
 ```
 
@@ -30,7 +28,7 @@ ros2 launch gps_tracker gps_tracker.launch.py mode:=ip
 ```
 
 ### real — live ESP32 GPS via gps_imu_broadcaster
-Run `gps_imu_broadcaster` from `autonomy_sensors` separately, then:
+Launch the real serial GPS node through this package:
 ```bash
 ros2 launch gps_tracker gps_tracker.launch.py mode:=real port:=/dev/ttyUSB0
 ```
@@ -54,6 +52,8 @@ ros2 launch gps_tracker gps_tracker.launch.py mode:=real port:=/dev/ttyUSB0
 
 | `/gps/fix`  Raw GPS fix (input) 
 | `/gps/path` Accumulated path in local x/y metres (output) 
+
+In `mode:=real`, `/imu/data_raw` is also published by `autonomy_sensors/gps_imu_broadcaster`.
 
 ---
 

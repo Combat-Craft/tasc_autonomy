@@ -62,16 +62,16 @@ def generate_launch_description():
     )
 
     real_gps_node = Node(
-        package='gps_tracker',
-        executable='real_gps',
-        name='gps_publisher',
+        package='autonomy_sensors',
+        executable='gps_imu_broadcaster',
+        name='gps_imu_broadcaster',
         output='screen',
         condition=is_real,
         parameters=[{
             'port': port,
-            'baudrate': baudrate,
-            'min_sats': 4,
-            'max_hdop': 3.0,
+            'baud': baudrate,
+            'frame_id_imu': 'imu_link',
+            'frame_id_gps': 'gps_link',
         }]
     )
 

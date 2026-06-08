@@ -11,7 +11,7 @@ class IPGPSPublisher(Node):
     """
     Publishes a NavSatFix derived from your machine's IP geolocation.
     Accuracy is city/neighbourhood level (~1-5 km). Good for pipeline testing.
-    Generates a small simulated walk around the detected location.
+    Generates a small square walk around the detected location.
     """
 
     def __init__(self):
@@ -28,8 +28,7 @@ class IPGPSPublisher(Node):
         lat, lon = self._fetch_location()
         self.get_logger().info(f'IP location: {lat:.5f}, {lon:.5f}')
 
-        # Build a small rectangular walk around the detected point
-        # step_m metres converted to degrees (approx)
+        # Build a small square walk around the detected point
         d_lat = step_m / 111111.0
         d_lon = step_m / (111111.0 * math.cos(math.radians(lat)))
 
@@ -79,7 +78,6 @@ class IPGPSPublisher(Node):
         msg.altitude  = 100.0
         msg.status.status  = 0
         msg.status.service = 1
-        # Covariance reflects IP accuracy (~2500 m^2 horizontal)
         msg.position_covariance = [2500.0, 0.0, 0.0, 0.0, 2500.0, 0.0, 0.0, 0.0, 9999.0]
         msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
 
