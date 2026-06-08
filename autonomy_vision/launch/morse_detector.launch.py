@@ -11,13 +11,8 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'camera_index': 0,
-            'roi_x': 0,
-            'roi_y': 0,
-            'roi_w': 0,
-            'roi_h': 0,
             'threshold_percentile': 85.0,
             'min_bright_fraction': 0.01,
-            'initial_dot_s': 0.15,
             'publish_hz': 10.0
         }]
     )
