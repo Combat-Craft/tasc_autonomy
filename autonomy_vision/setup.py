@@ -31,12 +31,15 @@ setup(
             'yolo_depth_v1 = autonomy_vision.yolo_depth_v1:main',
             # 'yolo_depth_v2 = autonomy_vision.yolo_depth_v2:main',
             'webcam_detection2D = autonomy_vision.webcam_detection2D:main',
+            
             'morse_code_detector = autonomy_vision.morse_code_detector:main',
+            
             'multi_camera_streamer = autonomy_vision.multi_camera_streamer:main',
+            'h265_camera_streamer = autonomy_vision.h265_camera_streamer:main',
+            
             'motor_controller = autonomy_vision.motor_controller:main',
             'motor_input = autonomy_vision.motor_input:main',
-
-            
+          
         ],
     },
 )
