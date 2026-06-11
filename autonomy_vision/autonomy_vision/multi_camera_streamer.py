@@ -86,7 +86,7 @@ class MultiCameraStreamer(Node):
             sink.set_property("max-buffers", 1) # 0=unlimited
             sink.set_property("max-time", 100000000) # 0=unlimited, in ns, set to 0.1s for now
             sink.set_property("leaky-type", 2) # drops old buffers when it fills
-            # sink.set_property("drop", True) # property doesnt seem to exist?
+            sink.set_property("drop", True)
             sink.set_property("sync", False)
 
             sink.connect(
