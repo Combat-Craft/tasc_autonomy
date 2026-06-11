@@ -19,16 +19,7 @@ class MultiCameraStreamer(Node):
         encoder_block = self._select_h264_encoder_block()
 
         self.cameras = {
-            "arm_cam": {
-                "pipeline":
-                "v4l2src device=/dev/video0 ! "
-                "videoconvert ! "
-                f"{encoder_block}"
-                "video/x-h264,stream-format=byte-stream,alignment=au ! "
-                "appsink name={sink_name} emit-signals=true sync=false drop=true",
-                "topic": "/arm_cam/h264"
-            },
-                "orbecc_cam": {
+            "orbec_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video8 ! "
                 "videoconvert ! "
@@ -37,7 +28,19 @@ class MultiCameraStreamer(Node):
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/orbecc_cam/h264"
             },
-                "test_cam": {
+         
+            "arm_cam": {
+                "pipeline":
+                "v4l2src device=/dev/video0 ! "
+                "video/x-raw, format=YUY2, width=640, height=480, framerate=30/1" # can be others, test and list here later
+                "videoconvert ! "
+                f"{encoder_block}"
+                "video/x-h264,stream-format=byte-stream,alignment=au ! "
+                "appsink name={sink_name} emit-signals=true sync=false drop=true",
+                "topic": "/arm_cam/h264"
+            },
+            
+            "back_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video2 ! "
                 "image/jpeg,width=640,height=480,framerate=30/1 ! "
@@ -47,7 +50,9 @@ class MultiCameraStreamer(Node):
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
-                "topic": "/test_cam/h264"}
+                "topic": "/back_cam/h264"
+            },
+            #"ip_cam": {
             #     "pipeline":
             #     "rtspsrc location=rtsp://admin:@192.168.1.117:8554/profile0 "
             #     "protocols=tcp latency=50 ! "
@@ -97,8 +102,8 @@ class MultiCameraStreamer(Node):
 
     def _select_h264_encoder_block(self):
         # Pick the first available encoder so the node can run across systems.
-        candidates = [
-            ("x264enc", "x264enc tune=zerolatency speed-preset=ultrafast bitrate=1024 ! "),
+        candidates = [ 
+            ("x264enc", "x264enc tune=zerolatency speed-preset=ultrafast pass=pass1 bitrate=512 ! "), #pass 1 is VBR
             ("avenc_h264_omx", "avenc_h264_omx bitrate=2000000 ! "),
         ]
 
