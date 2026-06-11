@@ -22,6 +22,8 @@ class MultiCameraStreamer(Node):
             "orbec_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video8 ! "
+                # might be cap selectable? check with
+                # v4l2-ctl --list-formats-ext –all --device /dev/video0
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
@@ -32,19 +34,18 @@ class MultiCameraStreamer(Node):
             "arm_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video0 ! "
-                "video/x-raw, format=YUY2, width=640, height=480, framerate=30/1" # can be others, test and list here later
+                "video/x-raw, format=YUY2, width=640, height=480, framerate=30/1" # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/arm_cam/h264"
             },
-            
+
             "back_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video2 ! "
-                "image/jpeg,width=640,height=480,framerate=30/1 ! "
-                "jpegparse ! "
+                "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
                 "jpegdec ! "
                 "videoconvert ! "
                 f"{encoder_block}"
@@ -52,9 +53,11 @@ class MultiCameraStreamer(Node):
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/back_cam/h264"
             },
+
+            # REMEMBER TO SET CAMERA TO H264
             #"ip_cam": {
             #     "pipeline":
-            #     "rtspsrc location=rtsp://admin:@192.168.1.117:8554/profile0 "
+            #     "rtspsrc location=rtsp://admin:@192.168.1.117:8554/profile1 "
             #     "protocols=tcp latency=50 ! "
             #     "rtph264depay ! "
             #     "h264parse ! "
@@ -80,8 +83,10 @@ class MultiCameraStreamer(Node):
             pipeline = Gst.parse_launch(config["pipeline"].format(sink_name=f"sink{i}"))
 
             sink = pipeline.get_by_name(f"sink{i}")
-            sink.set_property("max-buffers", 1)
-            sink.set_property("drop", True)
+            sink.set_property("max-buffers", 1) # 0=unlimited
+            sink.set_property("max-time", 100000000) # 0=unlimited, in ns, set to 0.1s for now
+            sink.set_property("leaky-type", 2) # drops old buffers when it fills
+            # sink.set_property("drop", True) # property doesnt seem to exist?
             sink.set_property("sync", False)
 
             sink.connect(
