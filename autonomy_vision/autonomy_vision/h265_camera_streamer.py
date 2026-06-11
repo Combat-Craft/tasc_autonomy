@@ -10,10 +10,10 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 
 
-class MultiCameraStreamer(Node):
+class MultiCameraStreamer265(Node):
 
     def __init__(self):
-        super().__init__('multi_camera_streamer')
+        super().__init__('h265_camera_streamer')
 
         Gst.init(None)
         encoder_block = self._select_h265_encoder_block()
@@ -136,7 +136,7 @@ class MultiCameraStreamer(Node):
 
         msg = CompressedVideo()
         msg.timestamp = self.get_clock().now().to_msg()
-        msg.format = "h264"
+        msg.format = "h265"
         msg.data = bytes(map_info.data)
 
         self.camera_publishers[cam].publish(msg)
@@ -176,7 +176,7 @@ def main():
 
     rclpy.init()
 
-    node = MultiCameraStreamer()
+    node = MultiCameraStreamer265()
 
     rclpy.spin(node)
 
