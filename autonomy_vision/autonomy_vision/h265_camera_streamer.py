@@ -21,12 +21,13 @@ class MultiCameraStreamer265(Node):
         self.cameras = {
             "orbec_cam": {
                 "pipeline":
-                "v4l2src device=/dev/video8 ! "
-                # might be cap selectable? check with
-                # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                "v4l2src device=/dev/orbbec_color_cam ! "
+                "video/x-raw, format=YUY2 ,width=1280,height=720,framerate=30/1 ! "
+                #"image/jpeg,width=1280,height=720,framerate=30/1 ! "
+                #"jpegdec ! "
                 "videoconvert ! "
                 f"{encoder_block}"
-                "video/x-h265,stream-format=hvc1,alignment=au ! " 
+                "video/x-h265,alignment=au ! " #stream-format=hvc1,
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/orbecc_cam/h265"
             },
@@ -34,23 +35,26 @@ class MultiCameraStreamer265(Node):
          
             "arm_cam": {
                 "pipeline":
-                "v4l2src device=/dev/video0 ! "
-                "video/x-raw, format=YUY2, width=640, height=480, framerate=30/1" # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                "v4l2src device=/dev/mina_cam ! "
+                "video/x-raw, format=YUY2 ,width=1280,height=720,framerate=30/1 ! "
+                #"image/jpeg,width=640,height=480,framerate=30/1 ! " 
+                #"jpegdec ! "
                 "videoconvert ! "
                 f"{encoder_block}"
-                "video/x-h265,stream-format=hvc1,alignment=au ! " 
+                "video/x-h265,alignment=au ! " #stream-format=hvc1,
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/arm_cam/h265"
             },
 
             "back_cam": {
                 "pipeline":
-                "v4l2src device=/dev/video2 ! "
-                "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
-                "jpegdec ! "
+                "v4l2src device=/dev/back_web_cam ! "
+                "video/x-raw, format=YUY2 ,width=1280,height=720,framerate=30/1 ! "
+                #"image/jpeg,width=640,height=480,framerate=30/1 ! " 
+                #"jpegdec ! "
                 "videoconvert ! "
                 f"{encoder_block}"
-                "video/x-h265,stream-format=hvc1,alignment=au ! " 
+                "video/x-h265,alignment=au ! " #stream-format=hvc1,
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/back_cam/h265"
             },
@@ -85,8 +89,7 @@ class MultiCameraStreamer265(Node):
 
             sink = pipeline.get_by_name(f"sink{i}")
             sink.set_property("max-buffers", 1) # 0=unlimited
-            sink.set_property("max-time", 100000000) # 0=unlimited, in ns, set to 0.1s for now
-            sink.set_property("leaky-type", 2) # drops old buffers when it fills
+            #sink.set_property("max-time", 100000000) # 0=unlimited, in ns, set to 0.1s for now
             sink.set_property("drop", True) # property doesnt seem to exist?
             sink.set_property("sync", False)
 
@@ -106,7 +109,7 @@ class MultiCameraStreamer265(Node):
 
         self.create_timer(1.0, self._report_pipeline_health)
 
-     def _select_h265_encoder_block(self):
+    def _select_h265_encoder_block(self):
         # Pick the first available encoder so the node can run across systems.
         candidates = [
             ("x265enc", "x265enc tune=zerolatency speed-preset=ultrafast bitrate=512 ! ")

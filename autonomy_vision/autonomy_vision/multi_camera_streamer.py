@@ -24,8 +24,9 @@ class MultiCameraStreamer(Node):
             "orbec_cam": {
                 "pipeline":
                 "v4l2src device=/dev/orbbec_color_cam ! "
-                # might be cap selectable? check with
-                # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                "video/x-raw, format=YUY2 ,width=1280,height=720,framerate=30/1 ! "
+                #"image/jpeg,width=1280,height=720,framerate=30/1 ! "
+                #"jpegdec ! "
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
@@ -36,8 +37,9 @@ class MultiCameraStreamer(Node):
             "arm_cam": {
                 "pipeline":
                 "v4l2src device=/dev/mina_cam ! "
-                "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
-                "jpegdec ! " 
+                "video/x-raw, format=YUY2 ,width=640,height=480,framerate=30/1 ! "
+                #"image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                #"jpegdec ! " 
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
@@ -48,8 +50,9 @@ class MultiCameraStreamer(Node):
             "back_cam": {
                 "pipeline":
                 "v4l2src device=/dev/back_web_cam ! "
-                "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
-                "jpegdec ! "
+                "video/x-raw, format=YUY2 ,width=640,height=480,framerate=30/1 ! "
+               # "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                #"jpegdec ! "
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
@@ -112,7 +115,7 @@ class MultiCameraStreamer(Node):
         # Pick the first available encoder so the node can run across systems.
         candidates = [ 
             ("x264enc", "x264enc tune=zerolatency speed-preset=ultrafast pass=pass1 bitrate=512 ! "), #pass 1 is VBR
-            ("avenc_h264_omx", "avenc_h264_omx bitrate=2000000 ! "),
+            #("avenc_h264_omx", "avenc_h264_omx bitrate=2000000 ! "),
         ]
 
         for element_name, encoder_block in candidates:
