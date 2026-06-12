@@ -19,6 +19,59 @@ class MultiCameraStreamer(Node):
         encoder_block = self._select_h264_encoder_block()
 
         self.cameras = {
+
+            '''
+            YUYV' (YUYV 4:2:2)
+                Size: Discrete 640x360
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+                Size: Discrete 1280x720
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+                Size: Discrete 1920x1080
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+        [1]: 'MJPG' (Motion-JPEG, compressed)
+                Size: Discrete 640x360
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+                Size: Discrete 1280x720
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+                Size: Discrete 1920x1080
+                        Interval: Discrete 0.017s (60.000 fps)
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                        Interval: Discrete 0.200s (5.000 fps)
+            '''
             "orbec_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video8 ! "
@@ -30,7 +83,43 @@ class MultiCameraStreamer(Node):
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/orbecc_cam/h264"
             },
-         
+            '''
+            'MJPG' (Motion-JPEG, compressed)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                Size: Discrete 1280x720
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                Size: Discrete 1920x1080
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+        [1]: 'YUYV' (YUYV 4:2:2)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                Size: Discrete 1280x720
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+        [2]: 'H264' (H.264, compressed)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                Size: Discrete 1280x720
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+                Size: Discrete 1920x1080
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.067s (15.000 fps)
+                        Interval: Discrete 0.100s (10.000 fps)
+            '''
             "arm_cam": {
                 "pipeline":
                 "v4l2src device=/dev/video0 ! "
@@ -41,6 +130,33 @@ class MultiCameraStreamer(Node):
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/arm_cam/h264"
             },
+            '''
+            0]: 'MJPG' (Motion-JPEG, compressed)
+                Size: Discrete 1920x1080
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.040s (25.000 fps)
+                Size: Discrete 1280x720
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.040s (25.000 fps)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.040s (25.000 fps)
+                Size: Discrete 640x360
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.040s (25.000 fps)
+                Size: Discrete 352x288
+                        Interval: Discrete 0.033s (30.000 fps)
+                        Interval: Discrete 0.040s (25.000 fps)
+        [1]: 'YUYV' (YUYV 4:2:2)
+                Size: Discrete 640x480
+                        Interval: Discrete 0.033s (30.000 fps)
+                Size: Discrete 640x360
+                        Interval: Discrete 0.033s (30.000 fps)
+                Size: Discrete 352x288
+                        Interval: Discrete 0.033s (30.000 fps)
+                Size: Discrete 320x240
+                        Interval: Discrete 0.033s (30.000 fps)
+            '''
 
             "back_cam": {
                 "pipeline":
@@ -84,8 +200,8 @@ class MultiCameraStreamer(Node):
 
             sink = pipeline.get_by_name(f"sink{i}")
             sink.set_property("max-buffers", 1) # 0=unlimited
-            sink.set_property("max-time", 100000000) # 0=unlimited, in ns, set to 0.1s for now
-            sink.set_property("leaky-type", 2) # drops old buffers when it fills
+            #sink.set_property("max-time", 100000000) # 0=unlimited, in ns, set to 0.1s for now
+            #sink.set_property("leaky-type", 2) # drops old buffers when it fills
             sink.set_property("drop", True)
             sink.set_property("sync", False)
 
