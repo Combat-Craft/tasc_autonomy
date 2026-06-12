@@ -1,0 +1,18 @@
+{
+    "configurations": [
+    {
+        "name": "Linux",
+        "includePath": [
+            "${workspaceFolder}/**",
+            "/home/raybans123/Downloads/OrbbecSDK_v2.8.6_202604271452_6399409_linux_x86_64/include",
+            "/usr/include/opencv4"
+        ],
+        "defines": [],
+        "compilerPath": "/usr/bin/g++",
+        "cStandard": "c17",
+        "cppStandard": "c++11",
+        "intelliSenseMode": "linux-gcc-x64"
+    }
+    ],
+    "version": 4
+}
