@@ -20,61 +20,10 @@ class MultiCameraStreamer(Node):
 
         self.cameras = {
 
-            '''
-            YUYV' (YUYV 4:2:2)
-                Size: Discrete 640x360
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-                Size: Discrete 1280x720
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-                Size: Discrete 1920x1080
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-        [1]: 'MJPG' (Motion-JPEG, compressed)
-                Size: Discrete 640x360
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-                Size: Discrete 1280x720
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-                Size: Discrete 1920x1080
-                        Interval: Discrete 0.017s (60.000 fps)
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                        Interval: Discrete 0.200s (5.000 fps)
-            '''
+            
             "orbec_cam": {
                 "pipeline":
-                "v4l2src device=/dev/video8 ! "
+                "v4l2src device=/dev/orbbec_color_cam ! "
                 # might be cap selectable? check with
                 # v4l2-ctl --list-formats-ext –all --device /dev/video0
                 "videoconvert ! "
@@ -83,84 +32,22 @@ class MultiCameraStreamer(Node):
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/orbecc_cam/h264"
             },
-            '''
-            'MJPG' (Motion-JPEG, compressed)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                Size: Discrete 1280x720
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                Size: Discrete 1920x1080
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-        [1]: 'YUYV' (YUYV 4:2:2)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                Size: Discrete 1280x720
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-        [2]: 'H264' (H.264, compressed)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                Size: Discrete 1280x720
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-                Size: Discrete 1920x1080
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.067s (15.000 fps)
-                        Interval: Discrete 0.100s (10.000 fps)
-            '''
+            
             "arm_cam": {
                 "pipeline":
-                "v4l2src device=/dev/video0 ! "
-                "video/x-raw, format=YUY2, width=640, height=480, framerate=30/1" # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                "v4l2src device=/dev/mina_cam ! "
+                "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
+                "jpegdec ! " 
                 "videoconvert ! "
                 f"{encoder_block}"
                 "video/x-h264,stream-format=byte-stream,alignment=au ! "
                 "appsink name={sink_name} emit-signals=true sync=false drop=true",
                 "topic": "/arm_cam/h264"
             },
-            '''
-            0]: 'MJPG' (Motion-JPEG, compressed)
-                Size: Discrete 1920x1080
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.040s (25.000 fps)
-                Size: Discrete 1280x720
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.040s (25.000 fps)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.040s (25.000 fps)
-                Size: Discrete 640x360
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.040s (25.000 fps)
-                Size: Discrete 352x288
-                        Interval: Discrete 0.033s (30.000 fps)
-                        Interval: Discrete 0.040s (25.000 fps)
-        [1]: 'YUYV' (YUYV 4:2:2)
-                Size: Discrete 640x480
-                        Interval: Discrete 0.033s (30.000 fps)
-                Size: Discrete 640x360
-                        Interval: Discrete 0.033s (30.000 fps)
-                Size: Discrete 352x288
-                        Interval: Discrete 0.033s (30.000 fps)
-                Size: Discrete 320x240
-                        Interval: Discrete 0.033s (30.000 fps)
-            '''
 
             "back_cam": {
                 "pipeline":
-                "v4l2src device=/dev/video2 ! "
+                "v4l2src device=/dev/back_web_cam ! "
                 "image/jpeg,width=640,height=480,framerate=30/1 ! " # can be others, test and list here later # v4l2-ctl --list-formats-ext –all --device /dev/video0
                 "jpegdec ! "
                 "videoconvert ! "
