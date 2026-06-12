@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
-import os
 from glob import glob
+import os
 
 package_name = 'autonomy_vision'
 
@@ -9,10 +9,18 @@ setup(
     version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        (
+            'share/ament_index/resource_index/packages',
+            ['resource/' + package_name]
+        ),
+        (
+            'share/' + package_name,
+            ['package.xml']
+        ),
+        (
+            os.path.join('share', package_name, 'launch'),
+            glob('launch/*.py')
+        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -27,20 +35,37 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            # Panorama
             'panorama_stitcher = autonomy_vision.panorama_stitcher:main',
             'panorama_stitcher_with_heading = autonomy_vision.panorama_stitcher_with_heading:main',
+
+            # Heading display
             'display_heading_imu = autonomy_vision.display_heading_imu:main',
             'display_heading = autonomy_vision.display_heading:main',
             'display_images = autonomy_vision.display_images:main',
 
+            # Cameras
             'pose_cam = autonomy_vision.gst_pose_cam:main',
             'arm_cam = autonomy_vision.gst_arm_cam:main',
             'webcam_detector = autonomy_vision.webcam_detection2D:main',
+            'webcam_detection2D = autonomy_vision.webcam_detection2D:main',
 
+            # YOLO
             'yolo_pc = autonomy_vision.yolo_pc:main',
             'yolo_depth_v1 = autonomy_vision.yolo_depth_v1:main',
             'yolo_depth_v2 = autonomy_vision.yolo_depth_v2:main',
+
+            # Morse
             'morse_detector = autonomy_vision.morse_code_detector:main',
+            'morse_code_detector = autonomy_vision.morse_code_detector:main',
+
+            # Streaming
+            'multi_camera_streamer = autonomy_vision.multi_camera_streamer:main',
+            'h265_camera_streamer = autonomy_vision.h265_camera_streamer:main',
+
+            # Motors
+            'motor_controller = autonomy_vision.motor_controller:main',
+            'motor_input = autonomy_vision.motor_input:main',
         ],
     },
 )
