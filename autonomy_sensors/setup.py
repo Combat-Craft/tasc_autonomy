@@ -18,7 +18,7 @@ setup(
     zip_safe=True,
     maintainer='ArtemisLee',
     maintainer_email='yr.lee@torontomu.com',
-    description='Has all the sensor code, such as GPS, IMU, etc.',
+    description='Has all the sensor code, such as GPS, IMU, LiDAR, and GPS tracker package (fake/IP/real modes)',
     license='Apache-2.0',
     extras_require={
         'test': [
@@ -30,6 +30,10 @@ setup(
             'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
             'gps_node = autonomy_sensors.gps_node:main',
             'imu_node = autonomy_sensors.imu_node:main',
+            
+            'fake_gps     = gps_tracker.fake_gps:main',
+            'ip_gps       = gps_tracker.ip_gps:main',
+            'route_logger = gps_tracker.route_logger:main',
         ],
     },
 )

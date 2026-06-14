@@ -14,6 +14,11 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  
+  <!-- Launch file dependencies -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
   
   <!-- 3rd party ros2 packages-->
   <exec_depend>foxglove_msgs</exec_depend>
@@ -21,11 +26,7 @@
   
   <!-- python packages --> 
   <test_depend>python3-pytest</test_depend>
-  <!-- dont need bc default python? also failed rosdep --> 
-  <!--<exec_depend>serial</exec_depend>--> 
-  <!--<exec_depend>threading</exec_depend>--> 
-  
-  
+   
   <!-- ament packages i.e. came with-->
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

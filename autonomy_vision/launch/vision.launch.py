@@ -25,15 +25,14 @@ def generate_launch_description():
         Node(
             package='autonomy_vision',
             executable='multi_camera_streamer',
-            name='camera0_node',
-            arguments=['0'] #The media stream for the camera (eg. 0, -1 or '/dev/video2')
+            name='camera_streamer_node',
+            remappings=[
+                ('/orbecc_cam/h264', '/camera_streamer/orbecc_cam/h264'),
+                ('/arm_cam/h264', '/camera_streamer/arm_cam/h264'), 
+                ('/back_cam/h264', '/camera_streamer/back_cam/h264'),
+            ]
         ),
-        Node(
-            package='autonomy_vision',
-            executable='multi_camera_streamer',
-            name='camera1_node',
-            arguments=['1'] #The media stream for the camera (eg. 0, -1 or '/dev/video2')
-        ),
+
         
         
                
@@ -42,7 +41,7 @@ def generate_launch_description():
         # Node(
         #     package='navigation',
         #     executable='multi_camera_publisher',
-        #     name='camera1_node',
+        #     name='camera_streams',
         #     arguments=['1'] #The media stream for the camera (eg. '/dev/video2')
         # ),
         

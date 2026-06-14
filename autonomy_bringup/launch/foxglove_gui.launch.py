@@ -122,6 +122,9 @@ from launch_ros.actions import Node
 
 import os
 
+## THE PPURPOSE OF THIS CODE TO RUN ON FOXGLOVE GUI
+## WHITELIST MAY BE NEEDED TO PREVENT UNNEDED TOPICS FROM STREAMING OVER THE NETWORK
+
 # look at this for finetuning: 
 # https://docs.ros.org/en/humble/How-To-Guides/Launch-file-different-formats.html
 
@@ -150,7 +153,7 @@ def generate_launch_description():
             }.items()      
         ),
         
-        # Launch all sensors
+        # Launch all sensors - currently imu, gps, gps route logger (real) 
         IncludeLaunchDescription(
             PathJoinSubstitution([
               FindPackageShare("autonomy_sensors"),
@@ -159,14 +162,14 @@ def generate_launch_description():
             ])    
         ),
         
-        # Launch all cameras/visions
-        #IncludeLaunchDescription(
-        #    PathJoinSubstitution([
-        #      FindPackageShare("autonomy_vision"),
-         #         "launch",
-        #          "vision.launch.py"
-        #    ])    
-        #),
+        # Launch all cameras/visions - currently only multicamera
+        IncludeLaunchDescription(
+            PathJoinSubstitution([
+              FindPackageShare("autonomy_vision"),
+                 "launch",
+                  "vision.launch.py"
+            ])    
+        ),
         
         
 

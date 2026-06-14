@@ -37,6 +37,9 @@ import os
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument('walk_step_m', default_value='5.0', description='Step size in metres for ip mode walk'),
+        DeclareLaunchArgument('loop', default_value='true', description='Loop waypoints (true/false)'),
+
         # IMU and GPS, shared node version
         Node(
            package='autonomy_sensors', 
@@ -48,6 +51,25 @@ def generate_launch_description():
                {'baud_rate': 115200},           
            ]
         ),
+        
+        # GPS Route Logger 
+        Node(
+            package='gps_tracker',
+            executable='route_logger',
+            name='route_logger',
+            output='screen'
+        ),
+        # Get approximate location via IP lookup
+        #Node(
+        #    package='gps_tracker',
+        #    executable='ip_gps',
+        #    name='gps_publisher',
+        #    output='screen',
+        #    parameters=[{
+        #        'walk_step_m': LaunchConfiguration('walk_step_m'),
+        #        'loop': LaunchConfiguration('loop'),
+        #    }]
+        #)
     ])
     
 
