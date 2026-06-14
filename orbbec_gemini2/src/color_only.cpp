@@ -1,23 +1,19 @@
 #include <libobsensor/ObSensor.hpp>
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <memory>
 
-#include "utils.hpp"
-#include "utils_opencv.hpp"
+#include "orbbec_gemini2/utils/utils.hpp"
+#include "orbbec_gemini2/utils/utils_opencv.hpp"
 
-int main(int argc, char **argv)
+int main()
 {
     try
     {
-
         ob::Pipeline pipe;
         auto config = std::make_shared<ob::Config>();
 
         config->enableVideoStream(
             OB_STREAM_COLOR, 1280, 720, 30, OB_FORMAT_MJPG);
 
-        std::cout << "Starting Gemini2 color stream for GStreamer" << std::endl;
+        std::cout << "Starting color-only stream: 1280x720 @ 30 FPS" << std::endl;
 
         pipe.start(config);
 
@@ -40,12 +36,10 @@ int main(int argc, char **argv)
             std::cerr << "Failed to get stream profiles." << std::endl;
         }
 
-        std::cout << "GStreamer viewer running. Press Ctrl+C to exit." << std::endl;
+        ob_smpl::CVWindow win("Color", 1280, 720);
+        win.setShowSyncTimeInfo(true);
 
-        ob_smpl::CVWindow window("GStreamer Preview", 1280, 720);
-        window.setShowSyncTimeInfo(true);
-
-        while (window.run())
+        while (win.run())
         {
             auto frameset = pipe.waitForFrameset();
             if (!frameset)
@@ -54,25 +48,17 @@ int main(int argc, char **argv)
                 continue;
             }
 
-            auto colorFrame = frameset->getFrame(OB_FRAME_COLOR);
+            auto colorFrame = frameset->colorFrame();
             if (!colorFrame)
             {
                 std::cerr << "Frameset had no color frame." << std::endl;
                 continue;
             }
 
-            auto videoFrame = colorFrame->as<const ob::VideoFrame>();
-            if (!videoFrame)
-            {
-                std::cerr << "Failed to cast to VideoFrame." << std::endl;
-                continue;
-            }
-
-            window.pushFramesToView(colorFrame);
+            win.pushFramesToView(colorFrame);
         }
 
         pipe.stop();
-        cv::destroyAllWindows();
         return 0;
     }
     catch (const ob::Error &e)
