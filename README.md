@@ -6,8 +6,6 @@ This repository is a ROS 2 Humble workspace for the TASC autonomy stack. It curr
 - `autonomy_bringup` (Python package): Its purpose is to call all other package's launch files and Foxglove
 - `autonomy_sensors` (Python package): GPS, IMU, their transform broadcaster nodes, and RPLidar is externally called
 - `autonomy_vision` (Python package): YOLO and camera streaming nodes, and Orbbec Gemini2 is externally called
-- `gps_tracker` (C++ package): GPS path tracking code
-
 
 [Current Progress Snapshot](#Current-Progress-Snapshot)
 
@@ -27,22 +25,19 @@ This repository is a ROS 2 Humble workspace for the TASC autonomy stack. It curr
 ## Current Progress Snapshot
 
 Implemented and present in source:
-- Sensor nodes: `gps_node`, `imu_node`, `gps_imu_broadcaster`, RPLidar's nodes are launched externally from `sensor.launch.py`
-- ~~Vision nodes: `yolo_pc`, `yolo_depth_v1`, `webcam_detection2D`, `morse_code_detector`, `multi_camera_streamer`, Gemini2's nodes are launched externally from `vision.launch.py`~~
-- ~~Multi-camera H.264 streamer with encoder fallback:~~
-  - ~~prefers `x264enc`~~
-  - ~~falls back to `avenc_h264_omx` when `x264enc` is unavailable~~
+- Sensor nodes: `gps_node`, `imu_node`, `gps_imu_broadcaster`, RPLidar's nodes are launched externally from `sensor.launch.py`, and for the router logger `route_logger`, `ip_gps` and `fake_gps`
+- Vision nodes: `multi_camera_streamer`, and can be called from `vision.launch.py`
 
 Known in-progress / issues:
-- `multi_camera_streamer` is publish-only and needs formatting changes.
-  - need to convert to H.265 for for efficient streaming
-- all camera streams need to be compressed / lowered in quality to improve FPS
-- USB serial path for GPS/IMU may need to be changed from `/dev/ttyUSB0` depending on connected device.
-- `gps_tracker` needs to be combined into `autonomy_sensors`. It will either be converted to python code or `autonomy_sensors` will be remaded into a combined C++/python package
+- `multi_camera_streamer` needs to have finalized gstreamer pipelines as more cameras come in
+- USB serial path for GPS/IMU and RPLiDAR may need to be changed from `/dev/ttyUSB0` depending on connected device, as they appear identicle due to both exportig serial data.
+- cameras....
 
 ## Workspace Layout
+
+**YOU MUST ADHERE TO THIS STRUCTURE. PLEASE DO NOT CREATE EXTRA PACKAGES OR SUB FOLDERS WITHOUT CONSULTING THE LEADS**
 ```
-~/tasc_autonomy
+~/autonav_ws # this if your main workspace folder, name it as you please in your PC
   ├── build
   ├── install
   ├── log
@@ -70,9 +65,14 @@ Known in-progress / issues:
           │   ├── Log
           │   ├── resource
           │   └── test
-          ├── gps_tracker
-          │   ├── launch
-          │   └── src
+          # --> combined C++ and Python ROS2 package. Has unique Building, please refer to internal readme or ask Artemis
+          ├── orbbec_gemini2/
+          │   ├── CMakeLists.txt
+          │   ├── package.xml
+          │   ├── orbbec_gemini2
+          │   ├── scripts #pynodes
+          │   ├── include/orbbec_gemini2 #c++ headers
+          │   └── src # c++ code
           ├── install
           └── test
 ```
@@ -81,21 +81,24 @@ Known in-progress / issues:
 
 ## Download and link repo
 
-1) Create your workspace folders
+1) Create your workspace folders and cd to the src folder
 ```bash
-mkdir -p ~/tasc_autonomy/src
+mkdir -p ~/<your_folder_name>/src
+cd ~/<your_folder_name>/src
 ```
-2) Git clone this branch
+2) Git clone this main branch
 ```bash
-git clone -b merge2 https://github.com/Combat-Craft/tasc_autonomy.git
+git clone https://github.com/Combat-Craft/tasc_autonomy.git
 ```
-3) Use Git status to ensure you're on branchmerge2
+3) Use Git status to ensure you're on main
 ```bash
 git status
 ```
 
 ## Build
-Go to workspace root i.e. ```cd ~/tasc_autonomy```:
+Go to workspace root i.e. ```cd ~/<your_folder_name>```
+**THIS IS IMPORTANT** It ensures the build, instal, and log folders and respective files are all within ~/<your_folder_name> and NOT in src or any other folder!
+
 1) Set up humble ROS2
 ```bash
 source /opt/ros/humble/setup.bash
@@ -138,16 +141,26 @@ v4l2-ctl --list-devices
 ```
 
 You can view my notes/test logs [here](https://docs.google.com/document/d/1xLJX_WVMZnSbE76I1YRzUpV9hlwl_LD-Z_N9sYjofT8/edit?usp=sharing)
+You can view more details on cameras here (to be made later)
 
 ## ROS2 Based Multi-camera-streamer
 
-Currently uses gstreamer, with software endocing xh264, and sinks ???. Has raw, default Orbbec, webcams.
+Currently uses gstreamer, with software endocing xh264, and appsink. Has a usb webcam, default Orbbec color, and a test webcam from lead Mina.
 
 ```bash
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 ros2 run autonomy_vision multi_camera_streamer
 ```
+
+or
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 launch autonomy_vision sensors.launch.py
+```
+
 
 ## IP Camera
 Note: IP Camera is set to static at 192.168.117 and I think it's network is 192.168.1.0/24 from other users' comments.
@@ -216,6 +229,11 @@ ros2 launch autonomy_sensors sensors.launch.py
 3) GPS tracker
 ```bash
 ros2 launch gps_tracker gps_tracker.launch.py
+```
+
+4) Launches all vision nodes
+```bash
+ros2 launch autonomy_vision sensors.launch.py
 ```
 
 
