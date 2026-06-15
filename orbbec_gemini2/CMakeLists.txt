@@ -47,6 +47,8 @@ add_executable(main src/main.cpp)
 ament_target_dependencies(main rclcpp std_msgs)
 
 # Create Orbbec C++ executables 
+
+
 add_executable(color_example src/color_example.cpp)
 target_link_libraries(color_example ob::OrbbecSDK)
 
@@ -77,6 +79,15 @@ target_link_libraries(gemini2_color_gstreamer
 )
 
 # Create Gstreamer executables
+add_executable(test_gstreamer src/test_gstreamer.cpp)
+target_link_libraries(test_gstreamer 
+    ob::OrbbecSDK
+    PkgConfig::gstreamer
+    PkgConfig::gstreamer-sdp
+    PkgConfig::gstreamer-app
+    PkgConfig::gstreamer-video
+)
+
 #add_executable(my-gstreamer-app main.cpp)
 
 #target_link_libraries(my-gstreamer-app
