@@ -1,0 +1,33 @@
+navsat_transform_node:
+  ros__parameters:
+
+    # how often (in Hz) the node reads the GPS/IMU data and translates it
+    frequency: 30.0
+
+    # how many seconds to wait after booting up before starting the translation
+    delay: 3.0
+
+    # mathematical difference between True North (GPS) and Magnetic North (IMU).
+    # -0.1815 radians is specifically the current declination for Toronto.
+    magnetic_declination_radians: -0.1815
+
+    # what IMU reads when the rover is facing exactly True East.
+    # If IMU is perfectly configured to the ENU standard (East = 0 degrees) leave this at 0.0
+    yaw_offset: 0.0
+
+    # forces the Z-axis (up/down) to always be 0. 
+    # recommended for ground rovers so bad GPS data doesn't make the map think the rover is floating or sinking.
+    zero_altitude: true
+
+    # tells the node to broadcast the mathematical link between the global earth grid (UTM) and your local map over the TF tree.
+    broadcast_utm_transform: true
+
+    # takes the flattened, translated GPS X/Y coordinates and publishes them to the /odometry/gps topic.
+    publish_filtered_gps: true
+
+    # if true, the node trusts the wheels for its compass heading. 
+    use_odometry_yaw: false
+
+    # if true, the node refuses to start until you manually give it a starting Latitude/Longitude.
+    # keeping this false tells it to automatically use the very first GPS ping it receives as the (0,0) starting point of your map.
+    wait_for_datum: false

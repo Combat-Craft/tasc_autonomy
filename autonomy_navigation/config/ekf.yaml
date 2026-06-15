@@ -1,0 +1,37 @@
+ekf_filter_node:
+  ros__parameters:
+
+    # frequency that filter outputs position estimate (30 is default)
+    frequency: 30.0
+    
+    # locks to a 2D plane to avoid slight fluctuations in ground plane
+    two_d_mode: true
+
+    # publishes acceleration state
+    publish_acceleration: true
+
+    # broadcast transform over /tf topic
+    publish_tf: true
+
+    map_frame: map # defaults to map if unspecificed        
+    odom_frame: odom # defaults to odom if unspecified 
+    base_link_frame: base_link # defaults to baselink if unspecified
+    world_frame: odom # defaults to the value of odom_frame if unspecified   
+
+    odom0: /diff_drive_controller/odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  false, false,  #  Only X-velocity (forward speed) is true
+                   false, false, true,
+                   false, false, false]
+
+    imu0: /imu/acc_gryo
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, true,
+                  false, false, false]
+    
+    # removes gravity from IMU acceleration measurements so filter doesn't use gravity in estimations
+    imu0_remove_graviational_acceleration: true
+
