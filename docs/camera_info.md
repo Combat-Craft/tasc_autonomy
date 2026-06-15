@@ -1,3 +1,6 @@
+# LAN / Network
+To connect to our network, you must be connected via switch with ethernet, or from comm's wireless connection. You must manually set your network (ethernet/wired or wiresless) to have an IPv4 of 192.168.1.XXX (replace with a number between 2-254. Currently, the IPs taken are 7,20,23, and 117).
+
 # udev
 
 YOU MUST ACTIATE THE RULES BEFORE USING THE STATIC NAMES
@@ -18,7 +21,13 @@ SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTR{name}=="USB Composite Device: U
 
 SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTR{name}=="Orbbec(R) Gemini(TM): Orbbec Ge", SYMLINK+="orbbec_color_cam"
 ```
-# Camera List
+# Cameras
+
+## Note on SRT on Gstreamer
+Port on both caller and listener must be the same. 
+Either the caller or listen IP must be default/0.0.0.0, and the other is the IP of the other. 
+To ensure the stream is being sent to our bay station PC, we will set our srtsink uri to the client ip and our srtsrc uri to be default. 
+We also manually set caller and listener, despite being default, for clarity and to reduce any risk of borking.
 
 ## IP Cam
 **Brand:** Revotech i706-P-Audio-FHW
@@ -104,16 +113,12 @@ NOTE: You will have to change the sink when you add it to PyQT. Probably appsink
 ```
 
 ### Gstreamer Pipeline (Tested via CLI)
-Key note on SRT on Gstreamer: Port on both caller and listener must be the same. 
-Either the caller or listen IP must be localhost/default, and the other is the IP of the other. 
-To ensure the stream is being sent to our bay station PC, we will set our srtsink uri to the client ip and our srtsrc uri to be localhost. 
-We also manually set caller and listen, despite being default, for clarity and to reduce any risk of borking.
 
 **REMEMBER TO REPLACE THE IP WITH YOUR PC'S**
 
 **Jetson/Server**
 ```bash
-gst-launch-1.0 v4l2src device=/dev/mina_cam ! "video/x-h264,width=640,height=480,framerate=30/1" ! h264parse config-interval=-1 ! srtsink uri="srt://192.168.1.XXX:7090?mode=caller" sync=false
+gst-launch-1.0 v4l2src device=/dev/mina_cam ! "video/x-h264,width=640,height=480,framerate=30/1" ! srtsink uri="srt://192.168.1.XXX:7090?mode=caller" sync=false
 ```
 
 **Bay Station/Client**
@@ -124,6 +129,7 @@ gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" ! h264parse ! avdec_h264 !
 
 ##  Original Webcam
 **Static name:** back_web_cam
+
 **Output Formats:**
 ```bash
 'MJPG' (Motion-JPEG, compressed)
@@ -154,45 +160,92 @@ gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" ! h264parse ! avdec_h264 !
 ```
 
 ### Gstreamer Pipeline (Tested via CLI)
-Key note on SRT: The IPs must match the IP of whatever PC it is on, NOT 'aimed' to where you want it to go.
+
+**REMEMBER TO REPLACE THE IP WITH YOUR PC'S** : 192.168.1.XXX with whatever one you have already set
 
 **Jetson/Server**
 ```bash
-gst-launch-1.0 -v v4l2src device=/dev/back_web_cam ! "video/x-h264,width=640,height=480,framerate=30/1" ! h264parse config-interval=-1 ! srtsink uri="srt://192.168.1.20:7090?mode=caller"
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! image/jpeg, width=640, height=480, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
 ```
 
 **Bay Station/Client**
 ```bash
-gst-launch-1.0 -v srtsrc uri="srt://0.0.0.0:7090?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 ```
 
-##  Mina's Webcam
-**Static name:**
+##  Default Orbbec Gemini2 Connection via V2L4
+**Static name:** orbbec_color_cam
+
 **Output Formats:**
 ```bash
+
+'YUYV' (YUYV 4:2:2)
+    Size: Discrete 640x360
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+    Size: Discrete 640x480
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+    Size: Discrete 1280x720
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+    Size: Discrete 1920x1080
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+'MJPG' (Motion-JPEG, compressed)
+    Size: Discrete 640x360
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+    Size: Discrete 640x480
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+    Size: Discrete 1280x720
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
+    Size: Discrete 1920x1080
+            Interval: Discrete 0.017s (60.000 fps)
+            Interval: Discrete 0.033s (30.000 fps)
+            Interval: Discrete 0.067s (15.000 fps)
+            Interval: Discrete 0.100s (10.000 fps)
+            Interval: Discrete 0.200s (5.000 fps)
 ```
 
 ### Gstreamer Pipeline (Tested via CLI)
+
+**REMEMBER TO REPLACE THE IP WITH YOUR PC'S** : 192.168.1.XXX with whatever one you have already set
+
 **Jetson/Server**
 ```bash
+gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=640, height=480, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false 
 ```
 
 **Bay Station/Client**
 ```bash
+gst-launch-1.0 srtsrc uri="srt://:7092?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false 
 ```
 
-##  Mina's Webcam
-**Static name:**
-**Output Formats:**
-```bash
-```
 
-### Gstreamer Pipeline (Tested via CLI)
-**Jetson/Server**
-
-**Bay Station/Client**
-```bash
-```
 
 
 
