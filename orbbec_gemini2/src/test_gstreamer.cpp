@@ -1,0 +1,154 @@
+#include <libobsensor/ObSensor.hpp>
+#include <gst/gst.h>
+#include <gst/app/gstappsrc.h>
+#include <iostream>
+#include <memory>
+
+int main(int argc, char **argv) try {
+
+    // Create a pipeline with default device.
+    ob::Pipeline pipe;
+
+    // Configure which streams to enable or disable for the Pipeline by creating a Config.
+    std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
+
+    // Enable color video stream.
+    config->enableVideoStream(OB_STREAM_COLOR, 1280, 720, 30, OB_FORMAT_MJPG);
+
+    // Start the pipeline with config.
+    pipe.start(config);
+
+
+    /* Initialize GStreamer */
+    gst_init(&argc, &argv);
+
+    GstElement *pipeline = gst_pipeline_new("orbbec-appsrc-pipeline");
+    GstElement *appsrc = gst_element_factory_make("appsrc", "orbbec-source");
+    GstElement *jpegdec = gst_element_factory_make("jpegdec", "jpeg-decoder");
+    GstElement *videoconvert = gst_element_factory_make("videoconvert", "video-convert");
+    GstElement *sink = gst_element_factory_make("autovideosink", "video-output");
+
+    if (!pipeline || !appsrc || !jpegdec || !videoconvert || !sink) {
+        std::cerr << "Failed to create GStreamer elements." << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    GstCaps *caps = gst_caps_new_simple(
+        "image/jpeg",
+        "width", G_TYPE_INT, 1280,
+        "height", G_TYPE_INT, 720,
+        "framerate", GST_TYPE_FRACTION, 30, 1,
+        NULL);
+
+    g_object_set(appsrc,
+                 "caps", caps,
+                 "format", GST_FORMAT_TIME,
+                 "is-live", TRUE,
+                 "block", TRUE,
+                 "stream-type", GST_APP_STREAM_TYPE_STREAM,
+                 NULL);
+    gst_caps_unref(caps);
+
+    gst_bin_add_many(GST_BIN(pipeline), appsrc, jpegdec, videoconvert, sink, NULL);
+    if (!gst_element_link_many(appsrc, jpegdec, videoconvert, sink, NULL)) {
+        std::cerr << "Failed to link GStreamer pipeline." << std::endl;
+        gst_object_unref(pipeline);
+        return EXIT_FAILURE;
+    }
+
+    GstStateChangeReturn stateRet = gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    if (stateRet == GST_STATE_CHANGE_FAILURE) {
+        std::cerr << "Unable to set the GStreamer pipeline to the playing state." << std::endl;
+        gst_object_unref(pipeline);
+        return EXIT_FAILURE;
+    }
+
+    GstBus *bus = gst_element_get_bus(pipeline);
+    guint64 frameCount = 0;
+    bool running = true;
+
+    while (running) {
+        auto frameSet = pipe.waitForFrameset();
+        if (!frameSet) {
+            continue;
+        }
+
+        auto colorFrame = frameSet->getFrame(OB_FRAME_COLOR);
+        if (!colorFrame) {
+            std::cerr << "Frameset missing color frame." << std::endl;
+            continue;
+        }
+
+        auto videoFrame = colorFrame->as<const ob::VideoFrame>();
+        if (!videoFrame) {
+            std::cerr << "Failed to cast to VideoFrame." << std::endl;
+            continue;
+        }
+
+        const gsize dataSize = static_cast<gsize>(videoFrame->getDataSize());
+        GstBuffer *buffer = gst_buffer_new_allocate(NULL, dataSize, NULL);
+        if (!buffer) {
+            std::cerr << "Failed to allocate GStreamer buffer." << std::endl;
+            break;
+        }
+
+        gst_buffer_fill(buffer, 0, videoFrame->getData(), dataSize);
+
+        guint64 pts = static_cast<guint64>(videoFrame->getTimeStampUs()) * 1000ULL;
+        GST_BUFFER_PTS(buffer) = pts;
+        GST_BUFFER_DURATION(buffer) = gst_util_uint64_scale_int(1, GST_SECOND, 30);
+
+        GstFlowReturn flowReturn = GST_FLOW_ERROR;
+        g_signal_emit_by_name(appsrc, "push-buffer", buffer, &flowReturn);
+        gst_buffer_unref(buffer);
+
+        if (flowReturn != GST_FLOW_OK) {
+            std::cerr << "GStreamer appsrc push failed: " << flowReturn << std::endl;
+            break;
+        }
+
+        frameCount++;
+        if ((frameCount % 30) == 0) {
+            std::cout << "Pushed " << frameCount << " frames to GStreamer." << std::endl;
+        }
+
+        GstMessage *msg = gst_bus_pop_filtered(bus, static_cast<GstMessageType>(GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
+        if (msg) {
+            GError *err = nullptr;
+            gchar *debugInfo = nullptr;
+
+            switch (GST_MESSAGE_TYPE(msg)) {
+                case GST_MESSAGE_ERROR:
+                    gst_message_parse_error(msg, &err, &debugInfo);
+                    std::cerr << "GStreamer error: " << err->message << std::endl;
+                    g_clear_error(&err);
+                    g_free(debugInfo);
+                    running = false;
+                    break;
+                case GST_MESSAGE_EOS:
+                    std::cout << "GStreamer reached end of stream." << std::endl;
+                    running = false;
+                    break;
+                default:
+                    break;
+            }
+            gst_message_unref(msg);
+        }
+    }
+
+    gst_app_src_end_of_stream(GST_APP_SRC(appsrc));
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+    gst_object_unref(bus);
+    gst_object_unref(pipeline);
+    pipe.stop();
+
+    return 0;
+}
+
+catch(ob::Error &e) {
+    std::cerr << "function:" << e.getFunction() << "\nargs:" << e.getArgs() << "\nmessage:" << e.what() << "\nstatus:" << e.getStatus()
+              << "\ntype:" << e.getExceptionType() << std::endl;
+    std::cout << "\nPress any key to exit.";
+    //ob_smpl::waitForKeyPressed();
+    exit(EXIT_FAILURE);
+} 
