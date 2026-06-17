@@ -24,15 +24,19 @@ orbbec_gemini2/
 ## Running and Build
 
 Go cd to your main workspace folder, it holds src, build, install, etc
+
 ```bash
 cd ~autonav_ws/
 ```
+
 Colcon build
+
 ```bash
 colcon build --packages-select orbbec_gemini2
 ```
 
 To run the Orbbec Code, which is external to ROS2 for now...
+
 ## Build
 
 ```bash
@@ -48,7 +52,6 @@ make
 ./gemini2_color_gstreamer
 ```
 
-- `gemini2_probe`: checks for connected Orbbec devices MISSING
 - `gemini2_color_only`: starts the color-only stream
 - `gemini2_color_gstreamer`: uses OrbbecSDK to get color frames, OpenCV to decode MJPG, and GStreamer to display the video
 
@@ -60,39 +63,39 @@ Clean up orbbec code to actually use gstreamer and remove any headers from orbbe
 
 ### FROM ORBBEC: The utils functions and classes used in the examples code
 
-***utils***
+**_utils_**
 
 It contains functions to wait for a key press with an optional timeout, get the current time in milliseconds, and parse the input option from a key press event.This is done with C++.
 
-***utils_c***
+**_utils_c_**
 
 It contains functions to get the current system timestamp and wait for keystrokes from the user, as well as a macro to check for and handle errors. These capabilities can be used in scenarios such as time measurement, user interaction, and error handling. This is done with C.
 
-***utils_opencv***
+**_utils_opencv_**
 
 The CVWindow class includes the following main functionalities:
 
 The CVWindow class leverages OpenCV to create a flexible and customizable graphical interface for displaying and managing camera frames.
 
- *Window Creation:*
+_Window Creation:_
 
 - The constructor accepts the window name, width, and height as parameters, along with an optional - arrangement mode (ArrangeMode).
 - The arrangement modes include single frame display, displaying multiple frames in a row, displaying multiple frames in a column, grid display, and overlay display.
 
- *Image Frame Display and Processing:*
+  _Image Frame Display and Processing:_
 
 - The pushFramesToView method is used to push a set or multiple sets of image frames to the window.
-- There is an internal thread processThread_ for processing image frames.
+- There is an internal thread processThread\_ for processing image frames.
 - The arrangeFrames method arranges the image frames based on the selected arrangement mode.
 - The visualize and drawInfo methods are used to draw additional information on the images.
 
- *User Interaction:*
+  _User Interaction:_
 
 - The setKeyPressedCallback method sets a key press callback function.
 - The setKeyPrompt method sets a prompt message.
 - The addLog method adds a log message.
 
- *Configuration and State Management:*
+  _Configuration and State Management:_
 
 - The setShowInfo method controls whether frame information should be displayed.
 - The setAlpha set alpha for OVERLAY render mode
@@ -131,4 +134,3 @@ catch(ob::Error &e) {
 ```
 
 Eventually, going to combine this with autonomy vision. but that's later, since I want to orbbec SDK dev and gstreamer/camera general stuff to work simulataneously withouth merge conflicts mucking around
-
