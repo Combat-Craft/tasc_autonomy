@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 import time
- 
+import torch 
  
 class webcam_detection2D(Node):
     def __init__(self):
@@ -17,10 +17,11 @@ class webcam_detection2D(Node):
  
         # Load YOLO11
         self.model = YOLO("yolo11n.pt", task="detect")
-        self.model.to("cuda")
-        self.get_logger().info("YOLOv11n GPU model loaded")
+        device = "cuda" if torch.cuda.is_available() else "cpu" #Load on GPU, otherwise default to CPU
+        self.model.to(device)
+        self.get_logger().info(f"YOLOv11n GPU model loaded on {device.upper()}")
  
-        # Warm-up run (first inference compiles kernels, do it now not live)
+        # Warm-up run to pre-load CUDA kernels before live frames arrive
         dummy = np.zeros((320, 320, 3), dtype=np.uint8)
         self.model(dummy, imgsz=320, verbose=False)
         self.get_logger().info("Warm-up complete")
@@ -35,7 +36,7 @@ class webcam_detection2D(Node):
  
         # Publishers
         self.pub_det   = self.create_publisher(Detection2DArray, "/detections", 10) # detection results
-        self.pub_debug = self.create_publisher(Image, "/debug_image", 10) # bounding boxes
+        self.pub_debug = self.create_publisher(Image, "/debug_image", 10) # image with bounding boxes
  
         # FPS tracking
         self._fps_start = time.time()
@@ -99,8 +100,7 @@ class webcam_detection2D(Node):
         small = cv2.resize(padded, (320, 320), interpolation=cv2.INTER_LINEAR)
         results = self.model(small, imgsz=320, conf=0.4, verbose=False) # Only keep detections with confidence score >= 0.4
 
-        scale_x = orig_w / 320
-        scale_y = orig_h / 320
+        scale = size / 320
 
         # Detection2DArray ROS2 message
         det_array = Detection2DArray()
@@ -117,8 +117,8 @@ class webcam_detection2D(Node):
             x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
  
             # Scale boxes back to original resolution
-            x1 = int(x1 * scale_x); x2 = int(x2 * scale_x)
-            y1 = int(y1 * scale_y); y2 = int(y2 * scale_y)
+            x1 = int(x1 * scale); x2 = int(x2 * scale)
+            y1 = int(y1 * scale); y2 = int(y2 * scale)
 
             # Class index, confidence score, and human readable label
             cls_id = int(det.cls.cpu().numpy()[0])
