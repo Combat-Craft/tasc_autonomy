@@ -55,7 +55,8 @@ def cardinal_Direction_8(angle):
         return "NW"
         
     return "?"
-        
+ 
+#REWRITE TO USE QUATERNIONS SINCE THIS BE INACCURATE LOL        
 def get_heading_simple(mx, my): #ax, ay, az, 
     #has the code for roll and yaw, just in case
     
@@ -88,38 +89,42 @@ def get_heading_simple(mx, my): #ax, ay, az,
 
     return heading
 
-class IMUGPSv2Node(Node):
+class IMUGPSNode(Node):
     def __init__(self):
-        super().__init__('imu_gps_node_v2')
+        super().__init__('imu_gps_node')
         
         # Parameters (easy to override in launch files)
         self.declare_parameter('port', '/dev/ttyUSB0')
         self.declare_parameter('baud', 115200) #still matches with new arduino sketch
-        self.declare_parameter('frame_id', 'gps_imu_link')
+        self.declare_parameter('frame_id', 'gps_imu_link') # match IMU, gps can be off by 5cm for all i care
         self.declare_parameter('simulated_data', False)
+        self.declare_parameter('foxglove_overlay', False) # whether to publish textAnnotation
 
         # other internal paramaters
         self.port = self.get_parameter('port').value
         self.baud = self.get_parameter('baud').value
+        self.foxglove_overlay = self.get_parameter('foxglove_overlay').value
         self.serial_port = None
-
-        ## GPS ##################################################################
-        # Publishers - standard GPS
+                
+        # Publishers
+        ## GPS 
         self.NavSatFix_pub = self.create_publisher(NavSatFix, '/gps/fix', 10)
-        # Publishers - foxglove GPS
-        self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)      
-        ## IMU ##################################################################
-        # Publishers - standard IMU
+              
+        ## IMU 
         self.imu_pub = self.create_publisher(Imu, '/imu/acc_gryo', 50)
         self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', 50)
-        # Publishers - custom IMU
+
         self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
         self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
-        # Publishers - foxglove IMU
-        self.headingfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/heading', 10)
-        self.compassfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
+        
+        #self.get_logger().info(f"imu_gps_node: self.foxglove_overlay is <{self.foxglove_overlay}>")   
+        ## Foxglove publishers
+        if self.foxglove_overlay:
+            self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)  
+            self.headingfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/heading', 10)
+            self.compassfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
          
-        # Start
+        # Start Node
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
@@ -140,7 +145,7 @@ class IMUGPSv2Node(Node):
             else:
                 self.get_logger().error(f"imu_gps_node: No ESP32 serial connection and no simulated data enabled")
 
-        self.get_logger().info(f"imu_gps_node: serial_port is currently {self.serial_port}")  
+        #self.get_logger().info(f"imu_gps_node: serial_port is currently {self.serial_port}")  
         # END init_serial_connection()
         
     # --------------------------------------------------
@@ -217,9 +222,7 @@ class IMUGPSv2Node(Node):
         #sleep(1) #  for 1 HZ
         
         self.NavSatFix_pub.publish(msg)
-        
-        #return msg
-        
+               
     # ----------------------------------------------------------------------------------------------------
     # IMU handler for Simulated
     # ----------------------------------------------------------------------------------------------------
@@ -274,17 +277,15 @@ class IMUGPSv2Node(Node):
         compass_msg.data = cardinal_Direction_8(heading_msg.data)
         
         #sleep(0.1) # should be 0.01 for 100HZ, but for simulation lets ease off for testing
-        #testList = [imu_msg, mag_msg, heading_msg, compass_msg]    
-        
-        #return testList
         
         self.imu_pub.publish(imu_msg)
         self.mag_pub.publish(mag_msg)
         self.heading_pub.publish(heading_msg)
         self.compass_pub.publish(compass_msg) 
         
-        self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
-        self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp) 
+        if self.foxglove_overlay:
+            self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
+            self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp) 
         
     # --------------------------------------------------
     # GPS handler for Serial
@@ -319,16 +320,14 @@ class IMUGPSv2Node(Node):
                 msg.status.status = NavSatStatus.STATUS_NO_FIX
                 msg.status.service = NavSatStatus.SERVICE_GPS
                 msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
-    
-            
-            self.handle_foxgloveGPS(msg)   
             
             self.NavSatFix_pub.publish(msg)
-            #return msg
+            if self.foxglove_overlay:
+                self.handle_foxgloveGPS(msg)
+
           
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_gps()")
-            #return
     
     # --------------------------------------------------
     # IMU handler
@@ -424,19 +423,20 @@ class IMUGPSv2Node(Node):
             compass_msg = String()
             compass_msg.data = cardinal_Direction_8(heading_msg.data) # i.e.N NE E SE S SW W NW
             
-            self.get_logger().info(f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}")           
+            #self.get_logger().info(f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}")           
             
             self.imu_pub.publish(imu_msg)
             self.mag_pub.publish(mag_msg)
             self.heading_pub.publish(heading_msg)
             self.compass_pub.publish(compass_msg) 
             
-            self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
-            self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
+            if self.foxglove_overlay:
+                self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
+                self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
                        
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_imu()")
-            #return
+
     
     # --------------------------------------------------     
     # Foxglove Text Annotation
