@@ -1,7 +1,7 @@
-# editing from antonia's gps_imu_broadcaster.py and MNTadro's imu_node.py, to work with current imu_gps_serial.ino 
+# editing from antonia's gps_imu_broadcaster.py and MNTadro's imu_node.py, to work with current imu_gps_fastimu.ino 
 #
 ## #  GPS,ms,lat,lon,alt,speed,hdop,sats,fix at 1Hz <- NO CHANGES  
-## #  IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz at 100Hz
+## #  IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz,qw,qx,qy,qz at 100Hz
 ## # This is the "No microROS, only Serial" option
 #
 # Note that this is publishing various topics :
@@ -34,9 +34,6 @@ from math import atan2, pi as PI, sqrt  # for heading, roll, pitch i.e. "compass
 from time import sleep # for simulated data, firmware publishes at certain Hz
 
 def cardinal_Direction_8(angle):
-    if angle < 0.0:
-        angle += 360.0
-        
     if ((0 <= angle <= 22.5) or angle > 337.5):
         return "N"
     if (22.5 < angle <= 67.5):
@@ -54,9 +51,7 @@ def cardinal_Direction_8(angle):
     if (292.5 < angle <= 337.5):
         return "NW"
         
-    return "?"
- 
-#REWRITE TO USE QUATERNIONS SINCE THIS BE INACCURATE LOL        
+
 def get_heading_simple(mx, my): #ax, ay, az, 
     #has the code for roll and yaw, just in case
     
@@ -89,9 +84,9 @@ def get_heading_simple(mx, my): #ax, ay, az,
 
     return heading
 
-class IMUGPSv2Node(Node):
+class IMUGPSNode(Node):
     def __init__(self):
-        super().__init__('imu_gps_node_v2')
+        super().__init__('imu_gps_node')
         
         # Parameters (easy to override in launch files)
         self.declare_parameter('port', '/dev/ttyUSB0')
@@ -117,7 +112,8 @@ class IMUGPSv2Node(Node):
         self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
         self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
         
-        #self.get_logger().info(f"imu_gps_node: self.foxglove_overlay is <{self.foxglove_overlay}>")   
+        self.get_logger().error(f"imu_gps_node: self.foxglove_overlay is < {self.foxglove_overlay} >")
+        
         ## Foxglove publishers
         if self.foxglove_overlay:
             self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)  
@@ -128,28 +124,36 @@ class IMUGPSv2Node(Node):
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
-        self.get_logger().info("imu_gps_node: IMU GPS broadcaster node started!")
+        self.get_logger().info("imu_gps_node: GPS node started!")
 
     # ----------------------------------------------------------------------------------------------------
     # Serial Read Try function
     # ----------------------------------------------------------------------------------------------------
     def init_serial_connection(self):
-        self.get_logger().info(f"imu_gps_node: Trying to connect to ESP32 serial port {self.port} at {self.baud} baud")  
+        self.get_logger().info(
+            f"imu_gps_node: Trying to connect to ESP32 serial port {self.port} at {self.baud} baud"
+        )      
         try:
             self.serial_port = serial.Serial(port=self.port, baudrate=self.baud, timeout=1.0)
-            self.get_logger().info(f"imu_gps_node: Connected to {self.port} at {self.baud} baud")
-        except serial.SerialException as e:
-            self.get_logger().warning(f"imu_gps_node: Failed to connect to {self.port} at {self.baud} baud: {e}")
+            self.get_logger().info(
+                f"imu_gps_node: Connected to {self.port} at {self.baud} baud"
+            )
+        except Exception as e:
+            self.get_logger().warning(
+                f"imu_gps_node: Failed to connect to {self.port} at {self.baud} baud: {e}"
+            )
             if self.get_parameter('simulated_data').value:
-                self.get_logger().info(f"imu_gps_node: Using simulated data fallback")
+                self.get_logger().info(
+                    f"imu_gps_node: Using simulated data fallback"
+                )
             else:
-                self.get_logger().error(f"imu_gps_node: No ESP32 serial connection and no simulated data enabled")
-
-        #self.get_logger().info(f"imu_gps_node: serial_port is currently {self.serial_port}")  
+                self.get_logger().error(
+                    f"imu_gps_node: No ESP32 serial connection and no simulated data enabled"
+                )
         # END init_serial_connection()
         
     # --------------------------------------------------
-    # Top Level MSG Publisher
+    # Top Level MSG Publisher - But going to Publish within handle_XXX() functions
     # --------------------------------------------------
     def publish_data(self):
         while rclpy.ok():
@@ -195,7 +199,8 @@ class IMUGPSv2Node(Node):
             # no serial, no simulate
             else:
                 self.get_logger().warning("imu_gps_node: No serial IMU data, no simulated data")
-        
+          
+       
     # --------------------------------------------------
     # GPS handler for Simulated
     # --------------------------------------------------
@@ -222,7 +227,7 @@ class IMUGPSv2Node(Node):
         #sleep(1) #  for 1 HZ
         
         self.NavSatFix_pub.publish(msg)
-               
+        
     # ----------------------------------------------------------------------------------------------------
     # IMU handler for Simulated
     # ----------------------------------------------------------------------------------------------------
@@ -276,7 +281,7 @@ class IMUGPSv2Node(Node):
         compass_msg = String()
         compass_msg.data = cardinal_Direction_8(heading_msg.data)
         
-        #sleep(0.1) # should be 0.01 for 100HZ, but for simulation lets ease off for testing
+        sleep(0.1) # should be 0.01 for 100HZ, but for simulation lets ease off for testing
         
         self.imu_pub.publish(imu_msg)
         self.mag_pub.publish(mag_msg)
@@ -320,14 +325,15 @@ class IMUGPSv2Node(Node):
                 msg.status.status = NavSatStatus.STATUS_NO_FIX
                 msg.status.service = NavSatStatus.SERVICE_GPS
                 msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
-            
+                   
             self.NavSatFix_pub.publish(msg)
+            
             if self.foxglove_overlay:
                 self.handle_foxgloveGPS(msg)
-
           
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_gps()")
+           
     
     # --------------------------------------------------
     # IMU handler
@@ -436,7 +442,6 @@ class IMUGPSv2Node(Node):
                        
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_imu()")
-
     
     # --------------------------------------------------     
     # Foxglove Text Annotation
@@ -458,10 +463,9 @@ class IMUGPSv2Node(Node):
         foxglove_msg.background_color.r = 0.0
         foxglove_msg.background_color.g = 0.0
         foxglove_msg.background_color.b = 0.0
-        foxglove_msg.background_color.a = 0.1 #0 = transparent   
+        foxglove_msg.background_color.a = 0.1 #0 = transparent      
         
-        self.latlonfox_pub.publish(foxglove_msg)     
-
+        return foxglove_msg
     
     def handle_foxgloveHeading(self, msg, timestamp):
         foxglove_msg = TextAnnotation()
@@ -478,9 +482,8 @@ class IMUGPSv2Node(Node):
         foxglove_msg.background_color.g = 0.0
         foxglove_msg.background_color.b = 0.0
         foxglove_msg.background_color.a = 0.1 #0 = transparent
-        
-        self.headingfox_pub.publish(foxglove_msg)               
-
+             
+        return foxglove_msg
         
     def handle_foxgloveCardinalCompass(self, msg, timestamp):
 
@@ -498,13 +501,13 @@ class IMUGPSv2Node(Node):
         foxglove_msg.background_color.g = 0.0
         foxglove_msg.background_color.b = 0.0
         foxglove_msg.background_color.a = 0.1 #0 = transparent
-        
-        self.compassfox_pub.publish(foxglove_msg) 
+             
+        return foxglove_msg
    
 
 def main():
     rclpy.init()
-    node = IMUGPSv2Node()
+    node = IMUGPSNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
