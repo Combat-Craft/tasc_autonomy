@@ -48,6 +48,11 @@ Known in-progress / issues:
           │   ├── launch
           │   ├── resource
           │   └── test
+          ├── autonomy_navigation
+          │   ├── config
+          │   ├── launch
+          │   ├── resource
+          │   └── test
           ├── autonomy_sensors
           │   ├── autonomy_sensors
           │   ├── firmware
