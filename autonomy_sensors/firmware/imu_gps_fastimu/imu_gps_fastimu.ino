@@ -20,16 +20,16 @@
 
 /* =========================
    GPS CONFIG
-   ========================= 
+   =========================  */
 // these are the pin #s on the ESP32, we are using UART pins for the GPS 
 // i.e. RX/MOsi and TX/MISO pins
-#define RXD2 16 
-#define TXD2 17
+#define RX2 16 //16 FOR RX2
+#define TX2 17 //17 FOR TX2
 #define GPS_BAUD 38400
 
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(2);
-*/
+/* */
 
 /* =========================
    IMU CONFIG
@@ -38,12 +38,19 @@ HardwareSerial gpsSerial(2);
 #define SDA_PIN 21
 #define SCL_PIN 22
 #define IMU_ADDRESS 0x69    //Default is not 0x68 but 0x69 for Sparkfun ICM20948
-#define PERFORM_CALIBRATION //Comment to disable startup calibration
+//#define PERFORM_CALIBRATION //Comment to disable startup calibration
 
 #define G_TO_MS2 9.80665
-ICM20948 IMU;               //Change to the name of any supported IMU! 
+ICM20948 IMU;               
 
-calData calib = { 0 };  //Calibration data
+//calData calib = { 0 };  //Calibration data - REDO AT ROVER
+calData calib = { 
+  true, 
+  {0.01, -0.05, 0.03},  // Accel biases X/Y/Z
+  {-0.63, 0.76, -0.05}, // Gyro biases X/Y/Z
+  {0.15, 0.00, 0.00},   // Mag biases X/Y/Z
+  {1.01, 1.00, 1.00}    // Mag Scale X/Y/Z
+};
 AccelData accelData;    //Sensor data
 GyroData gyroData;
 MagData magData;
@@ -55,7 +62,7 @@ Madgwick filter;
    Print Timing CONFIG
    ========================= */
 const unsigned long IMU_PERIOD_MS = 100; // 100 Hz = 10
-const unsigned long GPS_PERIOD_MS = 10;  // 1 Hz
+const unsigned long GPS_PERIOD_MS = 1000;  // 1 Hz = 1000
 unsigned long last_imu_time = 0;
 unsigned long last_gps_time = 0;
 
@@ -65,12 +72,7 @@ void setup() {
   while (!Serial) { //wait for connection
     ;
   }
-/*
-  // === GPS setup ==================================================
-  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
-  Serial.println("# GPS: serial started");
-  // === END GPS setup ==============================================
-*/
+
   // === IMU I2C setup - from Fast IMU ==============================
   //Wire.begin();
   //Wire.setClock(400000); //400khz clock
@@ -150,7 +152,7 @@ void setup() {
 
 void loop() {
   unsigned long now_milli = millis(); // for IMU and GPS print timing
-/*
+/* */
   // Always parse GPS bytes first
   while (gpsSerial.available()) {
     gps.encode(gpsSerial.read());
@@ -170,17 +172,15 @@ void loop() {
       Serial.print(gps.location.lng(),6); Serial.print(",");
       Serial.print(gps.altitude.meters(),2); Serial.print(",");
       Serial.print(gps.speed.mps(),2); Serial.print(",");
-      Serial.print(gps.hdop.isValid() ? gps.hdop.value()/100.0f : NAN,2);
-      Serial.print(",");
+      Serial.print(gps.hdop.isValid() ? gps.hdop.value()/100.0f : NAN,2);Serial.print(",");
       Serial.print(gps.satellites.isValid() ? gps.satellites.value() : 0);
-      Serial.print(",");
-      Serial.println(1);
+      Serial.println();
     } 
     else {
       Serial.println("nan,nan,nan,nan,nan,0,0");
     }
   }//END GPS OUTPUT
-*/
+/* */
   // -------- IMU OUTPUT --------  // from fast imu
   if (now_milli - last_imu_time >= IMU_PERIOD_MS) {  
     IMU.update();
@@ -193,23 +193,25 @@ void loop() {
     filter.update(gyroData.gyroX, gyroData.gyroY, gyroData.gyroZ, accelData.accelX, accelData.accelY, accelData.accelZ, magData.magX, magData.magY, magData.magZ);
 
     // print all test data data
-    Serial.print("ACC: "); // for testing
+    Serial.print("IMU,");
+    Serial.print(now_milli); Serial.print(",");
+    //Serial.print("ACC: "); // for testing
     Serial.print(accelData.accelX * G_TO_MS2); Serial.print(","); // , is tab
     Serial.print(accelData.accelY * G_TO_MS2); Serial.print(",");
     Serial.print(accelData.accelZ * G_TO_MS2); Serial.print(",");
-    Serial.print("GYR: "); // for testing
+    //Serial.print("GYR: "); // for testing
     Serial.print(gyroData.gyroX * DEG_TO_RAD); Serial.print(",");
     Serial.print(gyroData.gyroY * DEG_TO_RAD); Serial.print(",");
     Serial.print(gyroData.gyroZ * DEG_TO_RAD); Serial.print(",");
-    Serial.print("MAG: "); // for testing
+    //Serial.print("MAG: "); // for testing
     Serial.print(magData.magX); Serial.print(",");
     Serial.print(magData.magY); Serial.print(",");
     Serial.print(magData.magZ); Serial.print(",");
-    Serial.print("QUAT: ");
+    //Serial.print("QUAT: ");
     Serial.print(filter.getQuatW()); Serial.print(",");
     Serial.print(filter.getQuatX()); Serial.print(",");
     Serial.print(filter.getQuatY()); Serial.print(",");
-    Serial.print(filter.getQuatZ()); Serial.print(",");
+    Serial.print(filter.getQuatZ()); 
 
     Serial.println();
   } // END IMU OUTPUT
