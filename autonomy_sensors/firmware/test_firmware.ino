@@ -29,8 +29,8 @@
 #define WIRE_PORT Wire  
 
 /* Print Timing */
-const unsigned long IMU_PERIOD_MS = 10;    // 100 Hz = 10
-const unsigned long GPS_PERIOD_MS = 1000;  // 1 Hz
+const unsigned long IMU_PERIOD_MS = 100;    // 100 Hz = 10
+const unsigned long GPS_PERIOD_MS = 100;  // 1 Hz
 
 unsigned long last_imu_time = 0;
 unsigned long last_gps_time = 0;
@@ -116,29 +116,30 @@ void setup() {
 /* Set up IMU, which includes forcing the magnetometer manually as it sometimes fails to start
  * from Example1_Basics.ino, Example2_advanced.ino  
  */
+/* Set up IMU with Digital Low-Pass Filter (DLPF) enabled
+ * Based on Example2_Advanced.ino from SparkFun ICM_20948 library
+ */
 void setup_imu(){
-  //myICM.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
-
   bool initialized = false;
   
   while (!initialized){
-    myICM.begin(Wire, AD0_VAL);  
+    myICM.begin(WIRE_PORT, AD0_VAL);  // Note: use WIRE_PORT, not "Wire"
 
     Serial.print(F("Initialization of the IMU sensor returned: "));
     Serial.println(myICM.statusString());
      
-    if (myICM.status != ICM_20948_Stat_Ok){ // failed to start imu
+    if (myICM.status != ICM_20948_Stat_Ok){
       Serial.println("Trying IMU again...");
       delay(500);
     }
     else{
       initialized = true;
     }
-  }// END while loop  
+  }
 
   Serial.println("IMU I2C Device connected!");
 
-  // Here we are doing a SW reset to make sure the device starts in a known state
+  // Software reset to make sure device starts in known state
   myICM.swReset();
   if (myICM.status != ICM_20948_Stat_Ok)
   {
@@ -147,11 +148,63 @@ void setup_imu(){
   }
   delay(250);
 
-  // Now wake the IMU sensor up
+  // Wake the sensor up
   myICM.sleep(false);
   myICM.lowPower(false);
 
-  // Esnure the magnetometer starts, cause it doesn't always for some reason
+  // ============================================
+  // NEW: DLPF CONFIGURATION (from Example2_Advanced)
+  // ============================================
+  
+  // Set sample mode to continuous
+  myICM.setSampleMode((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), 
+                       ICM_20948_Sample_Mode_Continuous);
+  if (myICM.status != ICM_20948_Stat_Ok)
+  {
+    Serial.print(F("setSampleMode returned: "));
+    Serial.println(myICM.statusString());
+  }
+  
+  // Set full scale ranges
+  ICM_20948_fss_t myFSS;
+  myFSS.a = gpm16;      // Accelerometer: ±16g range
+  myFSS.g = dps250;     // Gyroscope: ±250 dps range (matches your Gscale)
+  myICM.setFullScale((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), myFSS);
+  if (myICM.status != ICM_20948_Stat_Ok)
+  {
+    Serial.print(F("setFullScale returned: "));
+    Serial.println(myICM.statusString());
+  }
+  
+  // Configure Digital Low-Pass Filter
+  ICM_20948_dlpcfg_t myDLPcfg;
+  // Accelerometer DLPF - choose one:
+  // acc_d473bw_n499bw (less filtering), acc_d246bw_n265bw, acc_d111bw4_n136bw, 
+  // acc_d50bw4_n68bw8, acc_d23bw9_n34bw4, acc_d11bw5_n17bw, acc_d5bw7_n8bw3
+  myDLPcfg.a = acc_d111bw4_n136bw;   // 111 Hz bandwidth - good balance
+  
+  // Gyroscope DLPF - choose one:
+  // gyr_d361bw4_n376bw5, gyr_d196bw6_n229bw8, gyr_d151bw8_n187bw6,
+  // gyr_d119bw5_n154bw3, gyr_d51bw2_n73bw3, gyr_d23bw9_n35bw9,
+  // gyr_d11bw6_n17bw8, gyr_d5bw7_n8bw9
+  myDLPcfg.g = gyr_d119bw5_n154bw3;  // 119 Hz bandwidth - good balance
+  
+  myICM.setDLPFcfg((ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), myDLPcfg);
+  if (myICM.status != ICM_20948_Stat_Ok)
+  {
+    Serial.print(F("setDLPcfg returned: "));
+    Serial.println(myICM.statusString());
+  }
+  
+  // Enable the DLPF
+  myICM.enableDLPF(ICM_20948_Internal_Acc, true);
+  myICM.enableDLPF(ICM_20948_Internal_Gyr, true);
+  
+  // ============================================
+  // END OF DLPF CONFIGURATION
+  // ============================================
+
+  // Ensure the magnetometer starts
   myICM.startupMagnetometer();
   if (myICM.status != ICM_20948_Stat_Ok)
   {
@@ -160,7 +213,7 @@ void setup_imu(){
   }
 
   Serial.println();
-  Serial.println(F("# IMU Configuration complete!"));
+  Serial.println(F("# IMU with Hardware DLPF Configuration complete!"));
    
 } // END setup_imu()
 
@@ -312,3 +365,93 @@ void get_scaled_IMU(float Gxyz[3], float Axyz[3], float Mxyz[3]) {
   Mxyz[2] = M_Ainv[2][0] * temp[0] + M_Ainv[2][1] * temp[1] + M_Ainv[2][2] * temp[2];
 
 }
+
+
+
+
+Great question! Here's how to test your updated firmware with the DLPF enabled.
+
+## Step 1: Upload the Firmware to ESP32
+
+```bash
+# In Arduino IDE:
+# 1. Select your ESP32 board (Tools → Board → ESP32 Dev Module)
+# 2. Select the correct COM port
+# 3. Click Upload (→) button
+```
+
+## Step 2: Test the Serial Output
+
+After upload, open the **Serial Monitor** (Tools → Serial Monitor) at **115200 baud**.
+
+You should see output like:
+```
+# GPS serial started
+IMU I2C Device connected!
+# IMU with Hardware DLPF Configuration complete!
+# IMU + GPS streaming started
+IMU,1234,0.01,-0.02,9.81,0.001,0.002,0.001,15.2,-20.1,-30.5
+IMU,1254,0.02,-0.01,9.80,0.002,0.001,0.002,15.1,-20.0,-30.4
+GPS,1300,43.6532,-79.3832,76.5,0.23,1.2,8,1
+...
+```
+
+## Step 3: Quick Visual Test
+
+Move the IMU around and watch the Serial Monitor:
+- **Shake it** → Values should change but be smoother than before
+- **Rotate it** → Gyro values should respond
+- **Tilt it** → Accelerometer values should change
+
+## Step 4: Test in ROS
+
+Once the firmware is running, test with your ROS node:
+
+```bash
+# Terminal 1: Run your IMU node
+ros2 run your_package imu_node.py
+
+# Terminal 2: Check if data is coming through
+ros2 topic echo /imu/data_raw --once
+
+# Terminal 3: Check the filtered output (if running EKF)
+ros2 topic echo /odometry/filtered --once
+```
+
+## Step 5: Compare With/Without DLPF
+
+To see the difference, you can temporarily comment out the DLPF enable lines:
+
+```cpp
+// Temporarily disable DLPF to compare
+// myICM.enableDLPF(ICM_20948_Internal_Acc, true);
+// myICM.enableDLPF(ICM_20948_Internal_Gyr, true);
+```
+
+Then re-upload and compare the serial output noise levels.
+
+## Quick Diagnostic Commands
+
+```bash
+# Check if ESP32 is sending data
+ls /dev/ttyUSB*  # Linux
+ls /dev/cu.usbserial*  # Mac
+
+# View raw serial data (Linux/Mac)
+screen /dev/ttyUSB0 115200
+
+# Or use minicom
+minicom -D /dev/ttyUSB0 -b 115200
+```
+
+## What to Look For
+
+**With DLPF enabled:**
+- Smoother accelerometer values
+- Less gyro drift
+- Reduced high-frequency noise
+
+**If DLPF is working correctly:**
+- You'll see the message `# IMU with Hardware DLPF Configuration complete!`
+- No error messages about setSampleMode, setFullScale, or setDLPcfg
+
