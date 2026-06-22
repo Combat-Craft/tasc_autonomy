@@ -185,6 +185,9 @@ gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 !
 **Static name:** orbbec_color_cam
 
 **Output Formats:**
+
+For SDK Code params: https://github.com/orbbec/OrbbecSDK_v2/blob/6a35953bf284f91607dc764a68271230a482ec86/include/libobsensor/h/ObTypes.h#L204
+
 ```bash
 
 'YUYV' (YUYV 4:2:2)
