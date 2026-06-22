@@ -22,7 +22,7 @@ def generate_launch_description():
     # LAUNCH ARGUMENTS
     # Camera device path (default: /dev/video0)
     camera_device_arg = DeclareLaunchArgument(
-        'camera_device', default_value='/dev/video0',
+        'camera_device', default_value='/dev/back_web_cam',
         description='Camera device path'
     )
 
@@ -53,13 +53,13 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'video_device':  LaunchConfiguration('camera_device'),
-            'pixel_format':  'mjpeg2rgb',
+            'pixel_format':  'yuyv2rgb',
             'image_width':   LaunchConfiguration('image_width'),
             'image_height':  LaunchConfiguration('image_height'),
             'framerate':     LaunchConfiguration('framerate'),
         }]
     )
- 
+
     #  2. YOLO Detector Node
     # Runs object detection on incoming camera frames.
     # Delayed start ensures usb_cam is fully initialized before detection begins to prevent empty frame errors.

@@ -1,8 +1,5 @@
 #include <libobsensor/ObSensor.hpp>
 
-#include "orbbec_gemini2/utils/utils.hpp"
-#include "orbbec_gemini2/utils/utils_opencv.hpp"
-
 int main()
 {
     try

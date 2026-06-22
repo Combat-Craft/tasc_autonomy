@@ -10,25 +10,28 @@ try
     auto config = std::make_shared<ob::Config>();
 
     const int width = 1280, height = 720, fps = 30;
-    config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_MJPG);
+    config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_YUYV);
     pipe.start(config);
 
     gst_init(&argc, &argv);
 
+    // gst-launch-1.0 v4l2src device=/dev/back_web_cam 
+    // ! video/x-raw, format=YUYV, width=1280, height=4720, framerate=30/1 
+    // ! videoconvert 
+    // ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast
+    // ! srtsink uri="srt://192.168.1.23:7092?mode=caller" sync=false
+
     GstElement *pipeline = gst_pipeline_new("orbbec-gst");
     GstElement *appsrc = gst_element_factory_make("appsrc", "src");
-    GstElement *jpegdec = gst_element_factory_make("jpegdec", "dec");
     GstElement *videoconvert = gst_element_factory_make("videoconvert", "conv");
-    GstElement *caps_x264 = gst_element_factory_make("capsfilter", "caps_x264");
     GstElement *x264enc = gst_element_factory_make("x264enc", "enc");
-    GstElement *h264parse = gst_element_factory_make("h264parse", "parse");
-    GstElement *queue = gst_element_factory_make("queue", "queue");
     GstElement *sink = gst_element_factory_make("srtsink", "sink");
 
-    if (!pipeline || !appsrc || !jpegdec || !videoconvert || !caps_x264 || !x264enc || !h264parse || !queue || !sink)
+    if (!pipeline || !appsrc || !videoconvert || !x264enc || !sink)
         return EXIT_FAILURE;
 
-    GstCaps *caps = gst_caps_new_simple("image/jpeg",
+    GstCaps *caps = gst_caps_new_simple("video/x-raw",
+                                        "format", G_TYPE_STRING, "YUYV",
                                         "width", G_TYPE_INT, width,
                                         "height", G_TYPE_INT, height,
                                         "framerate", GST_TYPE_FRACTION, fps, 1, NULL);
@@ -45,29 +48,31 @@ try
     gst_caps_unref(caps);
 
     /* Force x264 to receive canonical I420 raw frames */
-    GstCaps *x264_caps = gst_caps_new_simple("video/x-raw",
-                                             "format", G_TYPE_STRING, "I420",
-                                             "framerate", GST_TYPE_FRACTION, fps, 1, NULL);
-    g_object_set(caps_x264, "caps", x264_caps, NULL);
-    gst_caps_unref(x264_caps);
+   // GstCaps *x264_caps = gst_caps_new_simple("video/x-raw",
+   //                                          "format", G_TYPE_STRING, "I420",
+   //                                          "framerate", GST_TYPE_FRACTION, fps, 1, NULL);
+    //g_object_set(caps_x264, "caps", x264_caps, NULL);
+    //gst_caps_unref(x264_caps);
 
     /* x264 encoder settings */
     g_object_set(x264enc,
                  "bitrate", 500,
+                 "tune", 0x00000004, // GST_X264_ENC_TUNE_ZEROLATENCY
+                 "speed-preset", 1, // ultrafast
                  NULL);
 
-    const char *srt_uri = (argc > 1) ? argv[1] : "srt://192.168.1.XXX:7092?mode=caller";
+    const char *srt_uri = "srt://192.168.1.23:7092?mode=caller";
     g_object_set(sink, "uri", srt_uri, "sync", FALSE, NULL);
 
     /* Configure queue to keep latency down and drop old buffers when overloaded */
-    g_object_set(queue, "max-size-buffers", 2, "max-size-bytes", 0, "max-size-time", 0, "leaky", 2, NULL);
+    //g_object_set(queue, "max-size-buffers", 2, "max-size-bytes", 0, "max-size-time", 0, "leaky", 2, NULL);
 
     gst_bin_add_many(GST_BIN(pipeline),
-                     appsrc, jpegdec, videoconvert, caps_x264, x264enc, h264parse, queue, sink, NULL);
+                     appsrc, videoconvert, x264enc, sink, NULL);
 
-    if (!gst_element_link_many(appsrc, jpegdec, videoconvert, caps_x264, x264enc, h264parse, queue, sink, NULL))
+    if (!gst_element_link_many(appsrc, videoconvert, x264enc, sink, NULL))
     {
-        std::cerr << "GStreamer: failed to link full pipeline (appsrc->jpegdec->videoconvert->caps->x264enc->h264parse->srtsink).\n";
+        std::cerr << "GStreamer: failed to link full pipeline (appsrc->videoconvert->x264enc->srtsink).\n";
         return EXIT_FAILURE;
     }
 
