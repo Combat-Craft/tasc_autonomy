@@ -164,6 +164,13 @@ gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" ! h264parse ! avdec_h264 !
 **REMEMBER TO REPLACE THE IP WITH YOUR PC'S** : 192.168.1.XXX with whatever one you have already set
 
 **Jetson/Server**
+
+preferred:
+```bash
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! video/x-raw, format=YUY2, width=640, height=480, framerate=30/1 ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
+```
+
+backup:
 ```bash
 gst-launch-1.0 v4l2src device=/dev/back_web_cam ! image/jpeg, width=640, height=480, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
 ```
@@ -236,8 +243,14 @@ gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 !
 **REMEMBER TO REPLACE THE IP WITH YOUR PC'S** : 192.168.1.XXX with whatever one you have already set
 
 **Jetson/Server**
+preferred:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=640, height=480, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false 
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! video/x-raw, format=YUY2, width=1280, height=4720, framerate=30/1 ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false
+```
+
+backup:
+```bash
+gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=1280, height=4720, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false 
 ```
 
 **Bay Station/Client**
