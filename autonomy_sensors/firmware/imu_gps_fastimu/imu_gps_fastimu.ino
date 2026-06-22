@@ -72,6 +72,9 @@ void setup() {
   while (!Serial) { //wait for connection
     ;
   }
+  // === GPS Serial/UART setup  ==============================
+  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RX2, TX2);
+  Serial.println("# GPS serial started");
 
   // === IMU I2C setup - from Fast IMU ==============================
   //Wire.begin();
@@ -180,7 +183,7 @@ void loop() {
       Serial.println("nan,nan,nan,nan,nan,0,0");
     }
   }//END GPS OUTPUT
-/* */
+
   // -------- IMU OUTPUT --------  // from fast imu
   if (now_milli - last_imu_time >= IMU_PERIOD_MS) {  
     IMU.update();
@@ -215,8 +218,7 @@ void loop() {
 
     Serial.println();
   } // END IMU OUTPUT
-
-  
+ 
   
 
 }
