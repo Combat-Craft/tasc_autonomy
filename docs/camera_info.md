@@ -245,7 +245,7 @@ gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 !
 **Jetson/Server**
 preferred:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/back_web_cam ! video/x-raw, format=YUY2, width=1280, height=4720, framerate=30/1 ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false
+gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! video/x-raw, format=YUY2, width=1280, height=4720, framerate=30/1 ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false
 ```
 
 backup:
