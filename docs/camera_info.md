@@ -187,6 +187,8 @@ gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 !
 **Output Formats:**
 
 For SDK Code params: https://github.com/orbbec/OrbbecSDK_v2/blob/6a35953bf284f91607dc764a68271230a482ec86/include/libobsensor/h/ObTypes.h#L204
+For SDK Code Guide: https://orbbec.github.io/docs/OrbbecSDKv2_API_User_Guide/source/3_Application_Guide/ApplicationGuide.html
+
 
 ```bash
 
