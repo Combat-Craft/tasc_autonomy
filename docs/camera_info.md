@@ -120,6 +120,9 @@ NOTE: You will have to change the sink when you add it to PyQT. Probably appsink
 ```bash
 gst-launch-1.0 v4l2src device=/dev/mina_cam ! "video/x-h264,width=640,height=480,framerate=30/1" ! srtsink uri="srt://192.168.1.XXX:7090?mode=caller" sync=false
 ```
+```bash
+gst-launch-1.0 v4l2src device=/dev/mina_cam ! "video/x-raw, format=YUY2, width=640, height=360, framerate=30/1" ! videoconvert ! x264enc bitrate=500 tune=zerolatency speed-preset=ultrafast  ! srtsink uri="srt://192.168.1.XXX:7090?mode=caller" sync=false
+```
 
 **Bay Station/Client**
 ```bash
@@ -166,7 +169,7 @@ gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" ! h264parse ! avdec_h264 !
 **Jetson/Server**
 Preferred since better quality:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/back_web_cam ! "video/x-raw, format=YUY2, width=640, height=360, framerate=30/1" ! videoconvert ! x265enc bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! "video/x-raw, format=YUY2, width=640, height=360, framerate=30/1" ! videoconvert ! x264enc bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
 ```
 If YUY2 aint working for some reason:
 ```bash
