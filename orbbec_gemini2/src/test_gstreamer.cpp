@@ -13,7 +13,9 @@ int main(int argc, char **argv) try {
     std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
 
     // Enable color video stream.
-    config->enableVideoStream(OB_STREAM_COLOR, 1280, 720, 30, OB_FORMAT_MJPG);
+    const int width = 1280, height = 720, fps = 30;
+    //config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_MJPG);
+    config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_YUYV);
 
     // Start the pipeline with config.
     pipe.start(config);
@@ -24,20 +26,27 @@ int main(int argc, char **argv) try {
 
     GstElement *pipeline = gst_pipeline_new("orbbec-appsrc-pipeline");
     GstElement *appsrc = gst_element_factory_make("appsrc", "orbbec-source");
-    GstElement *jpegdec = gst_element_factory_make("jpegdec", "jpeg-decoder");
     GstElement *videoconvert = gst_element_factory_make("videoconvert", "video-convert");
-    GstElement *sink = gst_element_factory_make("autovideosink", "video-output");
+    GstElement *encoder = gst_element_factory_make("x264enc", "x264-encoder");
+    GstElement *sink = gst_element_factory_make("srtsink", "srt-output");
 
-    if (!pipeline || !appsrc || !jpegdec || !videoconvert || !sink) {
+    if (!pipeline || !appsrc  || !videoconvert || !sink) {
         std::cerr << "Failed to create GStreamer elements." << std::endl;
         return EXIT_FAILURE;
     }
 
+    // gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam
+    // ! video/x-raw, format=YUY2, width=1280, height=4720, framerate=30/1
+    // ! videoconvert
+    // ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast
+    // ! srtsink uri="srt://192.168.1.23:7092?mode=caller" latency=200 sync=false
+
     GstCaps *caps = gst_caps_new_simple(
-        "image/jpeg",
-        "width", G_TYPE_INT, 1280,
-        "height", G_TYPE_INT, 720,
-        "framerate", GST_TYPE_FRACTION, 30, 1,
+        "video/x-raw",
+        "format", G_TYPE_STRING, "YUY2",
+        "width", G_TYPE_INT, width,
+        "height", G_TYPE_INT, height,
+        "framerate", GST_TYPE_FRACTION, fps, 1,
         NULL);
 
     g_object_set(appsrc,
@@ -49,8 +58,21 @@ int main(int argc, char **argv) try {
                  NULL);
     gst_caps_unref(caps);
 
-    gst_bin_add_many(GST_BIN(pipeline), appsrc, jpegdec, videoconvert, sink, NULL);
-    if (!gst_element_link_many(appsrc, jpegdec, videoconvert, sink, NULL)) {
+    g_object_set(encoder,
+        "bitrate", 500,         // kbps
+        "tune", 0x00000004,     // zerolatency
+        "pass", 17,             // pass1 i.e. VBR
+        "speed-preset", 1,      // ultrafast
+        NULL);
+
+    g_object_set(sink,
+        "uri", "srt://192.168.1.23:7092?mode=caller",
+        "sync", FALSE,
+        "latency", 200,
+        NULL);
+
+    gst_bin_add_many(GST_BIN(pipeline), appsrc, videoconvert, encoder, sink, NULL);
+    if (!gst_element_link_many(appsrc, videoconvert, encoder, sink, NULL)) {
         std::cerr << "Failed to link GStreamer pipeline." << std::endl;
         gst_object_unref(pipeline);
         return EXIT_FAILURE;
@@ -96,11 +118,9 @@ int main(int argc, char **argv) try {
 
         guint64 pts = static_cast<guint64>(videoFrame->getTimeStampUs()) * 1000ULL;
         GST_BUFFER_PTS(buffer) = pts;
-        GST_BUFFER_DURATION(buffer) = gst_util_uint64_scale_int(1, GST_SECOND, 30);
+        GST_BUFFER_DURATION(buffer) = gst_util_uint64_scale_int(1, GST_SECOND, fps);
 
-        GstFlowReturn flowReturn = GST_FLOW_ERROR;
-        g_signal_emit_by_name(appsrc, "push-buffer", buffer, &flowReturn);
-        gst_buffer_unref(buffer);
+        GstFlowReturn flowReturn = gst_app_src_push_buffer(GST_APP_SRC(appsrc), buffer);
 
         if (flowReturn != GST_FLOW_OK) {
             std::cerr << "GStreamer appsrc push failed: " << flowReturn << std::endl;

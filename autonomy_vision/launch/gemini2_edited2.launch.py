@@ -1,3 +1,5 @@
+# outdated as of 18-Jun-2026
+
 # gemini2 launch file with pointcloud params enabled, and IMU/IR off
 
 from launch import LaunchDescription
@@ -10,33 +12,57 @@ from launch_ros.descriptions import ComposableNode
 from launch_ros.actions import Node
 import os
 
+# Color-only mode: 1280x720 @ 30fps compressed (Foxglove-Encoding)
+#
+# To enable point cloud, uncomment/ set true for:
+#   - enable_depth, depth_* params
+#   - enable_point_cloud, enable_colored_point_cloud
+#   - depth_registration: must be 'true' for colored point cloud
+#   - The image_transport republisher is not needed for point cloud
 
+# foxglove encoding settings:: (from multi_camera_streamer.py) for gstreamer
+'''
+"orbec_cam": {
+                "pipeline":
+                "v4l2src device=/dev/orbbec_color_cam ! "
+                "video/x-raw, format=YUY2 ,width=1280,height=720,framerate=30/1 ! "
+                #"image/jpeg,width=1280,height=720,framerate=30/1 ! "
+                #"jpegdec ! "
+                "videoconvert ! "
+                f"{encoder_block}"
+                "video/x-h264,stream-format=byte-stream,alignment=au ! "
+                "appsink name={sink_name} emit-signals=true sync=false drop=true",
+                "topic": "/orbecc_cam/h264"
+            },
+'''
 
 def generate_launch_description():
     # Declare arguments
     args = [
         
-        #hardware stuff
+        #hardware stuff (kind of redundant)
         DeclareLaunchArgument('camera_name', default_value='camera'),
-        DeclareLaunchArgument('depth_registration', default_value='true'), # reset to true for point cloud
+        
         DeclareLaunchArgument('serial_number', default_value=''),
         DeclareLaunchArgument('usb_port', default_value=''),
         DeclareLaunchArgument('device_num', default_value='1'),
         DeclareLaunchArgument('vendor_id', default_value='0x2bc5'),
         DeclareLaunchArgument('product_id', default_value=''),
 
-        # Point cloud params
-        DeclareLaunchArgument('enable_point_cloud', default_value='true'),
-        DeclareLaunchArgument('enable_colored_point_cloud', default_value='true'),
+        # Point cloud params 
+        DeclareLaunchArgument('enable_point_cloud', default_value='false'),
+        DeclareLaunchArgument('enable_colored_point_cloud', default_value='false'),
         DeclareLaunchArgument('cloud_frame_id', default_value=''),
         DeclareLaunchArgument('point_cloud_qos', default_value='default'),
 
         DeclareLaunchArgument('connection_delay', default_value='100'),
 
         #color stuff (resolution, fps, profile, mirroring)
-        DeclareLaunchArgument('color_width', default_value='640'),
-        DeclareLaunchArgument('color_height', default_value='360'),
-        DeclareLaunchArgument('color_fps', default_value='15'),
+        # Color settings: 720 @ 30fps
+        DeclareLaunchArgument('color_width', default_value='1280'),
+        DeclareLaunchArgument('color_height', default_value='720'),
+        DeclareLaunchArgument('color_fps', default_value='30'), 
+
         DeclareLaunchArgument('color_format', default_value='MJPG'),
         DeclareLaunchArgument('enable_color', default_value='true'),
         DeclareLaunchArgument('flip_color', default_value='false'),
@@ -54,7 +80,7 @@ def generate_launch_description():
         DeclareLaunchArgument('depth_height', default_value='400'),
         DeclareLaunchArgument('depth_fps', default_value='15'),
         DeclareLaunchArgument('depth_format', default_value='Y14'),
-        DeclareLaunchArgument('enable_depth', default_value='true'),
+        DeclareLaunchArgument('enable_depth', default_value='false'),
         DeclareLaunchArgument('flip_depth', default_value='false'),
         DeclareLaunchArgument('depth_qos', default_value='default'),
         DeclareLaunchArgument('depth_camera_info_qos', default_value='default'),
@@ -62,19 +88,32 @@ def generate_launch_description():
         DeclareLaunchArgument('depth_ae_roi_top', default_value='-1'),
         DeclareLaunchArgument('depth_ae_roi_right', default_value='-1'),
         DeclareLaunchArgument('depth_ae_roi_bottom', default_value='-1'),
+        DeclareLaunchArgument('depth_registration', default_value='true'), 
 
-        # IR stuff
+        # For enabling point cloud:
+        # --- Depth: DISABLED (enable for point cloud) ---
+        # 'enable_depth': 'false',
+        # 'depth_width': '640',
+        # 'depth_height': '400',
+        # 'depth_fps': '15',
+        # 'depth_format': 'Y14',
+        # 'flip_depth': 'false',
+        # 'depth_qos': 'default',
+        # 'depth_registration': 'true',   # required for colored point cloud
+
+        # IR stuff (disabled)
         DeclareLaunchArgument('ir_width', default_value='640'),
         DeclareLaunchArgument('ir_height', default_value='400'),
         DeclareLaunchArgument('ir_fps', default_value='15'),
         DeclareLaunchArgument('ir_format', default_value='Y8'),
-        DeclareLaunchArgument('enable_ir', default_value='true'),
+        DeclareLaunchArgument('enable_ir', default_value='false'),
         DeclareLaunchArgument('flip_ir', default_value='false'),
         DeclareLaunchArgument('ir_qos', default_value='default'),
         DeclareLaunchArgument('ir_camera_info_qos', default_value='default'),
         DeclareLaunchArgument('enable_ir_auto_exposure', default_value='true'),
         DeclareLaunchArgument('ir_exposure', default_value='-1'),
         DeclareLaunchArgument('ir_gain', default_value='-1'),
+
 
         # IMU stuff
         DeclareLaunchArgument('enable_sync_output_accel_gyro', default_value='true'),

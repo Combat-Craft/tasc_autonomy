@@ -1,5 +1,6 @@
 '''
 # orbbec gemini2 - FOR NOW, DIRECT AS ^LAUNCH IS BAD
+# but why bad?
         IncludeLaunchDescription(
             PathJoinSubstitution([
               FindPackageShare('orbbec_camera'),   
@@ -24,9 +25,9 @@
                 'connection_delay':'100',
 
                 # == color stuff (resolution, fps, profile, mirroring) ==
-                'color_width':'640',
-                'color_height':'360',
-                'color_fps':'15',
+                'color_width':'1280',
+                'color_height':'720',
+                'color_fps':'30',
                 'color_format':'MJPG',
                 'enable_color':'true',
                 'flip_color':'false',
@@ -122,8 +123,8 @@ from launch_ros.actions import Node
 
 import os
 
-## THE PPURPOSE OF THIS CODE TO RUN ON FOXGLOVE GUI
-## WHITELIST MAY BE NEEDED TO PREVENT UNNEDED TOPICS FROM STREAMING OVER THE NETWORK
+## THE PURPOSE OF THIS CODE TO RUN ON FOXGLOVE GUI
+## WHITELIST MAY BE NEEDED TO PREVENT UNNEEDED TOPICS FROM STREAMING OVER THE NETWORK
 
 # look at this for finetuning: 
 # https://docs.ros.org/en/humble/How-To-Guides/Launch-file-different-formats.html
@@ -154,6 +155,7 @@ def generate_launch_description():
         ),
         
         # Launch all sensors - currently imu, gps, gps route logger (real) 
+        '''
         IncludeLaunchDescription(
             PathJoinSubstitution([
               FindPackageShare("autonomy_sensors"),
@@ -161,7 +163,7 @@ def generate_launch_description():
                   "sensors.launch.py"
             ])    
         ),
-        
+        '''
         # Launch all cameras/visions - currently only multicamera
         IncludeLaunchDescription(
             PathJoinSubstitution([

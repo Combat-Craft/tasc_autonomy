@@ -65,10 +65,12 @@ add_library(ob_examples_utils STATIC
 )
 target_link_libraries(ob_examples_utils PUBLIC ${OpenCV_LIBS})
 target_include_directories(ob_examples_utils PUBLIC ${OpenCV_INCLUDE_DIRS})
-    
+
+
 add_executable(gemini2_color_only src/color_only.cpp)
 target_link_libraries(gemini2_color_only 
     ob::OrbbecSDK 
+    ${OpenCV_LIBS}
 )
 
 add_executable(gemini2_color_gstreamer src/color_gstreamer.cpp)
@@ -83,6 +85,14 @@ target_link_libraries(gemini2_color_gstreamer
 # Create Gstreamer executables
 add_executable(test_gstreamer src/test_gstreamer.cpp)
 target_link_libraries(test_gstreamer 
+    ob::OrbbecSDK
+    PkgConfig::gstreamer
+    PkgConfig::gstreamer-sdp
+    PkgConfig::gstreamer-app
+    PkgConfig::gstreamer-video
+)
+add_executable(test_gstreamer_v2 src/test_gstreamer_v2.cpp)
+target_link_libraries(test_gstreamer_v2
     ob::OrbbecSDK
     PkgConfig::gstreamer
     PkgConfig::gstreamer-sdp

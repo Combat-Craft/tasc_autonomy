@@ -118,12 +118,12 @@ NOTE: You will have to change the sink when you add it to PyQT. Probably appsink
 
 **Jetson/Server**
 ```bash
-gst-launch-1.0 v4l2src device=/dev/mina_cam ! "video/x-h264,width=640,height=480,framerate=30/1" ! srtsink uri="srt://192.168.1.XXX:7090?mode=caller" latency=200 sync=false
+gst-launch-1.0 v4l2src device=/dev/mina_cam ! "video/x-h264,width=640,height=480,framerate=30/1" ! srtsink uri="srt://192.168.1.XXX:7090?mode=caller" sync=false
 ```
 
 **Bay Station/Client**
 ```bash
-gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" keep-listening=true ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 ```
 
 
@@ -164,26 +164,32 @@ gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" keep-listening=true ! h264
 **REMEMBER TO REPLACE THE IP WITH YOUR PC'S** : 192.168.1.XXX with whatever one you have already set
 
 **Jetson/Server**
-
-preferred:
+Preferred since better quality:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/back_web_cam ! video/x-raw, format=YUY2, width=640, height=480, framerate=30/1 ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" latency=200 sync=false
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! "video/x-raw, format=YUY2, width=640, height=360, framerate=30/1" ! videoconvert ! x265enc bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
+```
+If YUY2 aint working for some reason:
+```bash
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! image/jpeg, width=640, height=360, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
 ```
 
-backup:
-```bash
-gst-launch-1.0 v4l2src device=/dev/back_web_cam ! image/jpeg, width=640, height=480, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" latency=200 sync=false
-```
+OR
+
 
 **Bay Station/Client**
 ```bash
-gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" keep-listening=true ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 ```
 
 ##  Default Orbbec Gemini2 Connection via V2L4
 **Static name:** orbbec_color_cam
 
 **Output Formats:**
+
+For SDK Code params: https://github.com/orbbec/OrbbecSDK_v2/blob/6a35953bf284f91607dc764a68271230a482ec86/include/libobsensor/h/ObTypes.h#L204
+For SDK Code Guide: https://orbbec.github.io/docs/OrbbecSDKv2_API_User_Guide/source/3_Application_Guide/ApplicationGuide.html
+
+
 ```bash
 
 'YUYV' (YUYV 4:2:2)
@@ -240,20 +246,30 @@ gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" keep-listening=true ! h264
 
 ### Gstreamer Pipeline (Tested via CLI)
 
+The server code will be replcaed by the C++ ORbbec SDK code made in the orbbec_gemini_2 package
+
 **REMEMBER TO REPLACE THE IP WITH YOUR PC'S** : 192.168.1.XXX with whatever one you have already set
 
 **Jetson/Server**
-preferred:
+
+Preferred since better quality:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! video/x-raw, format=YUY2, width=1280, height=720, framerate=30/1 ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" latency=200 sync=false
+gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! "video/x-raw, format=YUY2, width=1280, height=720, framerate=30/1" ! videoconvert ! x265enc bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false 
 ```
 
-backup:
+If YUY2 aint working for some reason:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=1280, height=720, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" latency=200 sync=false 
+gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=1280, height=720, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false 
 ```
 
 **Bay Station/Client**
 ```bash
-gst-launch-1.0 srtsrc uri="srt://:7092?mode=listener" keep-listening=true ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false 
+gst-launch-1.0 srtsrc uri="srt://:7092?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false 
 ```
+
+
+
+
+
+
+## 

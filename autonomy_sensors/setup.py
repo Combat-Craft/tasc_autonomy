@@ -28,8 +28,8 @@ setup(
     entry_points={
         'console_scripts': [
             'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
-            'gps_node = autonomy_sensors.gps_node:main',
-            'imu_node = autonomy_sensors.imu_node:main',
+            #'gps_node = autonomy_sensors.gps_node:main',
+            #'imu_node = autonomy_sensors.imu_node:main',
             
             'fake_gps     = gps_tracker.fake_gps:main',
             'ip_gps       = gps_tracker.ip_gps:main',

@@ -1,5 +1,26 @@
 # Instructions
 
+## as of June 17, 2026
+ - install FastIMU library on Arduino IDE
+ - **first test using provided examples!** 
+  1. first as IMUIdentifier
+    - then edit to see LPFs, between lines 93 and 94, after the update
+```bash
+Serial.print("# Accl LPF (Hz): ); Serial.print(IMU.getAccelLPF()); Serial.print("\t");
+Serial.print("# Gyro LPF (Hz): ); Serial.print(IMU.getGyroLPF()); Serial.print("\t");
+```
+  2. then Calibrated_sensor_output
+  3. then Calibrated_quat
+  4. finally test ```imu_gps_fastimu.ino```, imu only then with GPS
+  
+As seen in https://github.com/LiquidCGS/FastIMU/blob/main/src/sensors/F_ICM20948.cpp lines 33-38, LPF are already set
+  
+As seen in https://github.com/LiquidCGS/FastIMU/issues/1 the units are ```The Acceleration is in Gs, the rotation is in deg/s, magnetometer is un uTesla``
+
+
+  
+**IGNORE BELOW FOR WHICH FIRMWARE FOR NOW**
+
 Currently, for firmware, On arduino
   1) connect the ESP32 with a usb c cable to the jetson
   2) Select the board to be the ```ESP32 Dev Module```

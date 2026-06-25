@@ -1,7 +1,7 @@
-# editing from antonia's gps_imu_broadcaster.py and MNTadro's imu_node.py, to work with current imu_gps_serial.ino 
+# editing from antonia's gps_imu_broadcaster.py and MNTadro's imu_node.py, to work with current imu_gps_fastimu.ino 
 #
 ## #  GPS,ms,lat,lon,alt,speed,hdop,sats,fix at 1Hz <- NO CHANGES  
-## #  IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz at 100Hz
+## #  IMU,ms,ax,ay,az,gx,gy,gz,mx,my,mz,qw,qx,qy,qz at 100Hz
 ## # This is the "No microROS, only Serial" option
 #
 # Note that this is publishing various topics :
@@ -51,6 +51,7 @@ def cardinal_Direction_8(angle):
     if (292.5 < angle <= 337.5):
         return "NW"
         
+
 def get_heading_simple(mx, my): #ax, ay, az, 
     #has the code for roll and yaw, just in case
     
@@ -90,31 +91,36 @@ class IMUGPSNode(Node):
         # Parameters (easy to override in launch files)
         self.declare_parameter('port', '/dev/ttyUSB0')
         self.declare_parameter('baud', 115200) #still matches with new arduino sketch
-        self.declare_parameter('frame_id', 'gps_imu_link')
-        self.declare_parameter('simulated_data', True)
+        self.declare_parameter('frame_id', 'gps_imu_link') # match IMU, gps can be off by 5cm for all i care
+        self.declare_parameter('simulated_data', False)
+        self.declare_parameter('foxglove_overlay', False) # whether to publish textAnnotation
 
         # other internal paramaters
         self.port = self.get_parameter('port').value
         self.baud = self.get_parameter('baud').value
+        self.foxglove_overlay = self.get_parameter('foxglove_overlay').value
         self.serial_port = None
-
-        ## GPS ##################################################################
-        # Publishers - standard GPS
+                
+        # Publishers
+        ## GPS 
         self.NavSatFix_pub = self.create_publisher(NavSatFix, '/gps/fix', 10)
-        # Publishers - foxglove GPS
-        self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)      
-        ## IMU ##################################################################
-        # Publishers - standard IMU
+              
+        ## IMU 
         self.imu_pub = self.create_publisher(Imu, '/imu/acc_gryo', 50)
         self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', 50)
-        # Publishers - custom IMU
+
         self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
         self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
-        # Publishers - foxglove IMU
-        self.headingfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/heading', 10)
-        self.compassfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
+        
+        self.get_logger().error(f"imu_gps_node: self.foxglove_overlay is < {self.foxglove_overlay} >")
+        
+        ## Foxglove publishers
+        if self.foxglove_overlay:
+            self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)  
+            self.headingfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/heading', 10)
+            self.compassfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
          
-        # Start
+        # Start Node
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
@@ -147,84 +153,53 @@ class IMUGPSNode(Node):
         # END init_serial_connection()
         
     # --------------------------------------------------
-    # Top Level MSG Publisher
+    # Top Level MSG Publisher - But going to Publish within handle_XXX() functions
     # --------------------------------------------------
     def publish_data(self):
         while rclpy.ok():
-            navsatfix_msg = None
-            imu_msg_list = None 
-            
+            #serial is ok            
             if self.serial_port and self.serial_port.is_open:
                 try:
                     #self.get_logger().info( f"imu_gps_node: Trying to obtain ESP32 serial read in publish_data()")
                     line = self.serial_port.readline().decode('ascii', errors='ignore').strip()
-                    
-                    #self.get_logger().info(f"imu_gps_node: {line}")
-                    
-                    if not line:
-                        continue
-                    
-                    if line.startswith('GPS'):
-                        #self.get_logger().info(f"imu_gps_node: {line}")
-                        navsatfix_msg = self.handle_gps(line)
-                        #self.get_logger().info(f"imu_gps_node: Handling GPS serial read")
-                        
-                    elif line.startswith("IMU"):
-                        #self.get_logger().info(f"imu_gps_node: Starting to go to handle_imu() in publish_data()")
-                        imu_msg_list = self.handle_imu(line)
-                        #self.get_logger().info(f"imu_gps_node: Handling IMU serial read")
-                
+    
                 except Exception:
-                    self.get_logger().error(f"imu_gps_node: Serial read error: {e}")
+                    self.get_logger().error(f"imu_gps_node: Serial read error: {Exception}")
                     self.serial_port = None
                     continue
-
-            # check for serial print first, then grab simulated data
-            
-            ## GPS
-            if navsatfix_msg:                
-                #self.get_logger().info(f"imu_gps_node: Retrieved serial GPS data msg")
-                self.simulated_data = False # the moment it detects real data disable simulated as it will add false data irl
-            elif navsatfix_msg is None and self.get_parameter('simulated_data').value:
-                #self.get_logger().warning("imu_gps_node: No serial GPS data, using simulated data")
-                navsatfix_msg = self.get_simulated_gps_data()                 
-            else: # in case navsatfix_msg is some weird ass thing
-                continue
-            
-            ## IMU
-            if imu_msg_list:
-                #self.get_logger().info(f"imu_gps_node: Retrieved serial IMU data msgs")    
-                self.simulated_data = False # the moment it detects real data disable simulated as it will add false data irl      
-            elif imu_msg_list is None and self.get_parameter('simulated_data').value:
-                self.get_logger().warning("imu_gps_node: No serial IMU data, using simulated data")
-                imu_msg_list = self.get_simulated_imu_data()               
-            else: # in case imu_msg_list is some weird ass thing
-                continue
-            # whether it is real serial or simulated, grab the msgs out of list
-            imu_msg, mag_msg, heading_msg, compass_msg = imu_msg_list     
-            
-            # publish the ros2 msgs
-            #self.get_logger().info(f"imu_gps_node: Publishing navsatfix_msg, imu_msg, mag_msg, heading_msg, compass_msg")
-            self.NavSatFix_pub.publish(navsatfix_msg)
-            self.imu_pub.publish(imu_msg)
-            self.mag_pub.publish(mag_msg)
-            self.heading_pub.publish(heading_msg)
-            self.compass_pub.publish(compass_msg) 
-            
-            # publish the foxglove textannotation msgs
-            #self.get_logger().info(f"imu_gps_node: Publishing foxglove msgs - latlonfox, headingfoxglove, compassfoxglove")
-            foxglove_msg = self.handle_foxgloveGPS(navsatfix_msg)            
-            self.latlonfox_pub.publish(foxglove_msg)  
-            headingfoxglove_msg = self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp) 
-            self.headingfox_pub.publish(headingfoxglove_msg)               
-            compassfoxglove_msg = self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)
-            self.compassfox_pub.publish(compassfoxglove_msg) 
-
-            self.get_logger().info(
-                    f"imu_gps_node: Published Sample - Lat={navsatfix_msg.latitude:.6f}, Lon={navsatfix_msg.longitude:.6f}, "
-                    f"Alt={navsatfix_msg.altitude:.1f}m, Status={navsatfix_msg.status.status},"
-                    f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}"
-                )
+                    
+                #self.get_logger().info(f"imu_gps_node: {line}")          
+                if not line:
+                    continue
+                
+                if line.startswith('GPS,'):
+                    #self.get_logger().info(f"imu_gps_node: Starting to go to handle_imu() in publish_data()")
+                                       
+                    self.handle_gps(line)
+                    
+                    #self.get_logger().info(f"imu_gps_node: Handling GPS serial read")
+      
+                elif line.startswith("IMU,"):
+                    #self.get_logger().info(f"imu_gps_node: Starting to go to handle_imu() in publish_data()")
+                  
+                    self.handle_imu(line)
+                    
+                    #self.get_logger().info(f"imu_gps_node: Handling IMU serial read")
+                    
+            # no serial, but we can simulate
+            elif self.get_parameter('simulated_data').value:
+                if navsatfix_msg is None:
+                    self.get_logger().warning("imu_gps_node: No serial GPS data, using simulated data")
+                    self.get_simulated_gps_data() 
+                
+                if imu_msg_list is None:
+                    self.get_logger().warning("imu_gps_node: No serial IMU data, using simulated data")
+                    self.get_simulated_imu_data()  
+                
+            # no serial, no simulate
+            else:
+                self.get_logger().warning("imu_gps_node: No serial IMU data, no simulated data")
+          
        
     # --------------------------------------------------
     # GPS handler for Simulated
@@ -249,9 +224,9 @@ class IMUGPSNode(Node):
                 ]
         msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
         
-        sleep(1) #  for 1 HZ
+        #sleep(1) #  for 1 HZ
         
-        return msg
+        self.NavSatFix_pub.publish(msg)
         
     # ----------------------------------------------------------------------------------------------------
     # IMU handler for Simulated
@@ -272,7 +247,11 @@ class IMUGPSNode(Node):
         imu_msg.orientation.x = 0.0
         imu_msg.orientation.y = 0.0
         imu_msg.orientation.z = 0.0
-        imu_msg.orientation_covariance[0] = -1.0  # unknown orientation
+        imu_msg.orientation_covariance = [# [0] = -1.0  # unknown orientation
+            1.0e-2, 0.0, 0.0,
+            0.0, 1.0e-2, 0.0,
+            0.0, 0.0, 1.0e-2
+        ]
         imu_msg.linear_acceleration_covariance = [
             4.5359e-4, 0.0, 0.0,
             0.0, 4.5359e-4, 0.0,
@@ -290,7 +269,11 @@ class IMUGPSNode(Node):
         mag_msg.magnetic_field.x = 0.0000711 #sample from log
         mag_msg.magnetic_field.y = 0.00013935
         mag_msg.magnetic_field.z = 0.0001338
-        mag_msg.magnetic_field_covariance[0] = -1.0  # unknown orientation
+        mag_msg.magnetic_field_covariance = [
+            1.0e-2, 0.0, 0.0,
+            0.0, 1.0e-2, 0.0,
+            0.0, 0.0, 1.0e-2
+        ]
         
         heading_msg = Float32()
         heading_msg.data = get_heading_simple(mag_msg.magnetic_field.x, mag_msg.magnetic_field.y)
@@ -300,7 +283,14 @@ class IMUGPSNode(Node):
         
         sleep(0.1) # should be 0.01 for 100HZ, but for simulation lets ease off for testing
         
-        return [imu_msg, mag_msg, heading_msg, compass_msg]    
+        self.imu_pub.publish(imu_msg)
+        self.mag_pub.publish(mag_msg)
+        self.heading_pub.publish(heading_msg)
+        self.compass_pub.publish(compass_msg) 
+        
+        if self.foxglove_overlay:
+            self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
+            self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp) 
         
     # --------------------------------------------------
     # GPS handler for Serial
@@ -335,11 +325,15 @@ class IMUGPSNode(Node):
                 msg.status.status = NavSatStatus.STATUS_NO_FIX
                 msg.status.service = NavSatStatus.SERVICE_GPS
                 msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
-    
-            return msg
+                   
+            self.NavSatFix_pub.publish(msg)
+            
+            if self.foxglove_overlay:
+                self.handle_foxgloveGPS(msg)
           
         except ValueError:
-            return
+            self.get_logger().error(f"imu_node.py: Failed try in handle_gps()")
+           
     
     # --------------------------------------------------
     # IMU handler
@@ -349,11 +343,12 @@ class IMUGPSNode(Node):
     #   Calculated from IMU
     # --------------------------------------------------
     def handle_imu(self, line: str):
-        #ACCEL_CONVERSION = 0.001 # it will be coming in milli m/s^2, as it was converted from milli g's
+        # ACCEL_CONVERSION = 0.001 # FastIMU outputs Gs, convert to m/s^2, UPDATE: done in firmware
+        # GYRO_CONVERSION = PI / 180.0 # FastIMU outputs deg/s, convert to rad/s, UPDATE: done in firmware
         MAG_CONVERSION = 0.000001 # it will be coming in micro Tesla, need Tesla
                                   # tested in arduino, need to convert here to preserve precision
         try:
-            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz = line.split(',')
+            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz, qw, qx, qy, qz = line.split(',')
             ax = float(ax) # * ACCEL_CONVERSION
             ay = float(ay) 
             az = float(az) 
@@ -363,10 +358,12 @@ class IMUGPSNode(Node):
             mx = float(mx) * MAG_CONVERSION
             my = float(my) * MAG_CONVERSION
             mz = float(mz) * MAG_CONVERSION
-            
-            self.get_logger().info(f"imu_node.py: Line split success!!")
-        
-          
+            qw = float(qw)
+            qx = float(qx)
+            qy = float(qy)
+            qz = float(qz)        
+            #self.get_logger().info(f"imu_node.py: Line split success!!")
+                 
             # IMU data ==============================================================================
             imu_msg = Imu()
             imu_msg.header = Header()
@@ -381,12 +378,16 @@ class IMUGPSNode(Node):
             imu_msg.angular_velocity.y = gy
             imu_msg.angular_velocity.z = gz
          
-            imu_msg.orientation.w = 1.0 ## -- Orientation unknown --
-            imu_msg.orientation.x = 0.0
-            imu_msg.orientation.y = 0.0
-            imu_msg.orientation.z = 0.0
+            imu_msg.orientation.w = qw 
+            imu_msg.orientation.x = qx
+            imu_msg.orientation.y = qy
+            imu_msg.orientation.z = qz
             
-            imu_msg.orientation_covariance[0] = -1.0  # unknown orientation
+            imu_msg.orientation_covariance = [ # -1.0  # unknown orientation
+                1.0e-2, 0.0, 0.0,
+                0.0, 1.0e-2, 0.0,
+                0.0, 0.0, 1.0e-2
+            ]
             imu_msg.linear_acceleration_covariance = [
                 4.5359e-4, 0.0, 0.0,
                 0.0, 4.5359e-4, 0.0,
@@ -398,6 +399,11 @@ class IMUGPSNode(Node):
                 0.0, 0.0, 4.71762e-6
             ]
             
+            #self.get_logger().info(
+            #                f"Acc X,Y,Z ={imu_msg.linear_acceleration.x}, {imu_msg.linear_acceleration.y}, {imu_msg.linear_acceleration.z},"
+            #                f"Gryo X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
+            #        )
+            
             # Magnetometer data ==========================================================================
             mag_msg = MagneticField()
             mag_msg.header.stamp = imu_msg.header.stamp # let's use same timestamp here
@@ -406,7 +412,13 @@ class IMUGPSNode(Node):
             mag_msg.magnetic_field.x = mx
             mag_msg.magnetic_field.y = my
             mag_msg.magnetic_field.z = mz
-            mag_msg.magnetic_field_covariance[0] = -1.0  # unknown orientation
+            mag_msg.magnetic_field_covariance = [ #[0] = -1.0  # unknown orientation
+                1.0e-2, 0.0, 0.0,
+                0.0, 1.0e-2, 0.0,
+                0.0, 0.0, 1.0e-2
+            ]
+            
+            #self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
 
             # Heading Calculation ========================================================================
             heading_msg = Float32()
@@ -417,11 +429,19 @@ class IMUGPSNode(Node):
             compass_msg = String()
             compass_msg.data = cardinal_Direction_8(heading_msg.data) # i.e.N NE E SE S SW W NW
             
-            return [imu_msg, mag_msg, heading_msg, compass_msg]
+            #self.get_logger().info(f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}")           
             
+            self.imu_pub.publish(imu_msg)
+            self.mag_pub.publish(mag_msg)
+            self.heading_pub.publish(heading_msg)
+            self.compass_pub.publish(compass_msg) 
+            
+            if self.foxglove_overlay:
+                self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
+                self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
+                       
         except ValueError:
-            self.get_logger().error(f"imu_node.py: Failed try in handlu_imu()")
-            return
+            self.get_logger().error(f"imu_node.py: Failed try in handle_imu()")
     
     # --------------------------------------------------     
     # Foxglove Text Annotation
