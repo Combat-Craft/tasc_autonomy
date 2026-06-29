@@ -19,6 +19,8 @@ class MotorInput(Node):
 
         # Publisher
         self.pub = self.create_publisher(Float64, '/motor_cmd', 10)
+        self.pano_trigger_pub = self.create_publisher(Float64, '/panorama_trigger', 10)
+
 
     # Publish user command (target angle) to /motor_cmd
     def send(self, angle):
@@ -27,18 +29,28 @@ class MotorInput(Node):
         self.pub.publish(msg)
         self.get_logger().info(f"Sent: {angle}")
 
+    def trigger_panorama(self):
+        msg = Float64()
+        msg.data = 999.0
+        self.pano_trigger_pub.publish(msg)
+        self.get_logger().info("Panorama trigger sent")
+
+
 def main():
     rclpy.init()
     node = MotorInput()
     try:
         while True: # Recieves input from user continuously and it exits when user inputs 'e'
-            val = input("Enter angle (-135 to 135 | enter 'e' to exit): ") # Prompt user
+            val = input("Enter angle (-135 to 135 | 'p' for panorama | 'e' to exit): ") # Prompt user
             if val == 'e': # Exit
                 break
-            try: # Send command to ROS2 topic
-                node.send(float(val)) 
-            except ValueError: # Invalid
-                print("Invalid number")
+            elif val == 'p':
+                node.trigger_panorama()
+            else:
+                try: # Send command to ROS2 topic
+                    node.send(float(val)) 
+                except ValueError: # Invalid
+                    print("Invalid number")
     except KeyboardInterrupt:
         pass
     finally:

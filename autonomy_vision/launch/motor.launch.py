@@ -3,9 +3,10 @@ ROS2 Launch file
 
 Launch command: ros2 launch autonomy_vision motor.launch.py
 
-Starts two nodes:
+Starts three nodes:
 - motor_controller.py | Sends servo angle commands to Arduino over serial
 - motor_input.py | Allows user to enter motor angles within range of -135 to +135 deg | Openned in new window
+- new_pano_stitcher.py | Panorama sweep and stitch| Openned in new window
 """
 from launch import LaunchDescription
 from launch_ros.actions import Node
@@ -24,5 +25,30 @@ def generate_launch_description():
             name='motor_input',
             output='screen',
             prefix='gnome-terminal --'  # Open in new window
+        ),
+        Node(
+            package='autonomy_vision',
+            executable='panorama_stitcher',
+            name='panorama_stitcher',
+            output='screen',
+            prefix='gnome-terminal --' 
+        ),
+        Node(
+            package='v4l2_camera',
+            executable='v4l2_camera_node',
+            name='camera',
+            output='screen',
+            parameters=[{'video_device': '/dev/video0'}]
+        ),
+        Node(
+            package='image_transport',
+            executable='republish',
+            name='image_republisher',
+            output='screen',
+            arguments=['raw', 'compressed'],
+            remappings=[
+                ('in', '/image_raw'),
+                ('out/compressed', '/arm_cam/image/compressed')
+            ]
         ),
     ])
