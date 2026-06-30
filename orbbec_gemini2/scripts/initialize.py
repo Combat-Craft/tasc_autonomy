@@ -6,37 +6,66 @@ gi.require_version("Gst", "1.0")
 from gi.repository import Gst
 
 #DEFAULT SETTINGS
-WIDTH = 640
-HEIGHT = 480
-FRAMERATE = 30
-
-FORMAT = "YUY2"
 
 BITRATE = 500
 LATENCY = 200
 
 CAMERAS = [
-    {
-        "name": "mina_cam",
-        "device": "/dev/mina_cam",
-        "port": 7090,
-    },
 
     {
         "name": "back_web_cam",
-        "device": "/dev/back_web_cam",
+        "source": "v4l2src",
+        "source_uri": "/dev/back_web_cam",
         "port": 7091,
+        "caps": {
+            "format": "YUY2",
+            "width": 640,
+            "height": 480,
+            "framerate": 30,
+        }
     }
 ]
+
+def camera_configure(camera):
+
+    print(f"\nConfiguring {camera['name']}")
+
+    camera["source"] = (
+        input(f"Source [{camera['source']}]: ").strip()
+    )
+
+    camera["port"] = (
+        input(f"Port [{camera['port']}]: ").strip()
+    )
+
+    caps = camera["caps"]
+
+    caps["format"] = (
+        input(f"Format [{caps['format']}]: ").strip()
+        or caps["format"]
+    )
+
+    caps["width"] = int(
+        input(f"Width [{caps['width']}]: ").strip()
+        or caps["width"]
+    )
+
+    caps["height"] = int(
+        input(f"Height [{caps['height']}]: ").strip()
+        or caps["height"]
+    )
+
+    caps["framerate"] = int(
+        input(f"Framerate [{caps['framerate']}]: ").strip()
+        or caps["framerate"]
+    )
 
 #FILTER (CAPS) CONFIGURATION
 use_defaults = input("Use Default Settings? [y/n]: ").strip().lower()
 
 if use_defaults == "n":
-    WIDTH = int(input(f"Width [{WIDTH}] ") or WIDTH)
-    HEIGHT = int(input(f"Height [{HEIGHT}] ") or HEIGHT)
-    FRAMERATE = int(input(f"Framerate [{FRAMERATE}]: ") or FRAMERATE)
-    BITRATE = int(input(f"Bitrate [{BITRATE}]: ") or BITRATE)
+    for camera in CAMERAS:
+        camera_configure(camera)
 
 
 #SINK SELECTION
@@ -57,7 +86,10 @@ pipelines = []
 
 def build_pipeline(camera):
     
-    source = f"v4l2src device={camera['device']}"
+    source = (
+        f"{camera['source']} "
+        f"device={camera['source_uri']}"
+    )
 
     port = camera["port"]
     sink = (
@@ -67,13 +99,30 @@ def build_pipeline(camera):
         f'sync=false'
     )
 
+    caps = camera["caps"]
+    format = caps["format"].upper()
+
+    if format in ("MJPG", "MJPEG"):
+        caps_str = (
+            f"image/jpeg,"
+            f"width={caps['width']},"
+            f"height={caps['height']},"
+            f"framerate={caps['framerate']}/1"
+        )
+        decode_str = "! jpegdec "
+    else:
+        caps_str = (
+            f"video/x-raw,"
+            f"format={caps['format']},"
+            f"width={caps['width']},"
+            f"height={caps['height']},"
+            f"framerate={caps['framerate']}/1"
+        )
+        decode_str = ""
     pipeline_str = pipeline_str = f"""
     {source}
-    ! video/x-raw,
-        format={FORMAT},
-        width={WIDTH},
-        height={HEIGHT},
-        framerate={FRAMERATE}/1
+    ! {caps_str}
+    {decode_str}
     ! videoconvert
     ! x264enc
         pass=pass1
@@ -118,5 +167,3 @@ finally:
 
     for pipeline in pipelines:
         pipeline.set_state(Gst.State.NULL)
-
-
