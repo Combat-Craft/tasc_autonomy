@@ -8,11 +8,21 @@ int main(int argc, char **argv) try {
 
     // Create a pipeline with default device.
     ob::Pipeline pipe;
+    
+    // 2.Get the device from pipeline.
+    std::shared_ptr<ob::Device> device = pipe.getDevice();
 
-    // Configure which streams to enable or disable for the Pipeline by creating a Config.
+    // 3.Get the sensor list from device.
+    std::shared_ptr<ob::SensorList> sensorList = device->getSensorList();
+
+    // 4.Create a config for pipeline.
     std::shared_ptr<ob::Config> config = std::make_shared<ob::Config>();
-
-    // Enable color video stream.
+    
+    // 5. Set relevant color camera parameters
+    // - Set the Color for automatic exposure.
+    device->setBoolProperty(OB_PROP_COLOR_AUTO_EXPOSURE_BOOL, true);
+    
+    // 6. Enable color video stream.
     const int width = 1280, height = 720, fps = 30;
     //config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_MJPG);
     config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_YUYV);
