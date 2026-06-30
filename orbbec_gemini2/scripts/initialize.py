@@ -33,11 +33,11 @@ def camera_configure(camera):
     print(f"\nConfiguring {camera['name']}")
 
     camera["source"] = (
-        input(f"Source [{camera['source']}]: ").strip()
+        input(f"Source [{camera['source']}]: ").strip() or camera["source"]
     )
 
     camera["port"] = (
-        input(f"Port [{camera['port']}]: ").strip()
+        input(f"Port [{camera['port']}]: ").strip() or camera["port"]
     )
 
     caps = camera["caps"]
