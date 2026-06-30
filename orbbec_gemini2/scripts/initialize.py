@@ -10,6 +10,7 @@ from gi.repository import Gst
 BITRATE = 500
 LATENCY = 200
 
+#List of dictionary entries for each camera.
 CAMERAS = [
 
     {
@@ -26,6 +27,7 @@ CAMERAS = [
     }
 ]
 
+#This function allows user to configure the settings of each camera, given that they don't want to use default settings.
 def camera_configure(camera):
 
     print(f"\nConfiguring {camera['name']}")
@@ -60,7 +62,7 @@ def camera_configure(camera):
         or caps["framerate"]
     )
 
-#FILTER (CAPS) CONFIGURATION
+#Prompt user to determine if they want to use default settings for cameras.
 use_defaults = input("Use Default Settings? [y/n]: ").strip().lower()
 
 if use_defaults == "n":
@@ -68,7 +70,7 @@ if use_defaults == "n":
         camera_configure(camera)
 
 
-#SINK SELECTION
+#IP Configuration for SRTSink
 srt = int(input("Enter PC IP Suffix (192.168.1.XXX): "))
 
 client_ip = f"192.168.1.{srt}"
@@ -86,12 +88,16 @@ pipelines = []
 
 def build_pipeline(camera):
     
+    #The source string for cameras
     source = (
         f"{camera['source']} "
         f"device={camera['source_uri']}"
     )
 
+    #The ports of the cameras
     port = camera["port"]
+    
+    #Configures the sink
     sink = (
         f'srtsink '
         f'uri="srt://{client_ip}:{port}?mode=caller" '
@@ -99,9 +105,11 @@ def build_pipeline(camera):
         f'sync=false'
     )
 
+    #Caps and format of the cameras.
     caps = camera["caps"]
     format = caps["format"].upper()
 
+    #If the format "MJPG" is chosen, then a different caps string, which follows the MJPG format, is constructed.
     if format in ("MJPG", "MJPEG"):
         caps_str = (
             f"image/jpeg,"
@@ -110,6 +118,8 @@ def build_pipeline(camera):
             f"framerate={caps['framerate']}/1"
         )
         decode_str = "! jpegdec "
+    
+   # Uses default cap string
     else:
         caps_str = (
             f"video/x-raw,"
@@ -119,6 +129,7 @@ def build_pipeline(camera):
             f"framerate={caps['framerate']}/1"
         )
         decode_str = ""
+    #Constructs the pipeline string for the command to run
     pipeline_str = pipeline_str = f"""
     {source}
     ! {caps_str}
