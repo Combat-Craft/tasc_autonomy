@@ -3,10 +3,26 @@
 """
 ROS2 Node
 
-motor_input.py is a ROS2 node that allows the user to enter servo angles within the range of -135 to +135 degrees.
-It publishes the command ot the /motor_cmd topic.
+Allows the user to control the camera servo and trigger a panorama sweep.
 
-ROS2 node 'motor_controller.py' subscribes to /motor_cmd and forwards the servo command to the Arduino.
+User inputs:
+    - A number from -135 to +135: 
+        Publishes a servo angle command
+    - 'p':
+        Triggers the panorama sweep
+    - 'e':
+        Exits the node
+
+Published topics:
+    - /motor_cmd
+    - /panorama_trigger
+
+Related nodes:
+    - motor_controller.py:
+        Subscribes to /motor_cmd and sends the converted servo command to Arduino.
+
+    - panorama_stitcher.py:
+        Subscribes to /panorama_trigger and begins the panorama sweep.
 """
 
 import rclpy

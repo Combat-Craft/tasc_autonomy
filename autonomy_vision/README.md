@@ -1,6 +1,6 @@
 # autonomy_vision
 
-ROS 2 vision package for the rover. This package currently includes webcam YOLO detection, servo motor control through Arduino serial, and panorama sweeping/stitching using a camera mounted on a servo.
+ROS 2 autonomy vision package for the rover. This package currently includes webcam YOLO detection, servo motor control through Arduino serial, and panorama sweeping/stitching using a camera mounted on a servo.
 
 ## Package Structure
 
@@ -18,7 +18,8 @@ autonomy_vision/
 │   ├── panorama_stitcher.py
 │   ├── webcam_detection2D.py
 │   ├── yolo_depth_v1.py
-│   └── yolo_pc.py
+│   ├── yolo_pc.py
+│   └── README.md
 │
 ├── launch/
 │   ├── detection.launch.py
@@ -106,19 +107,56 @@ ros2 launch autonomy_vision detection.launch.py camera_device:=/dev/video6 image
 
 ### `motor.launch.py`
 
-Launches:
+Launches the motor, camera, and panorama-related nodes needed for manual servo control and panorama capture.
 
-1. `motor_controller`
-2. `motor_input`
-3. `panorama_stitcher`
-4. `v4l2_camera_node`
-5. `image_transport` republisher
-6. `fake_gps`
-7. simulated `imu_node`
+Normal mode with camera:
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py
 ```
+
+Test mode without requiring camera frames:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py test_mode:=true
+```
+
+Select a specific camera device:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py camera_device:=/dev/video0
+```
+
+Select a specific Arduino serial port:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB0
+```
+
+Select a specific baud rate:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py baud_rate:=115200
+```
+
+Launch arguments:
+
+| Argument        | Description                                                   | Default        |
+| --------------- | ------------------------------------------------------------- | -------------- |
+| `test_mode`     | Runs `panorama_stitcher` without requiring real camera frames | `false`        |
+| `camera_device` | Camera device path used by `v4l2_camera_node`                 | `/dev/video0`  |
+| `serial_port`   | Serial port used by the Arduino motor controller              | `/dev/ttyUSB0` |
+| `baud_rate`     | Arduino serial communication baud rate                        | `115200`       |
+
+Started nodes:
+
+| Node                | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| `motor_controller`  | Subscribes to `/motor_cmd` and forwards mapped servo values to Arduino |
+| `motor_input`       | Opens a terminal for manual servo input and panorama triggering        |
+| `panorama_stitcher` | Runs the panorama sweep logic                                          |
+| `v4l2_camera_node`  | Publishes raw camera frames                                            |
+| `image_republisher` | Converts raw images to compressed images for panorama capture          |
 
 Motor control flow:
 
@@ -134,6 +172,15 @@ panorama_stitcher → /motor_cmd → motor_controller → Arduino → servo swee
 camera → /image_raw → image_transport republish → /arm_cam/image/compressed → panorama_stitcher
 ```
 
+Important topics:
+
+| Topic                       | Description                                           |
+| --------------------------- | ----------------------------------------------------- |
+| `/motor_cmd`                | Servo angle command in degrees, from `-135` to `+135` |
+| `/panorama_trigger`         | Trigger message used to start the panorama sweep      |
+| `/image_raw`                | Raw image topic from the camera node                  |
+| `/arm_cam/image/compressed` | Compressed image topic used by `panorama_stitcher`    |
+
 ### `gemini2_edited2.launch.py`
 
 ### `morse_detector.launch.py`
@@ -142,65 +189,31 @@ camera → /image_raw → image_transport republish → /arm_cam/image/compresse
 
 ## Nodes
 
-### `Motor_controller.py`
-
-Controls the Arduino Nano over serial.
-
-The node subscribes to:
-
-```txt
-/motor_cmd
-```
-
-It receives target servo angles in the range:
-
-```txt
--135 degrees to +135 degrees
-```
-
-The Arduino Servo library expects values from `0` to `180`, so the ROS 2 command is mapped like this:
-
-```txt
--135 degrees → 0
-0 degrees    → 90
-+135 degrees → 180
-```
-
-The serial port is currently hardcoded as:
-
-```txt
-/dev/ttyUSB0
-```
-
-The baud rate is:
-
-```txt
-115200
-```
-
 ### `motor_input.py`
 
-Allows the user to type motor commands from the terminal.
+Allows the user to control the camera servo and trigger a panorama sweep from the terminal.
 
-It publishes angle commands to:
+User inputs:
 
-```txt
-/motor_cmd
-```
+| Input                        | Action                          |
+| ---------------------------- | ------------------------------- |
+| Number from `-135` to `+135` | Publishes a servo angle command |
+| `p`                          | Triggers the panorama sweep     |
+| `e`                          | Exits the node                  |
 
-It also publishes panorama trigger commands to:
+Published topics:
 
-```txt
-/panorama_trigger
-```
+| Topic               | Type               | Description                                 |
+| ------------------- | ------------------ | ------------------------------------------- |
+| `/motor_cmd`        | `std_msgs/Float64` | Manual servo angle command                  |
+| `/panorama_trigger` | `std_msgs/Float64` | Trigger message for starting panorama sweep |
 
-Input options:
+Related nodes:
 
-```txt
--135 to 135  → move servo to that angle
-p            → trigger panorama sweep
-e            → exit
-```
+| Node                   | Relationship                                                                |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `motor_controller.py`  | Subscribes to `/motor_cmd` and sends the converted servo command to Arduino |
+| `panorama_stitcher.py` | Subscribes to `/panorama_trigger` and begins the panorama sweep             |
 
 Example prompt:
 
@@ -208,52 +221,172 @@ Example prompt:
 Enter angle (-135 to 135 | 'p' for panorama | 'e' to exit):
 ```
 
+---
+
+### `motor_controller.py`
+
+Subscribes to camera servo angle commands and sends the mapped servo value to the Arduino over serial.
+
+Subscribed topics:
+
+| Topic        | Type               | Description                    |
+| ------------ | ------------------ | ------------------------------ |
+| `/motor_cmd` | `std_msgs/Float64` | Servo angle command in degrees |
+
+Serial parameters:
+
+| Parameter     | Description                                | Default        |
+| ------------- | ------------------------------------------ | -------------- |
+| `serial_port` | Serial port for Arduino motor controller   | `/dev/ttyUSB0` |
+| `baud_rate`   | Baud rate for Arduino serial communication | `115200`       |
+
+The serial parameters are passed through `motor.launch.py`, so the port and baud rate can be changed from the launch command.
+
+Example:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB1 baud_rate:=115200
+```
+
+Angle mapping:
+
+The Arduino Servo library expects values from `0` to `180`, but the ROS 2 control range is `-135` to `+135` degrees. The node maps the ROS 2 angle into the Arduino servo range.
+
+```txt
+-135 degrees → 0
+0 degrees    → 90
++135 degrees → 180
+```
+
+Related nodes:
+
+| Node                   | Relationship                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `motor_input.py`       | Publishes manual servo angle commands to `/motor_cmd`                            |
+| `panorama_stitcher.py` | Publishes automated servo angle commands to `/motor_cmd` during a panorama sweep |
+
+Troubleshooting serial device detection:
+
+```bash
+ls /dev/ttyUSB* /dev/ttyACM*
+lsusb
+dmesg | tail -50
+```
+
+If the Arduino uses a CH340/CH341 USB serial chip and the device does not appear, reload the driver:
+
+```bash
+sudo modprobe ch341
+```
+
+Then unplug and reconnect the Arduino USB cable.
+
+If `lsusb` does not show the device at all, it is likely a cable, USB port, or hardware issue.
+
+If `lsusb` shows the CH340 device but `/dev/ttyUSB*` does not appear, it is likely a driver issue.
+
+---
+
 ### `panorama_stitcher.py`
 
-Controls a servo sweep, captures compressed camera images, and stitches them into a panorama.
+Controls an automated camera panorama sweep.
 
-The sweep angles are currently:
+When triggered, this node moves the camera servo through a sequence of angles from `-135` to `+135` degrees, captures one compressed camera frame at each angle, stores GPS/heading metadata for each frame, and attempts to stitch the captured frames into a panorama image.
+
+Main behavior:
+
+1. Waits for a trigger message on `/panorama_trigger`.
+2. Publishes servo angle commands to `/motor_cmd`.
+3. Waits for the servo to move and settle.
+4. Captures a compressed image frame from `/arm_cam/image/compressed`.
+5. Saves the frame, servo angle, GPS coordinates, and heading.
+6. Repeats until all sweep angles are complete.
+7. Attempts to stitch the captured frames into `panorama.jpg`.
+8. Resets and waits for the next trigger.
+
+Published topics:
+
+| Topic        | Type               | Description                                                 |
+| ------------ | ------------------ | ----------------------------------------------------------- |
+| `/motor_cmd` | `std_msgs/Float64` | Target camera servo angle in degrees, from `-135` to `+135` |
+
+Subscribed topics:
+
+| Topic                       | Type                          | Description                                       |
+| --------------------------- | ----------------------------- | ------------------------------------------------- |
+| `/panorama_trigger`         | `std_msgs/Float64`            | Trigger message used to start the panorama sweep  |
+| `/arm_cam/image/compressed` | `sensor_msgs/CompressedImage` | Compressed camera image used for panorama capture |
+| `/gps/fix`                  | `sensor_msgs/NavSatFix`       | GPS coordinates saved with panorama metadata      |
+| `/heading`                  | `std_msgs/Float32`            | Rover heading in degrees clockwise from north     |
+
+Parameters:
+
+| Parameter   | Description                                                                            | Default |
+| ----------- | -------------------------------------------------------------------------------------- | ------- |
+| `test_mode` | Simulates image captures and tests motor movement without requiring real camera frames | `false` |
+
+Test mode example:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py test_mode:=true
+```
+
+Sweep configuration:
+
+| Setting                   | Value              |
+| ------------------------- | ------------------ |
+| Sweep range               | `-135°` to `+135°` |
+| Number of sweep angles    | `18`               |
+| Approximate angle spacing | `15.9°`            |
+| Move time                 | `1.0 s`            |
+| Settle time               | `1.0 s`            |
+| Output file               | `panorama.jpg`     |
+
+The sweep currently uses:
 
 ```python
-np.linspace(-135, 135, 10)
+self.sweep_angles = np.linspace(-135, 135, 18)
 ```
 
-This means the panorama sweep captures 10 positions from `-135` degrees to `+135` degrees.
+This gives 18 capture positions across a 270-degree range.
 
-The node publishes servo commands to:
+Metadata and overlay behavior:
+
+* Stores GPS coordinates from `/gps/fix`.
+* Stores rover heading from `/heading`.
+* Calculates camera heading as rover heading plus servo angle.
+* Converts camera heading into an 8-direction compass label.
+* Draws GPS text at the top-left of the panorama.
+* Draws heading/cardinal markers near the top of the panorama.
+* Draws servo angle markers near the bottom of the panorama.
+
+Heading reference:
 
 ```txt
-/motor_cmd
+0°   = North
+90°  = East
+180° = South
+270° = West
 ```
 
-It subscribes to compressed images from:
+Related nodes:
 
-```txt
-/arm_cam/image/compressed
-```
+| Node                            | Relationship                                               |
+| ------------------------------- | ---------------------------------------------------------- |
+| `motor_input.py`                | Publishes manual servo commands and panorama triggers      |
+| `motor_controller.py`           | Receives `/motor_cmd` and sends mapped commands to Arduino |
+| Camera node / image republisher | Provides compressed frames on `/arm_cam/image/compressed`  |
+| GPS/IMU node or test publisher  | Provides `/gps/fix` and `/heading`                         |
 
-It also subscribes to:
+Configuration notes:
 
-```txt
-/panorama_trigger
-/gps/fix
-/heading
-/cardinal_compass
-```
+The sweep timing and number of angles may need to be adjusted based on:
 
-The panorama is saved as:
-
-```txt
-panorama.jpg
-```
-
-There is also a test mode inside the file:
-
-```python
-self.TEST_MODE = False
-```
-
-When test mode is enabled, the node simulates captures without requiring real camera frames.
+* camera field of view
+* overlap between neighbouring frames
+* servo speed
+* camera mount vibration
+* image blur during capture
 
 ### `webcam_detection2D.py`
 
@@ -309,17 +442,16 @@ The node logs FPS approximately every 3 seconds.
 
 ## Topics
 
-| Topic                       | Type                           | Direction    | Description                                    |
-| --------------------------- | ------------------------------ | ------------ | ---------------------------------------------- |
-| `/motor_cmd`                | `std_msgs/Float64`             | Input/Output | Servo angle command in degrees                 |
-| `/panorama_trigger`         | `std_msgs/Float64`             | Input/Output | Trigger topic for starting panorama sweep      |
-| `/image_raw`                | `sensor_msgs/Image`            | Input        | Raw camera image from USB camera               |
-| `/debug_image`              | `sensor_msgs/Image`            | Output       | YOLO debug image with bounding boxes           |
-| `/detections`               | `vision_msgs/Detection2DArray` | Output       | YOLO object detection results                  |
-| `/arm_cam/image/compressed` | `sensor_msgs/CompressedImage`  | Input        | Compressed camera image for panorama stitching |
-| `/gps/fix`                  | `sensor_msgs/NavSatFix`        | Input        | GPS position for panorama metadata             |
-| `/heading`                  | `std_msgs/Float32`             | Input        | Heading value for panorama metadata            |
-| `/cardinal_compass`         | `std_msgs/String`              | Input        | Cardinal direction for panorama metadata       |
+| Topic | Type | Direction | Description |
+|---|---|---|---|
+| `/motor_cmd` | `std_msgs/Float64` | Input/Output | Servo angle command in degrees, from `-135` to `+135` |
+| `/panorama_trigger` | `std_msgs/Float64` | Input/Output | Trigger topic for starting the panorama sweep |
+| `/image_raw` | `sensor_msgs/Image` | Input/Output | Raw camera image from the camera node |
+| `/debug_image` | `sensor_msgs/Image` | Output | YOLO debug image with bounding boxes |
+| `/detections` | `vision_msgs/Detection2DArray` | Output | YOLO object detection results |
+| `/arm_cam/image/compressed` | `sensor_msgs/CompressedImage` | Input/Output | Compressed camera image used by `panorama_stitcher` |
+| `/gps/fix` | `sensor_msgs/NavSatFix` | Input | GPS position saved with panorama metadata |
+| `/heading` | `std_msgs/Float32` | Input | Rover heading in degrees, used to calculate camera heading/cardinal overlay |
 
 ## Arduino Servo Firmware
 
@@ -337,7 +469,13 @@ The Arduino expects serial commands from ROS 2 in the range:
 0 to 180
 ```
 
-The ROS 2 `motor_controller` node maps the rover servo range of `-135` to `+135` degrees into this Arduino range.
+The ROS 2 `motor_controller` node maps the camera servo range of `-135` to `+135` degrees into this Arduino range.
+
+```txt
+-135 degrees → 0
+0 degrees    → 90
++135 degrees → 180
+```
 
 ### Arduino Pin Wiring
 
@@ -349,11 +487,11 @@ The ROS 2 `motor_controller` node maps the rover servo range of `-135` to `+135`
 
 ### Arduino Serial Settings
 
-| Setting          | Value    |
-| ---------------- | -------- |
-| Baud rate        | `115200` |
-| Servo pin        | `D9`     |
-| Startup position | `90`     |
+| Setting           | Value    |
+| ----------------- | -------- |
+| Default baud rate | `115200` |
+| Servo pin         | `D9`     |
+| Startup position  | `90`     |
 
 On startup, the Arduino moves the servo to the center position:
 
@@ -369,11 +507,17 @@ READY
 
 when it starts.
 
+The serial port and baud rate are passed through `motor.launch.py`:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB0 baud_rate:=115200
+```
+
 ## Manual Commands
 
 ### Move Servo Manually
 
-Publish a servo command directly:
+Move to center:
 
 ```bash
 ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: 0.0}"
@@ -397,15 +541,48 @@ ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: 135.0}"
 ros2 topic pub --once /panorama_trigger std_msgs/msg/Float64 "{data: 999.0}"
 ```
 
-### Check Camera Output
+The actual value is not important. Receiving a message on `/panorama_trigger` starts the sweep.
+
+### Publish Test GPS and Heading Data
+
+When testing the panorama sweep without the real GPS/IMU hardware, publish fake GPS and heading data in separate terminals. The 
+heading is the rover’s facing direction, measured in degrees clockwise from north, where `0° = North`, `90° = East`, `180° = South`, and `270° = West`.
+
+Terminal 1 — publish fake GPS:
 
 ```bash
-ros2 topic echo /image_raw
+ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitude: -79.380000, altitude: 100.0}" -r 1
 ```
+
+Terminal 2 — publish fake heading:
+
+```bash
+ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
+```
+
+### Test Panorama Sweep Without Camera
+
+```bash
+ros2 launch autonomy_vision motor.launch.py test_mode:=true
+```
+
+This tests the servo sweep without waiting for real camera frames from `/arm_cam/image/compressed`.
+
+### Check Camera Output
+
+Check raw camera frames:
 
 ```bash
 ros2 topic hz /image_raw
 ```
+
+Check compressed camera frames:
+
+```bash
+ros2 topic hz /arm_cam/image/compressed
+```
+
+If the servo moves to the first sweep angle and then stops, check whether `/arm_cam/image/compressed` is publishing. In normal mode, `panorama_stitcher` waits for a compressed image frame before moving to the next angle.
 
 ### Check YOLO Detections
 
@@ -423,10 +600,18 @@ ros2 topic hz /debug_image
 
 ### USB Serial Device
 
-The Arduino Nano is currently expected to appear as:
+The Arduino Nano commonly appears as:
 
 ```txt
 /dev/ttyUSB0
+```
+
+However, the serial port can change depending on the connected USB devices. Use the `serial_port` launch argument if the Arduino appears on a different device path.
+
+Example:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB1
 ```
 
 Check for connected serial devices:
@@ -447,7 +632,7 @@ Check recent kernel messages:
 dmesg | tail -50
 ```
 
-If the Arduino uses a CH340 USB serial chip and `/dev/ttyUSB0` does not appear, reload the CH340 driver:
+If the Arduino uses a CH340/CH341 USB serial chip and `/dev/ttyUSB*` does not appear, reload the CH340 driver:
 
 ```bash
 sudo modprobe ch341
@@ -461,10 +646,10 @@ If `lsusb` shows the CH340 device but `/dev/ttyUSB*` does not appear, it is like
 
 ### Serial Permissions
 
-A temporary permission fix is:
+A temporary permission workaround is:
 
 ```bash
-sudo chmod 777 /dev/ttyUSB0
+sudo chmod 666 /dev/ttyUSB0
 ```
 
 A better long-term fix is to add the user to the `dialout` group:
@@ -475,6 +660,18 @@ sudo usermod -a -G dialout $USER
 
 Then log out and log back in.
 
+Check current groups:
+
+```bash
+groups
+```
+
+The output should include:
+
+```txt
+dialout
+```
+
 ## Camera Notes
 
 The detection launch file uses `usb_cam` and defaults to:
@@ -483,10 +680,16 @@ The detection launch file uses `usb_cam` and defaults to:
 /dev/back_web_cam
 ```
 
-The motor/panorama launch file uses `v4l2_camera` and currently uses:
+The motor/panorama launch file uses `v4l2_camera` and defaults to:
 
 ```txt
 /dev/video0
+```
+
+To select a different camera device:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py camera_device:=/dev/video2
 ```
 
 Check available camera devices:
@@ -521,10 +724,16 @@ Check panorama trigger topic:
 ros2 topic echo /panorama_trigger
 ```
 
+Check raw camera topic:
+
+```bash
+ros2 topic hz /image_raw
+```
+
 Check compressed camera topic:
 
 ```bash
-ros2 topic echo /arm_cam/image/compressed
+ros2 topic hz /arm_cam/image/compressed
 ```
 
 Check detection output:
@@ -533,10 +742,9 @@ Check detection output:
 ros2 topic echo /detections
 ```
 
-Check image publishing rate:
+Check debug image publishing rate:
 
 ```bash
-ros2 topic hz /image_raw
 ros2 topic hz /debug_image
 ```
 
@@ -557,14 +765,15 @@ PyTorch
 usb_cam
 v4l2_camera
 image_transport
-gps_tracker
-autonomy_sensors
 ```
 
 ## Notes
 
-* `motor_controller` currently uses a hardcoded serial port: `/dev/ttyUSB0`.
-* `motor.launch.py` currently uses a hardcoded camera device: `/dev/video0`.
-* `detection.launch.py` currently defaults to `/dev/back_web_cam`.
+* `motor_controller` uses the `serial_port` and `baud_rate` parameters from `motor.launch.py`.
+* `motor.launch.py` defaults to `/dev/video0` for the camera device, but this can be changed with `camera_device:=`.
+* `detection.launch.py` defaults to `/dev/back_web_cam`.
 * The panorama trigger is published on `/panorama_trigger`.
+* The panorama sweep publishes servo commands to `/motor_cmd`.
 * The final panorama is saved as `panorama.jpg`.
+* In normal mode, `panorama_stitcher` requires compressed camera frames on `/arm_cam/image/compressed`.
+* In test mode, `panorama_stitcher` simulates image captures and tests motor movement without camera frames.
