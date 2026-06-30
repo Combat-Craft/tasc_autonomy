@@ -7,9 +7,9 @@ ROS 2 autonomy vision package for the rover. This package currently includes web
 ```txt
 autonomy_vision/
 ├── autonomy_vision/
-|   ├── old_code/
-|   |   ├── new_pano_stitcher.py
-|   |   └── h265_camera_streamer.py  
+│   ├── old_code/
+│   |   ├── new_pano_stitcher.py
+│   |   └── h265_camera_streamer.py  
 │   ├── __init__.py
 │   ├── morse_code_detector.py
 │   ├── motor_controller.py
@@ -31,18 +31,18 @@ autonomy_vision/
 │   └── README.md   
 │
 ├── firmware/
-|   ├── hello_morse.mp4
-|   └── panorama_motor/
+│   ├── hello_morse.mp4
+│   └── panorama_motor/
 │       └── panorama_motor.ino
-|
+│
 ├── resource/
 │   └── autonomy_vision   
-|
+│
 ├── test/
 │   ├── test_copyright.py
 │   ├── test_flake8.py
 │   └── test_pep257.py
-|
+│
 ├── package.xml
 ├── README.md
 ├── setup.cfg
