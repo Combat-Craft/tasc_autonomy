@@ -44,6 +44,8 @@ ros2 launch autonomy_vision morse_detector.launch.py
 
 # Servo Motor & Panorama Capture
 
+This section covers the camera servo control and panorama capture workflow. `motor_input.py` lets the user manually send servo commands or trigger a panorama sweep, `motor_controller.py` forwards the mapped servo commands to the Arduino, and `panorama_stitcher.py` rotates the camera through a set range of angles, captures images at each position, and creates a stitched panorama with GPS and heading metadata.
+
 ## Table of Contents
 
 - [1) Build](#1-build)
@@ -144,15 +146,6 @@ motor_input → /panorama_trigger → panorama_stitcher
 panorama_stitcher → /motor_cmd → motor_controller → Arduino → servo sweep
 camera → /image_raw → image_transport republish → /arm_cam/image/compressed → panorama_stitcher
 ```
-
-Important topics:
-
-| Topic                       | Description                                           |
-| --------------------------- | ----------------------------------------------------- |
-| `/motor_cmd`                | Servo angle command in degrees, from `-135` to `+135` |
-| `/panorama_trigger`         | Trigger message used to start the panorama sweep      |
-| `/image_raw`                | Raw image topic from the camera node                  |
-| `/arm_cam/image/compressed` | Compressed image topic used by `panorama_stitcher`    |
 
 ## 4) Nodes
 
