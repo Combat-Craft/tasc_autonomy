@@ -603,12 +603,6 @@ dialout
 
 ### Camera Device
 
-The detection launch file uses `usb_cam` and defaults to:
-
-```txt
-/dev/back_web_cam
-```
-
 The motor/panorama launch file uses `v4l2_camera` and defaults to:
 
 ```txt
@@ -639,13 +633,9 @@ v4l2-ctl --list-devices
 rclpy
 std_msgs
 sensor_msgs
-vision_msgs
 OpenCV / cv2
 NumPy
 PySerial
-Ultralytics YOLO
-PyTorch
-usb_cam
 v4l2_camera
 image_transport
 ```
