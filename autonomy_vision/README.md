@@ -152,9 +152,9 @@ Started nodes:
 
 | Node                | Description                                                            |
 | ------------------- | ---------------------------------------------------------------------- |
-| `motor_controller`  | Subscribes to `/motor_cmd` and forwards mapped servo values to Arduino |
-| `motor_input`       | Opens a terminal for manual servo input and panorama triggering        |
-| `panorama_stitcher` | Runs the panorama sweep logic                                          |
+| `motor_controller.py`  | Subscribes to `/motor_cmd` and forwards mapped servo values to Arduino |
+| `motor_input.py`       | Opens a terminal for manual servo input and panorama triggering        |
+| `panorama_stitcher.py` | Runs the panorama sweep logic                                          |
 | `v4l2_camera_node`  | Publishes raw camera frames                                            |
 | `image_republisher` | Converts raw images to compressed images for panorama capture          |
 
