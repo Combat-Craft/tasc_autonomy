@@ -353,7 +353,7 @@ The sweep timing and number of angles may need to be adjusted based on:
 The Arduino firmware is located at:
 
 ```txt
-launch/panorama_motor/panorama_motor.ino
+autonomy_vision/firmware/panorama_motor/panorama_motor.ino
 ```
 
 The firmware controls an MG90D servo motor using the Arduino Servo library.
