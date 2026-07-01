@@ -164,14 +164,16 @@ def generate_launch_description():
         #    ])    
         #),
         
-        Launch all cameras/visions - currently only multicamera
-        IncludeLaunchDescription(
-            PathJoinSubstitution([
-              FindPackageShare("autonomy_vision"),
-                 "launch",
-                 "vision.launch.py"
-           ])    
-        ),
+        # Launch all cameras/visions - currently only multicamera
+        #IncludeLaunchDescription(
+        #    PathJoinSubstitution([
+        #      FindPackageShare("autonomy_vision"),
+        #         "launch",
+         #         "vision.launch.py"
+         #   ])    
+        #),
+        
+        
 
     ])
     

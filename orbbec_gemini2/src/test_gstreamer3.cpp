@@ -22,21 +22,26 @@ int main(int argc, char **argv) try {
     // - Set the Color for automatic exposure.
     device->setBoolProperty(OB_PROP_COLOR_AUTO_EXPOSURE_BOOL, true);
     
-
-    // 6. Enable color video stream.
+    // 6. Disable other streams and sensors
+    config->disableStream(OB_STREAM_DEPTH);
+    config->disableStream(OB_STREAM_IR);
+    config->disableStream(OB_STREAM_IR_LEFT);
+    config->disableStream(OB_STREAM_IR_RIGHT);
+    config->disableStream(OB_STREAM_ACCEL);
+    config->disableStream(OB_STREAM_GYRO);
+    
+    // 7.Enable color video stream.
     const int width = 1280, height = 720, fps = 30;
     //config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_MJPG);
     config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_YUYV);
     
-    if (config->isStreamEnabled(OB_SENSOR_IR) ){  
-        std::cout << "\nIR sensor enabled";
-    }
+    //if (config->isStreamEnabled(OB_SENSOR_IR) ){  
+    //    std::cout << "\nIR sensor enabled";
+    //}
 
     // Start the pipeline with config.
     pipe.start(config);
-    
-    
-      
+         
 
 
     /* Initialize GStreamer */
@@ -84,7 +89,7 @@ int main(int argc, char **argv) try {
         NULL);
 
     g_object_set(sink,
-        "uri", "srt://127.0.0.1:7092?mode=caller",
+        "uri", "srt://192.168.1.23:7092?mode=caller",
         "sync", FALSE,
         "latency", 200,
         NULL);

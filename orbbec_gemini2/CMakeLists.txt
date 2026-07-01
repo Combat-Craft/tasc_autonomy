@@ -67,11 +67,13 @@ target_link_libraries(ob_examples_utils PUBLIC ${OpenCV_LIBS})
 target_include_directories(ob_examples_utils PUBLIC ${OpenCV_INCLUDE_DIRS})
 
 
-add_executable(gemini2_color_only src/color_only.cpp)
-target_link_libraries(gemini2_color_only 
-    ob::OrbbecSDK 
-    ${OpenCV_LIBS}
-)
+#add_executable(gemini2_color_only src/color_only.cpp)
+#target_link_libraries(gemini2_color_only 
+#    ob::OrbbecSDK 
+#    ${OpenCV_LIBS}
+#)
+
+
 
 add_executable(gemini2_color_gstreamer src/color_gstreamer.cpp)
 target_link_libraries(gemini2_color_gstreamer
@@ -99,6 +101,17 @@ target_link_libraries(test_gstreamer_v2
     PkgConfig::gstreamer-app
     PkgConfig::gstreamer-video
 )
+add_executable(orbbec_gstreamer src/test_gstreamer3.cpp)
+target_link_libraries(orbbec_gstreamer
+    ob::OrbbecSDK
+    PkgConfig::gstreamer
+    PkgConfig::gstreamer-sdp
+    PkgConfig::gstreamer-app
+    PkgConfig::gstreamer-video
+)
+
+# orbbec gstreamer
+
 
 #add_executable(my-gstreamer-app main.cpp)
 
@@ -112,7 +125,8 @@ target_link_libraries(test_gstreamer_v2
 # Install C++ executables
 install(TARGETS
   main
-  color_example
+  orbbec_gstreamer
+  test_gstreamer_v2
   DESTINATION lib/${PROJECT_NAME}
 )
 

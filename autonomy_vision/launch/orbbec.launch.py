@@ -63,9 +63,9 @@ def generate_launch_description():
         # 'ordered_pc': 'false',
 
         # --- General ---
-        'device_num': '1',
+        'device_num': 1,
         'vendor_id': '0x2bc5',
-        'connection_delay': '100',
+        'connection_delay': 100,
         'publish_tf': 'true',
         'tf_publish_rate': '0.0',
         'log_level': 'none',

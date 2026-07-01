@@ -33,6 +33,14 @@ def generate_launch_description():
             ]
         ),
 
+        IncludeLaunchDescription(
+            PathJoinSubstitution([
+              FindPackageShare("autonomy_vision"),
+                  "launch",
+                  "forbbec.launch.py"
+            ])    
+        ),
+
         
         
                
