@@ -22,13 +22,21 @@ int main(int argc, char **argv) try {
     // - Set the Color for automatic exposure.
     device->setBoolProperty(OB_PROP_COLOR_AUTO_EXPOSURE_BOOL, true);
     
+
     // 6. Enable color video stream.
     const int width = 1280, height = 720, fps = 30;
     //config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_MJPG);
     config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_YUYV);
+    
+    if (config->isStreamEnabled(OB_SENSOR_IR) ){  
+        std::cout << "\nIR sensor enabled";
+    }
 
     // Start the pipeline with config.
     pipe.start(config);
+    
+    
+      
 
 
     /* Initialize GStreamer */
@@ -69,14 +77,14 @@ int main(int argc, char **argv) try {
     gst_caps_unref(caps);
 
     g_object_set(encoder,
-        "bitrate", 500,         // kbps
+        "bitrate", 1000,         // kbps
         "tune", 0x00000004,     // zerolatency
         "pass", 17,             // pass1 i.e. VBR
         "speed-preset", 1,      // ultrafast
         NULL);
 
     g_object_set(sink,
-        "uri", "srt://192.168.1.23:7092?mode=caller",
+        "uri", "srt://127.0.0.1:7092?mode=caller",
         "sync", FALSE,
         "latency", 200,
         NULL);
@@ -170,7 +178,21 @@ int main(int argc, char **argv) try {
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(bus);
     gst_object_unref(pipeline);
+    
+
+    auto inputWatchThread = std::thread([]{
+        while(true) {
+            std::string cmd;
+            std::cout << "\nInput quit to close:  ";
+            std::getline(std::cin, cmd);
+            if(cmd == "quit" ) {
+                break;
+            }
+        }
+    });
+    inputWatchThread.detach();
     pipe.stop();
+
 
     return 0;
 }
