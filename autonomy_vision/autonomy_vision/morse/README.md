@@ -2,7 +2,17 @@
 
 This subpackage contains the morse code detector nodes and helpers.
 
-Usage
+## Morse Code Specification
+
+The decoder follows the **ITU-R M.1677-1 International Morse Code standard** at **18 words per minute** using the PARIS reference:
+- **Dit length**: 66.7 ms (1 unit)
+- **Dash length**: 200 ms (3 units) 
+- **Character space**: 200 ms (3 units)
+- **Word space**: 467 ms (7 units)
+
+This timing is detected by analyzing red LED flash durations on the security console. Flash pulses under ~133ms are interpreted as dots (·), longer pulses as dashes (−). Character and word boundaries are inferred from gaps between flashes.
+
+## Usage
 -
 - Launch with: `ros2 launch autonomy_vision morse_detector.launch.py`
 - Topic `/morse_code` publishes the current symbol (dots/dashes).

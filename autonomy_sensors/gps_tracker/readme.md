@@ -57,6 +57,16 @@ In `mode:=real`, `/imu/data_raw` is also published by `autonomy_sensors/gps_imu_
 
 ---
 
+## GPS Coordinates Output
+
+The `route_logger` node automatically saves all received GPS coordinates to a file in your home directory:
+- **File**: `~/MORSEPASSWORD.txt`
+- **Format**: CSV-style with latitude and longitude pairs, one per line: `latitude,longitude`
+
+This file is created/appended to as GPS data is received, making it easy to extract the exact coordinates visited during mission execution.
+
+---
+
 ## Foxglove
 
 Connect to `ws://localhost:8765` then:

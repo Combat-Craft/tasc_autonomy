@@ -1,4 +1,6 @@
 import math
+import os
+from pathlib import Path as PathlibPath
 
 import rclpy
 from rclpy.node import Node
@@ -26,6 +28,11 @@ class RouteLogger(Node):
         self.origin_set_ = False
         self.origin_lat_ = 0.0
         self.origin_lon_ = 0.0
+        
+        # Setup GPS coordinates output file
+        home_dir = os.path.expanduser('~')
+        self.coords_file_ = os.path.join(home_dir, 'MORSEPASSWORD.txt')
+        self.get_logger().info(f'GPS coordinates will be saved to {self.coords_file_}')
 
     def gps_callback(self, msg: NavSatFix):
         if not self.origin_set_:
@@ -47,6 +54,13 @@ class RouteLogger(Node):
         self.path_msg_.poses.append(pose)
 
         self.publisher_.publish(self.path_msg_)
+        
+        # Save GPS coordinates to file
+        try:
+            with open(self.coords_file_, 'a') as f:
+                f.write(f'{msg.latitude},{msg.longitude}\n')
+        except IOError as e:
+            self.get_logger().error(f'Failed to write GPS coordinates to file: {e}')
 
     def latlon_to_xy(self, lat: float, lon: float):
         R = 6378137.0
