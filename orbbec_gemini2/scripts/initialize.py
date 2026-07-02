@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
+#Modified
 
 import time
 import gi
 gi.require_version("Gst", "1.0")
-from gi.repository import Gst
+from gi.repository import Gst, GLib
 
 #DEFAULT SETTINGS
 
 BITRATE = 500
 LATENCY = 200
 
-#List of dictionary entries for each camera.
+#List of dictionary entries for each camera. Check if the default settings match the camera's capabilities.
 CAMERAS = [
 
     {
@@ -21,7 +22,7 @@ CAMERAS = [
         "caps": {
             "format": "YUY2",
             "width": 640,
-            "height": 360,
+            "height": 480,
             "framerate": 30,
         }
     },
@@ -34,7 +35,7 @@ CAMERAS = [
         "caps": {
             "format": "YUY2",
             "width": 640,
-            "height": 360,
+            "height": 480,
             "framerate": 30,
         }
     }
@@ -100,71 +101,84 @@ pipelines = []
 #Build Pipelines
 
 def build_pipeline(camera):
-    
-    #The source string for cameras
-    source = (
-        f"{camera['source']} "
-        f"device={camera['source_uri']}"
-    )
+    name = camera["name"]
 
-    #The ports of the cameras
-    port = camera["port"]
-    
-    #Configures the sink
-    sink = (
-        f'srtsink '
-        f'uri="srt://{client_ip}:{port}?mode=caller" '
-        f'latency={LATENCY} '
-        f'sync=false'
-    )
+    pipeline = Gst.Pipeline.new(name)
+   
+    caps_c = camera["caps"]
+    format = caps_c["format"].upper()
+    is_MJPG = format in ("MJPG", "MJPEG")
 
-    #Caps and format of the cameras.
-    caps = camera["caps"]
-    format = caps["format"].upper()
+    source = Gst.ElementFactory.make(camera["source"], f"{name}-source")
+    source.set_property("device", camera["source_uri"])
 
-    #If the format "MJPG" is chosen, then a different caps string, which follows the MJPG format, is constructed.
-    if format in ("MJPG", "MJPEG"):
-        caps_str = (
+    capsfilter = Gst.ElementFactory.make("capsfilter", f"{name}-caps")
+
+    if is_MJPG == True:
+        caps = Gst.Caps.from_string(
             f"image/jpeg,"
-            f"width={caps['width']},"
-            f"height={caps['height']},"
-            f"framerate={caps['framerate']}/1"
+            f"width={caps_c['width']},"
+            f"height={caps_c['height']},"
+            f"framerate={caps_c['framerate']}/1"
         )
-        decode_str = "! jpegdec "
-    
-   # Uses default cap string
     else:
-        caps_str = (
+        caps = Gst.Caps.from_string(
             f"video/x-raw,"
-            f"format={caps['format']},"
-            f"width={caps['width']},"
-            f"height={caps['height']},"
-            f"framerate={caps['framerate']}/1"
+            f"format={caps_c['format']},"
+            f"width={caps_c['width']},"
+            f"height={caps_c['height']},"
+            f"framerate={caps_c['framerate']}/1"
         )
-        decode_str = ""
-    #Constructs the pipeline string for the command to run
-    pipeline_str = pipeline_str = f"""
-    {source}
-    ! {caps_str}
-    {decode_str}
-    ! videoconvert
-    ! x264enc
-        pass=pass1
-        bitrate={BITRATE}
-        tune=zerolatency
-        speed-preset=ultrafast
-    ! {sink}
-"""
+    capsfilter.set_property("caps", caps)
+
+    if is_MJPG:
+        jpegdec = Gst.ElementFactory.make("jpegdec", f"{name}-jpegdec")
+    else:
+        jpegdec = None
     
+    convert = Gst.ElementFactory.make("videoconvert", f"{name}-convert")
+
+    encoder = Gst.ElementFactory.make("x264enc", f"{name}-encoder")
+    encoder.set_property("bitrate", BITRATE)
+    encoder.set_property("tune", "zerolatency")
+    encoder.set_property("speed-preset", "ultrafast")
+
+    sink = Gst.ElementFactory.make("srtsink", f"{name}-srtsink")
+    sink.set_property("uri", f"srt://{client_ip}:{camera['port']}?mode=caller")
+    sink.set_property("latency", LATENCY)
+    sink.set_property("sync", False)
+
+    pipeline.add(source)
+    pipeline.add(capsfilter)
+    if jpegdec is not None:
+        pipeline.add(jpegdec)
+    pipeline.add(convert)
+    pipeline.add(encoder)
+    pipeline.add(sink)
+
+    source.link(capsfilter)
+    if jpegdec is not None:
+        capsfilter.link(jpegdec)
+        jpegdec.link(convert)
+    else:
+        capsfilter.link(convert)
+    convert.link(encoder)
+    encoder.link(sink)
+
+   
+
     print()
-    print(camera['name'])
-    print(pipeline_str)
+    print(name)
+    print(
+        f"  {camera['source']} device={camera['source_uri']} "
+        f"[{format} {caps_c['width']}x{caps_c['height']}@{caps_c['framerate']}] "
+        f"-> srt://{client_ip}:{camera['port']}"
+    )
     print()
 
-    return Gst.parse_launch(pipeline_str)
+    return pipeline
 
-#Launch pipelines
-    
+
 for camera in CAMERAS:
     pipeline = build_pipeline(camera)
 

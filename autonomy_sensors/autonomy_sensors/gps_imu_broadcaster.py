@@ -224,6 +224,17 @@ class IMUGPSNode(Node):
                 ]
         msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
         
+        heading_msg = Float32()
+        heading_msg.data = 1
+        compass_msg = String()
+        compass_msg.data = "N"
+        self.heading_pub.publish(heading_msg)
+        self.compass_pub.publish(compass_msg) 
+        
+        if self.foxglove_overlay:
+            self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
+            self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp) 
+        
         #sleep(1) #  for 1 HZ
         
         self.NavSatFix_pub.publish(msg)
@@ -275,22 +286,11 @@ class IMUGPSNode(Node):
             0.0, 0.0, 1.0e-2
         ]
         
-        heading_msg = Float32()
-        heading_msg.data = get_heading_simple(mag_msg.magnetic_field.x, mag_msg.magnetic_field.y)
-        
-        compass_msg = String()
-        compass_msg.data = cardinal_Direction_8(heading_msg.data)
-        
         sleep(0.1) # should be 0.01 for 100HZ, but for simulation lets ease off for testing
         
         self.imu_pub.publish(imu_msg)
         self.mag_pub.publish(mag_msg)
-        self.heading_pub.publish(heading_msg)
-        self.compass_pub.publish(compass_msg) 
         
-        if self.foxglove_overlay:
-            self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
-            self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp) 
         
     # --------------------------------------------------
     # GPS handler for Serial
@@ -298,7 +298,7 @@ class IMUGPSNode(Node):
     # --------------------------------------------------
     def handle_gps(self, line: str):
         try:
-            _, ms, lat, lon, alt, speed, hdop, sats, fix = line.split(',')
+            _, ms, lat, lon, alt, speed, hdop, sats, fix, heading, cardinal = line.split(',')
             fix = int(fix)
         
             msg = NavSatFix()
@@ -330,6 +330,24 @@ class IMUGPSNode(Node):
             
             if self.foxglove_overlay:
                 self.handle_foxgloveGPS(msg)
+                
+             # Heading Calculation ========================================================================
+            heading_msg = Float32()
+            heading_msg.data = heading
+            
+            # Cardinal Compass  ======================================================================
+            ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
+            compass_msg = String()
+            compass_msg.data = cardinal
+            
+            #self.get_logger().info(f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}")           
+            
+            self.heading_pub.publish(heading_msg)
+            self.compass_pub.publish(compass_msg) 
+            
+            if self.foxglove_overlay:
+                self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
+                self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
           
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_gps()")
@@ -420,25 +438,11 @@ class IMUGPSNode(Node):
             
             #self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
 
-            # Heading Calculation ========================================================================
-            heading_msg = Float32()
-            heading_msg.data = get_heading_simple(mx, my) # in 360deg
-            
-            # Cardinal Compass  ======================================================================
-            ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
-            compass_msg = String()
-            compass_msg.data = cardinal_Direction_8(heading_msg.data) # i.e.N NE E SE S SW W NW
-            
-            #self.get_logger().info(f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}")           
+           
             
             self.imu_pub.publish(imu_msg)
             self.mag_pub.publish(mag_msg)
-            self.heading_pub.publish(heading_msg)
-            self.compass_pub.publish(compass_msg) 
             
-            if self.foxglove_overlay:
-                self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
-                self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
                        
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_imu()")

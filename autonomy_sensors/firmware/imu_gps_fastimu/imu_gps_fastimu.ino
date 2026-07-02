@@ -177,10 +177,12 @@ void loop() {
       Serial.print(gps.speed.mps(),2); Serial.print(",");
       Serial.print(gps.hdop.isValid() ? gps.hdop.value()/100.0f : NAN,2);Serial.print(",");
       Serial.print(gps.satellites.isValid() ? gps.satellites.value() : 0);
+      Serial.print(gps.course.deg(),6); Serial.print(",");
+      Serial.print(TinyGPSPlus::cardinal(gps.course.deg())); Serial.print(",");
       Serial.println();
     } 
     else {
-      Serial.println("nan,nan,nan,nan,nan,0,0");
+      Serial.println("nan,nan,nan,nan,nan,0,0,0,0");
     }
   }//END GPS OUTPUT
 
