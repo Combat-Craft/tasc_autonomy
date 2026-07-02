@@ -1,6 +1,6 @@
+from setuptools import find_packages, setup
 import os
 from glob import glob
-from setuptools import find_packages, setup
 
 package_name = 'autonomy_sensors'
 
@@ -12,13 +12,17 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
+        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.py'))),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'pyserial',  # For serial port communication
+        'pynmea2',   # For NMEA GPS parsing
+    ],
     zip_safe=True,
-    maintainer='ArtemisLee',
-    maintainer_email='yr.lee@torontomu.com',
-    description='Has all the sensor code, such as GPS, IMU, LiDAR, and GPS tracker package (fake/IP/real modes)',
+    maintainer='toni',
+    maintainer_email='tonithetutor@gmail.com',
+    description='Autonomy sensors package - GPS, IMU, and odometry publishers',
     license='Apache-2.0',
     extras_require={
         'test': [
@@ -27,13 +31,14 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            # IMU and GPS msgs
             'gps_imu_broadcaster = autonomy_sensors.gps_imu_broadcaster:main',
-            #'gps_node = autonomy_sensors.gps_node:main',
-            #'imu_node = autonomy_sensors.imu_node:main',
             
-            'fake_gps     = gps_tracker.fake_gps:main',
-            'ip_gps       = gps_tracker.ip_gps:main',
-            'route_logger = gps_tracker.route_logger:main',
+            #GPS Route Logger
+            'route_logger = autonomy_sensors.route_logger:main',
+            'ips_gps = autonomy_sensors.ips_gps:main',
+            'fake_gps = autonomy_sensors.fake_gps:main',
+
         ],
     },
 )

@@ -41,7 +41,7 @@ def generate_launch_description():
     # ── Nodes ───────────────────────────────────────────────────────────────
 
     fake_gps_node = Node(
-        package='gps_tracker',
+        package='autonomy_sensors',
         executable='fake_gps',
         name='gps_publisher',
         output='screen',
@@ -50,7 +50,7 @@ def generate_launch_description():
     )
 
     ip_gps_node = Node(
-        package='gps_tracker',
+        package='autonomy_sensors',
         executable='ip_gps',
         name='gps_publisher',
         output='screen',
@@ -77,7 +77,7 @@ def generate_launch_description():
     )
 
     route_logger_node = Node(
-        package='gps_tracker',
+        package='autonomy_sensors',
         executable='route_logger',
         name='route_logger',
         output='screen'

@@ -32,6 +32,19 @@ MORSE_CODE = {
 
 
 class MorseCodeDetector(Node):
+    # Morse code timing constants (18 WPM with PARIS reference)
+    # Dit length: 66.7ms (1 unit)
+    # Dah length: 200ms (3 units)
+    # Character space: 200ms (3 units)
+    # Word space: 467ms (7 units)
+    DIT_LENGTH = 0.0667  # seconds
+    DASH_LENGTH = 0.2    # seconds (3 × DIT_LENGTH)
+    CHAR_SPACE = 0.2     # seconds (3 × DIT_LENGTH)
+    WORD_SPACE = 0.467   # seconds (7 × DIT_LENGTH)
+    
+    # Thresholds with some margin for real-world detection uncertainty
+    DOT_DASH_THRESHOLD = (DIT_LENGTH + DASH_LENGTH) / 2  # ~0.133s
+    CHAR_WORD_THRESHOLD = (CHAR_SPACE + WORD_SPACE) / 2  # ~0.334s
 
     def __init__(self):
         super().__init__('morse_code_detector')
@@ -134,7 +147,7 @@ class MorseCodeDetector(Node):
         self._publish_debug(frame, gray, adaptive_thresh, light_on, bright_frac)
 
     def _handle_pulse(self, duration):
-        if duration < 0.25:
+        if duration < self.DOT_DASH_THRESHOLD:
             self.current_sym += '.'
         else:
             self.current_sym += '-'
@@ -144,9 +157,9 @@ class MorseCodeDetector(Node):
         self.pub_morse.publish(msg)
 
     def _handle_gap(self, gap):
-        if gap > 1.2:
+        if gap > self.CHAR_WORD_THRESHOLD:
             self._flush(word=True)
-        elif gap > 0.5:
+        elif gap > self.DIT_LENGTH * 1.5:  # ~0.1s, between character and word
             self._flush(word=False)
 
     def _flush(self, word=False):
@@ -198,6 +211,7 @@ class MorseCodeDetector(Node):
     def destroy_node(self):
         self.cap.release()
         super().destroy_node()
+
 
 
 def main():
