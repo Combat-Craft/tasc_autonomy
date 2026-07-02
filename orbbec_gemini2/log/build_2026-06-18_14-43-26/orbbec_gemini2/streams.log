@@ -1,0 +1,54 @@
+[0.044s] Invoking command in '/home/raybans123/tasc_autonomy/orbbec_gemini2/build/orbbec_gemini2': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/raybans123/tasc_autonomy/orbbec_gemini2 -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/raybans123/tasc_autonomy/orbbec_gemini2/install/orbbec_gemini2
+[0.389s] -- The C compiler identification is GNU 11.4.0
+[0.824s] -- The CXX compiler identification is GNU 11.4.0
+[0.856s] -- Detecting C compiler ABI info
+[1.070s] -- Detecting C compiler ABI info - done
+[1.081s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.092s] -- Detecting C compile features
+[1.094s] -- Detecting C compile features - done
+[1.103s] -- Detecting CXX compiler ABI info
+[1.372s] -- Detecting CXX compiler ABI info - done
+[1.384s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.384s] -- Detecting CXX compile features
+[1.386s] -- Detecting CXX compile features - done
+[1.413s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.769s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.919s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[2.043s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[2.206s] -- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.221s] -- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.253s] -- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.306s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.355s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.535s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.546s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[2.872s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[2.953s] -- Found FastRTPS: /opt/ros/humble/include  
+[3.034s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[3.070s] -- Looking for pthread.h
+[3.289s] -- Looking for pthread.h - found
+[3.290s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[3.498s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[3.502s] -- Found Threads: TRUE  
+[3.705s] -- Found rclpy: 3.3.21 (/opt/ros/humble/share/rclpy/cmake)
+[3.714s] -- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)
+[3.837s] [31mCMake Error at CMakeLists.txt:25 (find_package):
+[3.837s]   By not providing "FindOrbbecSDK.cmake" in CMAKE_MODULE_PATH this project
+[3.837s]   has asked CMake to find a package configuration file provided by
+[3.837s]   "OrbbecSDK", but CMake did not find one.
+[3.837s] 
+[3.837s]   Could not find a package configuration file provided by "OrbbecSDK" with
+[3.837s]   any of the following names:
+[3.837s] 
+[3.837s]     OrbbecSDKConfig.cmake
+[3.837s]     orbbecsdk-config.cmake
+[3.837s] 
+[3.837s]   Add the installation prefix of "OrbbecSDK" to CMAKE_PREFIX_PATH or set
+[3.837s]   "OrbbecSDK_DIR" to a directory containing one of the above files.  If
+[3.837s]   "OrbbecSDK" provides a separate development package or SDK, be sure it has
+[3.837s]   been installed.
+[3.838s] 
+[3.838s] [0m
+[3.838s] -- Configuring incomplete, errors occurred!
+[3.838s] See also "/home/raybans123/tasc_autonomy/orbbec_gemini2/build/orbbec_gemini2/CMakeFiles/CMakeOutput.log".
+[3.858s] Invoked command in '/home/raybans123/tasc_autonomy/orbbec_gemini2/build/orbbec_gemini2' returned '1': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/raybans123/tasc_autonomy/orbbec_gemini2 -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/raybans123/tasc_autonomy/orbbec_gemini2/install/orbbec_gemini2

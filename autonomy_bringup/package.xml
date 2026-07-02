@@ -4,13 +4,20 @@
   <name>autonomy_bringup</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="ahmedmegahed20142@gmail.com">ahmedtabl</maintainer>
-  <license>TODO: License declaration</license>
+  <maintainer email="yr.lee@torontomu.com">ArtemisLee</maintainer>
+  <license>Apache-2.0</license>
 
+  <!-- base ament packages -->
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
+  
+  <!-- 3rd party ros2 packages-->
+  <exec_depend>foxglove_bridge</exec_depend> 
+  <exec_depend>orbbec_camera</exec_depend>
+  <exec_depend>orbbec_description</exec_depend>
+
 
   <export>
     <build_type>ament_python</build_type>

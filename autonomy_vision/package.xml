@@ -3,26 +3,53 @@
 <package format="3">
   <name>autonomy_vision</name>
   <version>0.0.0</version>
-  <description>Vision processing and camera pipeline nodes for autonomy workflows.</description>
-  <maintainer email="tonithetutor@gmail.com">toni</maintainer>
+  <description>TODO: Package description</description>
+  <maintainer email="yr.lee@torontomu.com">ArtemisLee</maintainer>
   <license>Apache-2.0</license>
-
-  <buildtool_depend>ament_python</buildtool_depend>
-
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
-  <exec_depend>vision_msgs</exec_depend>
-  <exec_depend>message_filters</exec_depend>
-  <exec_depend>cv_bridge</exec_depend>
-  <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-opencv</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
+  
+  <!-- 3rd party ros2 packages-->
+  
+  <!-- orbbec_camera_v2 has 3 packages-->
+  <exec_depend>orbbec_camera</exec_depend>
+  <!--<exec_depend>orbbec_camera_msgs</exec_depend>-->
+  <exec_depend>orbbec_description</exec_depend>
+
+  <exec_depend>numpy</exec_depend>
+
+  <depend>ament_lint_auto</depend>
+  <depend>ament_lint_common</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>backward_ros</depend>
+  <depend>image_transport</depend>
+  <depend>image_publisher</depend>
+  <depend>rclcpp_components</depend>
+  <depend>cv_bridge</depend>
+  <depend>camera_info_manager</depend>
+  <depend>orbbec_camera_msgs</depend>
+  <depend>builtin_interfaces</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>statistics_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_sensor_msgs</depend>
+  <depend>tf2_msgs</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>diagnostic_msgs</depend>
+  <!-- system/development packages (kept as depend tags) -->
+  <depend>libgflags-dev</depend>
+  <depend>nlohmann-json-dev</depend>
+  <depend>libgoogle-glog-dev</depend>
+  <depend>libssl-dev</depend>
+  <depend>opengl</depend>
+
   <export>
     <build_type>ament_python</build_type>
   </export>

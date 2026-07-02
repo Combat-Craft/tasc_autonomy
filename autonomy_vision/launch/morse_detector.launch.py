@@ -17,17 +17,6 @@ def generate_launch_description():
         }]
     )
 
-    foxglove_bridge = Node(
-        package='foxglove_bridge',
-        executable='foxglove_bridge',
-        name='foxglove_bridge',
-        output='screen',
-        parameters=[{
-            'port': 8765
-        }]
-    )
-
     return LaunchDescription([
         morse_node,
-        foxglove_bridge
     ])

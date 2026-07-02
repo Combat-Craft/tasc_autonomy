@@ -1,42 +1,50 @@
 #!/usr/bin/env python3
- 
+# Terminal Command: ros2 launch autonomy_vision detection.launch.py
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesis
+from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithPose
 import numpy as np
 import cv2
 from ultralytics import YOLO
 import time
- 
+import torch 
  
 class webcam_detection2D(Node):
     def __init__(self):
-        # Initialize
+        # Initialize node
         super().__init__("webcam_detector")
  
-        # Load YOLO model
-        self.model = YOLO("yolo11n.pt")
+        # Load YOLO11
+        self.model = YOLO("yolo11n.pt", task="detect")
+        device = "cuda" if torch.cuda.is_available() else "cpu" #Load on GPU, otherwise default to CPU
+        self.model.to(device)
+        self.get_logger().info(f"YOLOv11n GPU model loaded on {device.upper()}")
  
-        # Subscribe to the webcam topic published by usb_cam
+        # Warm-up run to pre-load CUDA kernels before live frames arrive
+        dummy = np.zeros((320, 320, 3), dtype=np.uint8)
+        self.model(dummy, imgsz=320, verbose=False)
+        self.get_logger().info("Warm-up complete")
+
+        # Subscribes to webcam topic published by usb_cam
         self.subscription = self.create_subscription(
             Image,
-            "/image_raw",
+            "/image_raw",           #usb_cam publishes webcam feed to /image_raw
             self.image_callback,
             10
         )
  
         # Publishers
-        self.pub_det   = self.create_publisher(Detection2DArray, "/detections", 10)
-        self.pub_debug = self.create_publisher(Image, "/debug_image", 10)
+        self.pub_det   = self.create_publisher(Detection2DArray, "/detections", 10) # detection results
+        self.pub_debug = self.create_publisher(Image, "/debug_image", 10) # image with bounding boxes
  
         # FPS tracking
         self._fps_start = time.time()
         self._fps_count = 0
  
-        self.get_logger().info("Webcam Detector Node started — subscribed to /image_raw")
+        self.get_logger().info("Webcam Detector is active")
  
-    # Convert ROS2 Image message to BGR numpy array
+    # Convert ROS2 image message to BGR numpy array
     def image_msg_to_bgr(self, msg: Image):
         encoding = msg.encoding.lower()
  
@@ -52,6 +60,7 @@ class webcam_detection2D(Node):
  
         frame = np.frombuffer(msg.data, dtype=dt).reshape(msg.height, msg.width, ch)
  
+        # Convert to BGR so it can be used by OpenCV
         if encoding == 'rgb8':
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         if encoding == 'mono8':
@@ -59,70 +68,83 @@ class webcam_detection2D(Node):
  
         return frame
  
-    # Convert BGR numpy array to ROS2 Image message
+
+    # Convert BGR numpy array to ROS2 image message
     def ndarray_to_image_msg(self, img, ref_msg):
         msg = Image()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = ref_msg.header.frame_id
         msg.height, msg.width = img.shape[:2]
         msg.encoding = "bgr8"
-        msg.step = msg.width * 3
+        msg.step = msg.width * 3 
         msg.data = img.tobytes()
         return msg
  
-    # Main callback whcih runs every time a new frame arrives on the topic
+    # Main callback is triggered each time a new frame is published by usb_cam
     def image_callback(self, msg: Image):
- 
-        # Convert ROS2 image message to OpenCV BGR frame
+
+        #Convert ROS2 image message to OpenCV frame
         frame = self.image_msg_to_bgr(msg)
         if frame is None:
             return
  
-        # Timestamp for ROS2 messages
         stamp = self.get_clock().now().to_msg()
- 
-        # Run YOLO object detection
-        results = self.model(frame, verbose=False)
- 
-        # Build Detection2DArray message
+
+        orig_h, orig_w = frame.shape[:2]
+
+        # Pad to square first to preserve aspect ratio
+        size = max(orig_h, orig_w)
+        padded = np.zeros((size, size, 3), dtype=np.uint8)
+        padded[:orig_h, :orig_w] = frame
+
+        small = cv2.resize(padded, (320, 320), interpolation=cv2.INTER_LINEAR)
+        results = self.model(small, imgsz=320, conf=0.4, verbose=False) # Only keep detections with confidence score >= 0.4
+
+        scale = size / 320
+
+        # Detection2DArray ROS2 message
         det_array = Detection2DArray()
         det_array.header.stamp = stamp
         det_array.header.frame_id = msg.header.frame_id
  
-        # Copy frame for drawing debug boxes
+        # Copy frame for adding bounding boxes
         debug_img = frame.copy()
  
-        # Loop through all YOLO detections
+        # Identify each detected object
         for det in results[0].boxes:
  
-            # Bounding box corners in pixels
+            # Bounding box pixel coordinates
             x1, y1, x2, y2 = map(int, det.xyxy[0].cpu().numpy())
  
-            # Class ID and confidence
+            # Scale boxes back to original resolution
+            x1 = int(x1 * scale); x2 = int(x2 * scale)
+            y1 = int(y1 * scale); y2 = int(y2 * scale)
+
+            # Class index, confidence score, and human readable label
             cls_id = int(det.cls.cpu().numpy()[0])
             conf   = float(det.conf.cpu().numpy()[0])
             label  = self.model.names[cls_id]
  
-            # Fill Detection2D message
+            # Individual Detection2D message
             detection = Detection2D()
             detection.header.stamp = stamp
             detection.header.frame_id = msg.header.frame_id
  
-            # Bounding box as center and size (pixel space)
+            # Bounding box defined by center point and width/height
             detection.bbox.center.position.x = float((x1 + x2) / 2)
             detection.bbox.center.position.y = float((y1 + y2) / 2)
             detection.bbox.size_x = float(x2 - x1)
             detection.bbox.size_y = float(y2 - y1)
  
-            # Class label and confidence score
-            hypo = ObjectHypothesis()
-            hypo.class_id = label
-            hypo.score    = conf
+            # Attach class label and confidence score
+            hypo = ObjectHypothesisWithPose()
+            hypo.hypothesis.class_id = label
+            hypo.hypothesis.score    = conf
             detection.results.append(hypo)
  
             det_array.detections.append(detection)
  
-            # Draw bounding box and label on debug image
+            # Draw bounding box and label the image
             cv2.rectangle(debug_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(
                 debug_img,
@@ -132,11 +154,11 @@ class webcam_detection2D(Node):
                 0.6, (0, 255, 0), 2
             )
  
-        # Publish detections and debug image
+        # Publish detection results and image with bounding boxes
         self.pub_det.publish(det_array)
         self.pub_debug.publish(self.ndarray_to_image_msg(debug_img, msg))
  
-        # FPS logging every 3 seconds
+        # Log FPS every 3 seconds
         self._fps_count += 1
         elapsed = time.time() - self._fps_start
         if elapsed >= 3.0:

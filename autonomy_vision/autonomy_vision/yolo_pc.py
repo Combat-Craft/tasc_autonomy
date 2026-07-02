@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, CameraInfo
 from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithPose
 import numpy as np
@@ -16,13 +17,16 @@ class YoloDepthPointCloud(Node):
         # Load YOLO
         self.model = YOLO("yolo11n.pt")
 
-        # Time-synchronized subscribers
-        rgb_sub = Subscriber(self, Image, "/depth_camera/image_raw")
-        depth_sub = Subscriber(self, Image, "/depth_camera/depth/image_raw")
-        info_sub = Subscriber(self, CameraInfo, "/depth_camera/camera_info")
+        # Time-synchronized subscribers (sensor QoS)
+        rgb_sub = Subscriber(self, Image, "/depth_camera/image_raw", qos_profile=qos_profile_sensor_data)
+        depth_sub = Subscriber(self, Image, "/depth_camera/depth/image_raw", qos_profile=qos_profile_sensor_data)
+        info_sub = Subscriber(self, CameraInfo, "/depth_camera/camera_info", qos_profile=qos_profile_sensor_data)
 
-        self.ts = ApproximateTimeSynchronizer([rgb_sub, depth_sub, info_sub],
-                                              queue_size=10, slop=0.1)
+        self.ts = ApproximateTimeSynchronizer(
+            [rgb_sub, depth_sub, info_sub],
+            queue_size=20,
+            slop=0.2
+        )
         self.ts.registerCallback(self.callback)
 
         # Publishers
@@ -101,6 +105,7 @@ class YoloDepthPointCloud(Node):
     # MAIN CALLBACK
     # --------------------------------------------------------------------------
     def callback(self, rgb_msg, depth_msg, info_msg):
+        self.get_logger().info("callback fired", throttle_duration_sec=2.0)
         rgb = self.image_msg_to_bgr(rgb_msg)
         depth = self.depth_msg_to_array(depth_msg)
         if rgb is None or depth is None:
