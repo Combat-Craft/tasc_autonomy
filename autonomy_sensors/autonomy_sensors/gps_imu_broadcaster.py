@@ -33,55 +33,26 @@ from foxglove_msgs.msg import TextAnnotation
 from math import atan2, pi as PI, sqrt  # for heading, roll, pitch i.e. "compass" angles
 from time import sleep # for simulated data, firmware publishes at certain Hz
 
-def cardinal_Direction_8(angle):
-    if ((0 <= angle <= 22.5) or angle > 337.5):
-        return "N"
-    if (22.5 < angle <= 67.5):
-        return "NE"
-    if (67.5 < angle <= 112.5):
-        return "E"
-    if (112.5 < angle <= 157.5):
-        return "SE"
-    if (157.5 < angle <= 202.5):
-        return "S"
-    if (202.5 < angle <= 247.5):
-        return "SW"
-    if (247.5 < angle <= 292.5):
-        return "W"
-    if (292.5 < angle <= 337.5):
-        return "NW"
+def get_cardinal_16(heading_angle):
+    # alg from https://github.com/mikalhart/TinyGPSPlus/blob/master/src/TinyGPS%2B%2B.cpp
+    # 360/16 = 22.5, and we want True North to be 0deg +/- (22.5/2)
+    
+    cardinal = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    direction = (heading_angle + 11.25) / 22.5;
+    return cardinal[direction % 16];
         
 
-def get_heading_simple(mx, my): #ax, ay, az, 
-    #has the code for roll and yaw, just in case
-    
-    DECLINATION = 10.05 # Declination (degrees) in Toronto
-    
-    #roll = atan2(ay, az)
-    #pitch = atan2(-ax, sqrt(ay * ay + az * az))
-    
-    heading = 0
-    if (my == 0):
-        # C++ code is heading = (mx < 0) ? PI : 0;
-        if (mx < 0):
-            heading = PI
-        else:
-            heading = 0
-    else:
-        heading = atan2(mx, my)
-    
-    heading -= DECLINATION * PI / 180
-    
-    if (heading > PI):
-        heading -= (2 * PI)
-    elif (heading < -PI):
-        heading += (2 * PI)
-    
-    # Convert everything from radians to degrees:
-    heading *= 180.0 / PI
-    #pitch *= 180.0 / PI
-    #roll  *= 180.0 / PI
+def get_heading_quat(qw, qx, qy, qz): 
 
+    # sparkfun for Tait Bryan angles: heading/ψ is rotation about the Z-axis (+/- 180 deg.)
+    # assumes the NED orientation for quaternions
+    heading = atan2( 2.0*(qw*qz + qy*qx), (1.0 - 2.0*(qy*qy + qz*qz)) ) * 180.0 / PI;
+        
+    if heading < 0.0:
+        heading += 360
+    elif heading > 360.0
+        heading -= 360
+    
     return heading
 
 class IMUGPSNode(Node):
@@ -104,6 +75,9 @@ class IMUGPSNode(Node):
         # Publishers
         ## GPS 
         self.NavSatFix_pub = self.create_publisher(NavSatFix, '/gps/fix', 10)
+        
+        self.headingGPS_pub = self.create_publisher(Float32, '/headingGPS', 10) #
+        self.compassGPS_pub = self.create_publisher(String, '/cardinal_compassGPS', 10) # N S E W
               
         ## IMU 
         self.imu_pub = self.create_publisher(Imu, '/imu/acc_gryo', 50)
@@ -331,7 +305,7 @@ class IMUGPSNode(Node):
             if self.foxglove_overlay:
                 self.handle_foxgloveGPS(msg)
                 
-             # Heading Calculation ========================================================================
+            # Heading Calculation ========================================================================
             heading_msg = Float32()
             heading_msg.data = heading
             
@@ -340,17 +314,17 @@ class IMUGPSNode(Node):
             compass_msg = String()
             compass_msg.data = cardinal
             
-            #self.get_logger().info(f"Heading={heading_msg.data:.1f}, Compass={compass_msg.data}")           
+            self.get_logger().info(f"GPS Heading={heading_msg.data:.1f}, GPS Compass={compass_msg.data}")           
             
-            self.heading_pub.publish(heading_msg)
-            self.compass_pub.publish(compass_msg) 
+            self.headingGPS_pub.publish(heading_msg)
+            self.compassGPS_pub.publish(compass_msg) 
             
             if self.foxglove_overlay:
                 self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
                 self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
           
         except ValueError:
-            self.get_logger().error(f"imu_node.py: Failed try in handle_gps()")
+            self.get_logger().error(f"GPS_imu_node: Failed try in handle_gps()")
            
     
     # --------------------------------------------------
@@ -438,7 +412,20 @@ class IMUGPSNode(Node):
             
             #self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
 
-           
+            # test gps with quat
+             # Heading Calculation ========================================================================
+            heading_msg = Float32()
+            heading_msg.data = get_heading_quat(qw, qx, qy, qz)
+            
+            # Cardinal Compass  ======================================================================
+            ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
+            compass_msg = String()
+            compass_msg.data = get_cardinal_16(heading_msg.data)
+            
+            self.get_logger().info(f"IMU Heading={heading_msg.data:.1f}, IMU Compass={compass_msg.data}")           
+            
+            self.heading_pub.publish(heading_msg)
+            self.compass_pub.publish(compass_msg) 
             
             self.imu_pub.publish(imu_msg)
             self.mag_pub.publish(mag_msg)
