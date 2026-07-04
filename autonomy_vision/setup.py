@@ -37,6 +37,7 @@ setup(
         'console_scripts': [
             # Panorama
             'panorama_stitcher = autonomy_vision.panorama_stitcher:main',
+            'panorama_stitcher2 = autonomy_vision.panorama_stitcher_gstreamer:main',
             # Motors
             'motor_controller = autonomy_vision.motor_controller:main',
             'motor_input = autonomy_vision.motor_input:main',

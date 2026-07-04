@@ -69,12 +69,13 @@ Sweep configuration note:
 
 import time
 import cv2
+import urllib.request as request
 import numpy as np
 
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import CompressedImage, NavSatFix
+from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Float64, Float32, String
 
 class PanoramaSweeper(Node):
@@ -93,9 +94,8 @@ class PanoramaSweeper(Node):
         self.TEST_MODE = self.get_parameter('test_mode').get_parameter_value().bool_value
 
         self.get_logger().info(f"TEST_MODE = {self.TEST_MODE}")
-        
-        self.declare_parameter('rtsp_url', 'rtsp://admin:@192.168.1.117:8554/profile0 ') # might be able to use snapshot instead?
-        self.rtsp_url = self.get_parameter('rtsp_url')
+
+        self.cam_url = 'http://192.168.1.117:6688/snapshot/PROFILE_000'
 
         # -------------------------------------------------
         # Storage for captured panorama data
@@ -110,7 +110,7 @@ class PanoramaSweeper(Node):
         
         # Sweep angles in degrees.
         # The camera moves from -135 degrees to +135 degrees and captures one image at each angle.
-        self.sweep_angles = np.linspace(-135, 135, 18) # 270° / 17 gaps = 15.9° per image
+        self.sweep_angles = np.linspace(-135, 135, 10) # 270° / 17 gaps = 15.9° per image
         self.sweep_index = 0 # Index of the current sweep angle.
 
         # -------------------------------------------------
@@ -344,41 +344,19 @@ class PanoramaSweeper(Node):
         if self.state != "CAPTURE":
             return
             
-        # Retrieve RTSP Stream via OpenCV, and grab a frame
-        frame = False
-        stream_capture = cv2.VideoCapture(self.rtsp_url)
-        
-        if not stream_capture.isOpened() :
-            self.get_logger().warn("Error: Cannot open the RTSP stream")
-            return
-            
-        #last_capture_time = time.time()
-        #current_time = last_capture_time
-                       
-        ## https://docs.opencv.org/4.13.0/javadoc/org/opencv/videoio/VideoCapture.html#grab()
-        ## strategy is to grab then call retrieve to eventually get a frame
-        # or i can just read() to do both at once. if too much cpu i can change back to grab/retrieve
-        while not frame:            
-            ##stream_capture.grab() # grab next frame
-            
-            #current_time = time.time()
-            #elapsed_time = current_time - last_capture_time
-            
-            #if elapsed_time >= self.capture_time:
-                #frame = stream_capture.retrieve() # decode and get frame
-            
-            ##frame = stream_capture.retrieve() # decode and get frame
-            
-            ret, frame = stream_capture.read()
-                
+        # Retrieve 640x360 JPEG from provided RTSP snapshot url 
+        req = request.urlopen(self.cam_url)#'http://192.168.1.117:6688/snapshot/PROFILE_000')
 
         # Decode the compressed JPEG image into an OpenCV frame
-        #np_arr = np.frombuffer(msg.data, dtype=np.uint8)
-        #frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        np_arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+        #frame = cv2.imdecode(np_arr, -1) # 'Load it as it is'
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)        
 
         # If decoding fails, skip this frame.
-        #if frame is None:
-        #    return
+        if frame is None:
+            return
+
+        #cv2.imwrite(f"frame_{self.sweep_index}.jpg", frame) # save each frame for debugging
 
         # Get the servo angle associated with this captured frame.
         current_servo_angle = self.sweep_angles[self.sweep_index]
@@ -436,8 +414,10 @@ class PanoramaSweeper(Node):
         self.get_logger().info(f"Stitching {len(self.frames)} images")
 
         # Create OpenCV panorama stitcher and attempt to stitch the frames.
-        stitcher = cv2.Stitcher_create(cv2.Stitcher_PANORAMA)
+        stitcher = cv2.Stitcher_create(cv2.Stitcher_PANORAMA) #Stitcher_create uses CUDA
         status, pano = stitcher.stitch(self.frames)
+
+        self.get_logger().info(f"Called OpenCV stitcher → status {status}")
 
         # If OpenCV cannot stitch the images, reset and wait for another trigger.
         if status != cv2.Stitcher_OK:
@@ -496,7 +476,7 @@ class PanoramaSweeper(Node):
                 # rover heading + servo angle.
                 camera_heading = (base_heading + angle) % 360.0
 
-                cardinal = self.heading_to_cardinal(camera_heading)
+                cardinal = self.latest_cardinal
 
                 heading_label = f"{camera_heading:.0f}"
                 cardinal_label = cardinal
