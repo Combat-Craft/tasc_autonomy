@@ -48,6 +48,7 @@ This section covers the camera servo control and panorama capture workflow. `mot
 
 ## Table of Contents
 
+- [0) TL;DR for testing](#0-testing)
 - [1) Build](#1-build)
 - [2) Topics](#2-topics)
 - [3) Launch File](#3-launch-file)
@@ -56,6 +57,45 @@ This section covers the camera servo control and panorama capture workflow. `mot
 - [6) Manual Commands and Verification](#6-manual-commands-and-verification)
 - [7) Hardware and Device Notes](#7-hardware-and-device-notes)
 - [8) Dependencies Used by Current Code](#8-dependencies-used-by-current-code)
+
+## 0) TL;DR for testing
+
+Arduino wiring:
+
+| Servo Wire | Connection |
+| ---------- | ---------- |
+| Brown      | GND        |
+| Orange     | D9         |
+| Red        | 5V         |
+
+launch:
+
+```bash
+cd ~/<your_ros2_ws>
+colcon build --packages-select autonomy_vision
+source install/setup.bash
+ros2 launch autonomy_vision motor.launch.py
+```
+
+The launch file opens separate terminals for `motor_input.py` and `panorama_stitcher.py`. The launch file opens separate terminals for `motor_input.py` and `panorama_stitcher.py`, so there will be 3 terminals total: the original launch terminal, the motor input terminal, and the panorama stitcher log terminal. 
+
+In the `motor_input.py` terminal, enter a number from `-135` to `+135` to manually move the servo, or enter `p` to trigger a panorama sweep. The panorama sweep captures 18 images across a 270° range with `~15.9°` between captures. It hasa `1.0 s` move time and `1.0 s` settle time per position (`~36 s` total capture time).
+
+If testing without a camera, launch in test mode:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py test_mode:=true
+```
+
+For panorama testing with overlays, publish fake GPS and heading data in separate terminals:
+
+```bash
+ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitude: -79.380000, altitude: 100.0}" -r 1
+```
+
+```bash
+ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
+```
 
 ## 1) Build
 
