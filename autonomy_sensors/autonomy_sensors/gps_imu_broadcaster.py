@@ -9,13 +9,9 @@
 #        - /imu/data_raw
 #        - /imu/mag
 #        - /gps/fix
-#    - custom for overlay: 
+#    - custom for compass, used in panorama: 
 #        - /heading (as in pitch, roll, the angle of the Object away frm North)
 #        - /cardinal_compass (using 8-rose i.e. N, NE, E, etc)
-#    - custom using foxglove (all of TextAnnotation for use on 2D panels): 
-#        - /cam_overlay/latitude_longitude, 
-#        - /cam_overlay/heading 
-#        - /cam_overlay/compass
 #
 
 import serial
@@ -28,7 +24,6 @@ from sensor_msgs.msg import NavSatFix, NavSatStatus, Imu, MagneticField
 #from geometry_msgs.msg import Quaternion
 from std_msgs.msg import Header, Float32, String
 
-from foxglove_msgs.msg import TextAnnotation
 
 from math import atan2, pi as PI, sqrt  # for heading, roll, pitch i.e. "compass" angles
 from time import sleep # for simulated data, firmware publishes at certain Hz
@@ -64,12 +59,10 @@ class IMUGPSNode(Node):
         self.declare_parameter('baud', 115200) #still matches with new arduino sketch
         self.declare_parameter('frame_id', 'gps_imu_link') # match IMU, gps can be off by 5cm for all i care
         self.declare_parameter('simulated_data', False)
-        self.declare_parameter('foxglove_overlay', False) # whether to publish textAnnotation
 
         # other internal paramaters
         self.port = self.get_parameter('port').value
         self.baud = self.get_parameter('baud').value
-        self.foxglove_overlay = self.get_parameter('foxglove_overlay').value
         self.serial_port = None
                 
         # Publishers
@@ -86,14 +79,7 @@ class IMUGPSNode(Node):
         self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
         self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
         
-        self.get_logger().error(f"imu_gps_node: self.foxglove_overlay is < {self.foxglove_overlay} >")
         
-        ## Foxglove publishers
-        if self.foxglove_overlay:
-            self.latlonfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/latitude_longitude', 10)  
-            self.headingfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/heading', 10)
-            self.compassfox_pub = self.create_publisher(TextAnnotation, '/cam_overlay/compass', 10)
-         
         # Start Node
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
@@ -204,11 +190,7 @@ class IMUGPSNode(Node):
         compass_msg.data = "N"
         self.heading_pub.publish(heading_msg)
         self.compass_pub.publish(compass_msg) 
-        
-        if self.foxglove_overlay:
-            self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
-            self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp) 
-        
+
         #sleep(1) #  for 1 HZ
         
         self.NavSatFix_pub.publish(msg)
@@ -301,10 +283,7 @@ class IMUGPSNode(Node):
                 msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
                    
             self.NavSatFix_pub.publish(msg)
-            
-            if self.foxglove_overlay:
-                self.handle_foxgloveGPS(msg)
-                
+                          
             # Heading Calculation ========================================================================
             heading_msg = Float32()
             heading_msg.data = heading
@@ -317,11 +296,7 @@ class IMUGPSNode(Node):
             self.get_logger().info(f"GPS Heading={heading_msg.data:.1f}, GPS Compass={compass_msg.data}")           
             
             self.headingGPS_pub.publish(heading_msg)
-            self.compassGPS_pub.publish(compass_msg) 
-            
-            if self.foxglove_overlay:
-                self.handle_foxgloveHeading(heading_msg, imu_msg.header.stamp)  
-                self.handle_foxgloveCardinalCompass(compass_msg, imu_msg.header.stamp)   
+            self.compassGPS_pub.publish(compass_msg)  
           
         except ValueError:
             self.get_logger().error(f"GPS_imu_node: Failed try in handle_gps()")
@@ -434,67 +409,6 @@ class IMUGPSNode(Node):
         except ValueError:
             self.get_logger().error(f"imu_node.py: Failed try in handle_imu()")
     
-    # --------------------------------------------------     
-    # Foxglove Text Annotation
-
-    # ... looking at this, i should refactor since repeat code but later...
-    # -------------------------------------------------- 
-    def handle_foxgloveGPS(self, msg):
-
-        foxglove_msg = TextAnnotation()
-        foxglove_msg.timestamp =  msg.header.stamp
-        foxglove_msg.position.x = 360.0 # origin is top left corner of the image
-        foxglove_msg.position.y = 15.0
-        foxglove_msg.text = "lat: " + str(msg.latitude) + "            " + "lon: " + str(msg.longitude) #12 spaces   
-        foxglove_msg.font_size = 12.0
-        foxglove_msg.text_color.r = 1.0
-        foxglove_msg.text_color.g = 1.0
-        foxglove_msg.text_color.b = 1.0
-        foxglove_msg.text_color.a = 1.0 #opaque
-        foxglove_msg.background_color.r = 0.0
-        foxglove_msg.background_color.g = 0.0
-        foxglove_msg.background_color.b = 0.0
-        foxglove_msg.background_color.a = 0.1 #0 = transparent      
-        
-        return foxglove_msg
-    
-    def handle_foxgloveHeading(self, msg, timestamp):
-        foxglove_msg = TextAnnotation()
-        foxglove_msg.timestamp =  timestamp
-        foxglove_msg.position.x = 360.0 # origin is top left corner of the image
-        foxglove_msg.position.y = 15.0
-        foxglove_msg.text = "Heading: " + str(msg.data)
-        foxglove_msg.font_size = 12.0
-        foxglove_msg.text_color.r = 1.0
-        foxglove_msg.text_color.g = 1.0
-        foxglove_msg.text_color.b = 1.0
-        foxglove_msg.text_color.a = 1.0 #opaque
-        foxglove_msg.background_color.r = 0.0
-        foxglove_msg.background_color.g = 0.0
-        foxglove_msg.background_color.b = 0.0
-        foxglove_msg.background_color.a = 0.1 #0 = transparent
-             
-        return foxglove_msg
-        
-    def handle_foxgloveCardinalCompass(self, msg, timestamp):
-
-        foxglove_msg = TextAnnotation()
-        foxglove_msg.timestamp =  timestamp 
-        foxglove_msg.position.x = 360.0 # origin is top left corner of the image
-        foxglove_msg.position.y = 30.0
-        foxglove_msg.text = msg.data #already string
-        foxglove_msg.font_size = 12.0
-        foxglove_msg.text_color.r = 1.0
-        foxglove_msg.text_color.g = 1.0
-        foxglove_msg.text_color.b = 1.0
-        foxglove_msg.text_color.a = 1.0 #opaque
-        foxglove_msg.background_color.r = 0.0
-        foxglove_msg.background_color.g = 0.0
-        foxglove_msg.background_color.b = 0.0
-        foxglove_msg.background_color.a = 0.1 #0 = transparent
-             
-        return foxglove_msg
-   
 
 def main():
     rclpy.init()
