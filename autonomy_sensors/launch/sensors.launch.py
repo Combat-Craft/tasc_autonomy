@@ -51,14 +51,34 @@ def generate_launch_description():
                {'baud_rate': 115200},           
            ]
         ),
+
+        # RPLidar A1M8
+        IncludeLaunchDescription(
+            PathJoinSubstitution([
+              FindPackageShare('rplidar_ros'),
+                  'launch',
+                  "rplidar_a1_launch.py"
+            ]),
+            launch_arguments={
+                'channel_type': 'serial',
+                'serial_port': '/dev/ttyUSB5',
+                'serial_baudrate': '115200',
+                'frame_id': 'laser',
+                'inverted': 'false',
+                'angle_compensate': 'true',
+                'scan_mode': 'Sensitivity'  # Optimal for A1M8
+            }.items()
+            
+        ),
+        
         
         # GPS Route Logger 
-        Node(
-            package='gps_tracker',
-            executable='route_logger',
-            name='route_logger',
-            output='screen'
-        ),
+        #Node(
+        #    package='gps_tracker',
+        #    executable='route_logger',
+        #    name='route_logger',
+        #    output='screen'
+        #),
         # Get approximate location via IP lookup
         #Node(
         #    package='gps_tracker',
