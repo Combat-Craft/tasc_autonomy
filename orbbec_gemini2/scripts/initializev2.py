@@ -8,7 +8,7 @@ from gi.repository import Gst, GLib
 
 #DEFAULT SETTINGS
 
-BITRATE = 500
+
 LATENCY = 200
 
 #List of dictionary entries for each camera. Check if the default settings match the camera's capabilities.
@@ -24,10 +24,23 @@ CAMERAS = [
             "width": 640,
             "height": 480,
             "framerate": 30,
+            "bitrate": 500,
         }
     },
 
-    
+    #{
+        #"name": "mina_cam",
+        #"source": "v4l2src",
+        #"source_uri": "/dev/mina_cam",
+       # "port": 7090,
+        #"caps": {
+          #  "format": "YUY2",
+          #  "width": 640,
+          #  "height": 480,
+          #  "framerate": 30,
+          #  "bitrate": 500,
+      #  }
+  #  }
 ]
 
 #This function allows user to configure the settings of each camera, given that they don't want to use default settings.
@@ -64,6 +77,35 @@ def camera_configure(camera):
         input(f"Framerate [{caps['framerate']}]: ").strip()
         or caps["framerate"]
     )
+
+def modify_settings(camera):
+    
+
+    print(f"\nModify {camera['name']}")
+
+    caps = camera["caps"]
+
+    caps["width"] = int(
+        input(f"Width [{caps['width']}]: ").strip()
+        or caps["width"]
+    )
+
+    caps["height"] = int(
+        input(f"Height [{caps['height']}]: ").strip()
+        or caps["height"]
+    )
+
+    caps["framerate"] = int(
+        input(f"Framerate [{caps['framerate']}]: ").strip()
+        or caps["framerate"]
+    )
+
+
+    caps["bitrate"] = int(
+        input(f"Bitrate [{caps['bitrate']}]: ").strip()
+        or caps["bitrate"]
+        ) 
+
 
 #Prompt user to determine if they want to use default settings for cameras.
 use_defaults = input("Use Default Settings? [y/n]: ").strip().lower()
@@ -128,7 +170,7 @@ def build_pipeline(camera):
     convert = Gst.ElementFactory.make("videoconvert", f"{name}-convert")
 
     encoder = Gst.ElementFactory.make("x264enc", f"{name}-encoder")
-    encoder.set_property("bitrate", BITRATE)
+    encoder.set_property("bitrate", caps_c["bitrate"])
     encoder.set_property("tune", "zerolatency")
     encoder.set_property("speed-preset", "ultrafast")
 
@@ -168,29 +210,50 @@ def build_pipeline(camera):
     return pipeline
 
 
-for camera in CAMERAS:
-    pipeline = build_pipeline(camera)
+def start_pipelines():
+    pipelines = []
+    for camera in CAMERAS:
+        pipeline = build_pipeline(camera)
+        pipeline.set_state(Gst.State.PLAYING)
+        pipelines.append(pipeline)
+        print(f"Started {camera['name']}")
+    return pipelines
 
-    pipeline.set_state(Gst.State.PLAYING)
-    pipelines.append(pipeline)
-
-    print(f"Started {camera['name']}")
-
-print()
-print("Now streaming")
-print("Press Ctrl+C to stop")
-print()
-    
-try:
-
-    while True:
-        time.sleep(1)
-
-except KeyboardInterrupt:
-
-    print("\nStopping pipelines...")
-
-finally:
-
+def stop_pipelines(pipelines):
     for pipeline in pipelines:
         pipeline.set_state(Gst.State.NULL)
+
+
+pipelines = start_pipelines()
+print()
+print("Now streaming")
+#print("Press Ctrl+C to stop")
+#print()
+
+while True:
+    pipeline_option = input("Kill (k), Pause (p), or Restart Pipeline (r)?: ").strip().lower()
+
+    if pipeline_option == "k":
+        stop_pipelines(pipelines)
+        print("Pipelines stopped.")
+        break
+
+    elif pipeline_option == "p":
+        for pipeline in pipelines:
+            pipeline.set_state(Gst.State.READY)
+        start_pipe = input("Start Pipeline? [y]: ").lower()
+        if start_pipe in ("", "y", "yes"):
+            for pipeline in pipelines:
+                pipeline.set_state(Gst.State.PLAYING)
+
+    elif pipeline_option == "r":
+        stop_pipelines(pipelines)
+
+        for camera in CAMERAS:
+            modify = input(f"Modify {camera['name']}? [y/n]: ").lower()
+
+            if modify == "y":
+                modify_settings(camera)
+
+        pipelines = start_pipelines()
+    
