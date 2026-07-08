@@ -69,8 +69,8 @@ class IMUGPSNode(Node):
         ## GPS 
         self.NavSatFix_pub = self.create_publisher(NavSatFix, '/gps/fix', 10)
         
-        self.headingGPS_pub = self.create_publisher(Float32, '/headingGPS', 10) #
-        self.compassGPS_pub = self.create_publisher(String, '/cardinal_compassGPS', 10) # N S E W
+        self.headingGPS_pub = self.create_publisher(Float32, '/heading', 10) #
+        self.compassGPS_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
               
         ## IMU 
         self.imu_pub = self.create_publisher(Imu, '/imu/acc_gryo', 50)
