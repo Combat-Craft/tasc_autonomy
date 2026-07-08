@@ -76,8 +76,8 @@ class IMUGPSNode(Node):
         self.imu_pub = self.create_publisher(Imu, '/imu/acc_gryo', 50)
         self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', 50)
 
-        self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
-        self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
+        #self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
+        #self.compass_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
         
         
         # Start Node
@@ -389,18 +389,18 @@ class IMUGPSNode(Node):
 
             # test gps with quat
              # Heading Calculation ========================================================================
-            heading_msg = Float32()
-            heading_msg.data = get_heading_quat(qw, qx, qy, qz)
+            #heading_msg = Float32()
+            #heading_msg.data = get_heading_quat(qw, qx, qy, qz)
             
             # Cardinal Compass  ======================================================================
             ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
-            compass_msg = String()
-            compass_msg.data = get_cardinal_16(heading_msg.data)
+            #compass_msg = String()
+            #compass_msg.data = get_cardinal_16(heading_msg.data)
             
             self.get_logger().info(f"IMU Heading={heading_msg.data:.1f}, IMU Compass={compass_msg.data}")           
             
-            self.heading_pub.publish(heading_msg)
-            self.compass_pub.publish(compass_msg) 
+            #self.heading_pub.publish(heading_msg)
+            #self.compass_pub.publish(compass_msg) 
             
             self.imu_pub.publish(imu_msg)
             self.mag_pub.publish(mag_msg)
