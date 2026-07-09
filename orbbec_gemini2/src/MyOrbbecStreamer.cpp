@@ -1,11 +1,44 @@
-#include <libobsensor/ObSensor.hpp>
-#include <gst/gst.h>
-#include <gst/app/gstappsrc.h>
-#include <iostream>
-#include <memory>
+#include "orbbec_gemini2/MyOrbbecStreamer.h"
 
-int main(int argc, char **argv) try {
+MyOrbbecStreamer::MyOrbbecStreamer(int argc, char *argv[]) {
+        cout << "MyOrbbecStreamer() contructor called" << std::endl;
+        /* Initialize GStreamer */
+        gst_init(&argc, &argv);
+        
+        // initialize defaults variables
+        width = 1280;
+        height = 720;
+        fps = 30;
+        bitrate = 512;
+        
 
+        
+        srtURI.append("srt://127.0.0.1:7092?mode=caller");
+}
+    
+void MyOrbbecStreamer::setWidth (int w) {
+  width = w;   
+}
+void MyOrbbecStreamer::setHeight (int h) {
+  height = h;   
+}
+void MyOrbbecStreamer::setFPS (int f) {
+  fps = f;   
+}
+void MyOrbbecStreamer::setbitrate (int bitr){
+  bitrate=bitr; 
+}
+void MyOrbbecStreamer::setURI(string s){
+  srtURI.replace(srtURI.begin(), srtURI.end(), s);
+};
+
+//void set (){};
+//void set (){};
+//void set (){};
+//void set (){};
+    
+void MyOrbbecStreamer::runStream(){
+  try{
     // Create a pipeline with default device.
     ob::Pipeline pipe;
     
@@ -22,17 +55,23 @@ int main(int argc, char **argv) try {
     // - Set the Color for automatic exposure.
     device->setBoolProperty(OB_PROP_COLOR_AUTO_EXPOSURE_BOOL, true);
     
-    // 6. Enable color video stream.
-    const int width = 1280, height = 720, fps = 30;
+    // 6. Disable other streams and sensors
+    config->disableStream(OB_STREAM_DEPTH);
+    config->disableStream(OB_STREAM_IR);
+    config->disableStream(OB_STREAM_IR_LEFT);
+    config->disableStream(OB_STREAM_IR_RIGHT);
+    config->disableStream(OB_STREAM_ACCEL);
+    config->disableStream(OB_STREAM_GYRO);
+    
+    // 7.Enable color video stream.
     //config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_MJPG);
     config->enableVideoStream(OB_STREAM_COLOR, width, height, fps, OB_FORMAT_YUYV);
 
     // Start the pipeline with config.
     pipe.start(config);
 
-
     /* Initialize GStreamer */
-    gst_init(&argc, &argv);
+    //gst_init(&argc, &argv);
 
     GstElement *pipeline = gst_pipeline_new("orbbec-appsrc-pipeline");
     GstElement *appsrc = gst_element_factory_make("appsrc", "orbbec-source");
@@ -42,7 +81,7 @@ int main(int argc, char **argv) try {
 
     if (!pipeline || !appsrc  || !videoconvert || !sink) {
         std::cerr << "Failed to create GStreamer elements." << std::endl;
-        return EXIT_FAILURE;
+        return ;
     }
 
     // gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam
@@ -69,14 +108,16 @@ int main(int argc, char **argv) try {
     gst_caps_unref(caps);
 
     g_object_set(encoder,
-        "bitrate", 500,         // kbps
+        "bitrate", bitrate,         // kbps
         "tune", 0x00000004,     // zerolatency
         "pass", 17,             // pass1 i.e. VBR
         "speed-preset", 1,      // ultrafast
         NULL);
-
+    
+    const char*tmpURI = srtURI.c_str();
+    
     g_object_set(sink,
-        "uri", "srt://192.168.1.23:7092?mode=caller",
+        "uri", tmpURI,
         "sync", FALSE,
         "latency", 200,
         NULL);
@@ -85,14 +126,14 @@ int main(int argc, char **argv) try {
     if (!gst_element_link_many(appsrc, videoconvert, encoder, sink, NULL)) {
         std::cerr << "Failed to link GStreamer pipeline." << std::endl;
         gst_object_unref(pipeline);
-        return EXIT_FAILURE;
+        return;
     }
 
     GstStateChangeReturn stateRet = gst_element_set_state(pipeline, GST_STATE_PLAYING);
     if (stateRet == GST_STATE_CHANGE_FAILURE) {
         std::cerr << "Unable to set the GStreamer pipeline to the playing state." << std::endl;
         gst_object_unref(pipeline);
-        return EXIT_FAILURE;
+        return;
     }
 
     GstBus *bus = gst_element_get_bus(pipeline);
@@ -170,15 +211,36 @@ int main(int argc, char **argv) try {
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(bus);
     gst_object_unref(pipeline);
+    
+
+    auto inputWatchThread = std::thread([]{
+        while(true) {
+            std::string cmd;
+            std::cout << "\nInput quit to close:  ";
+            std::getline(std::cin, cmd);
+            if(cmd == "quit" ) {
+                break;
+            }
+        }
+    });
+    inputWatchThread.detach();
     pipe.stop();
 
-    return 0;
-}
 
-catch(ob::Error &e) {
+    return;
+  }
+  catch(ob::Error &e) {
     std::cerr << "function:" << e.getFunction() << "\nargs:" << e.getArgs() << "\nmessage:" << e.what() << "\nstatus:" << e.getStatus()
               << "\ntype:" << e.getExceptionType() << std::endl;
     std::cout << "\nPress any key to exit.";
     //ob_smpl::waitForKeyPressed();
     exit(EXIT_FAILURE);
-} 
+  } 
+      
+} // END runStream
+
+
+
+
+
+

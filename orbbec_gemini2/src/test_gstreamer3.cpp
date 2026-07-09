@@ -89,7 +89,7 @@ int main(int argc, char **argv) try {
         NULL);
 
     g_object_set(sink,
-        "uri", "srt://192.168.1.23:7092?mode=caller",
+        "uri", "srt://127.0.0.1:7092?mode=caller",
         "sync", FALSE,
         "latency", 200,
         NULL);

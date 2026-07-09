@@ -24,7 +24,7 @@ find_package(sensor_msgs REQUIRED)
 set(OrbbecSDK_DIR "/opt/OrbbecSDK_v2.8.6/lib")
 find_package(OrbbecSDK REQUIRED)
 
-# find gstreamer dependencies
+# find gstreamer C dependencies
 find_package(PkgConfig REQUIRED)
 if(PkgConfig_FOUND)
   pkg_search_module(gstreamer REQUIRED IMPORTED_TARGET gstreamer-1.0>=1.4)
@@ -32,8 +32,23 @@ if(PkgConfig_FOUND)
   pkg_search_module(gstreamer-app REQUIRED IMPORTED_TARGET gstreamer-app-1.0>=1.4)
   pkg_search_module(gstreamer-video REQUIRED IMPORTED_TARGET gstreamer-video-1.0>=1.4)
 endif()
+
+# find gstreamer C++ dependencies
+#if(PkgConfig_FOUND)  
+#  pkg_search_module(GSTMM REQUIRED IMPORTED_TARGET gstreamermm-1.0)
+#  pkg_search_module(GLIBMM REQUIRED IMPORTED_TARGET glibmm-2.4) 
+#endif()
 #
-find_package(OpenCV REQUIRED)
+
+# add custom class files
+add_library(MyOrbbecStreamer src/MyOrbbecStreamer.cpp)
+target_link_libraries(MyOrbbecStreamer
+    ob::OrbbecSDK
+    PkgConfig::gstreamer
+    PkgConfig::gstreamer-sdp
+    PkgConfig::gstreamer-app
+    PkgConfig::gstreamer-video
+)
 
 # ====================== C++ SECTION ======================
 # Include C++ "include" directory
@@ -44,39 +59,12 @@ include_directories("${OrbbecSDK_DIR}/include")
 
 # Create C++ executables
 
-#add_executable(main src/main.cpp)
-#ament_target_dependencies(main rclcpp std_msgs)
+add_executable(main src/main.cpp)
+ament_target_dependencies(main rclcpp std_msgs)
 
 # Create Orbbec C++ executables
-
-#add_executable(gemini2_color_gstreamer src/color_gstreamer.cpp)
-#target_link_libraries(gemini2_color_gstreamer
-#    ob::OrbbecSDK
-#    PkgConfig::gstreamer
-#    PkgConfig::gstreamer-sdp
-#    PkgConfig::gstreamer-app
-#    PkgConfig::gstreamer-video
-#)
-
-#add_executable(test_gstreamer src/test_gstreamer.cpp)
-#target_link_libraries(test_gstreamer 
-#    ob::OrbbecSDK
-#    PkgConfig::gstreamer
-##    PkgConfig::gstreamer-sdp
- #   PkgConfig::gstreamer-app
-#    PkgConfig::gstreamer-video
-#)
-
-#add_executable(test_gstreamer_v2 src/test_gstreamer_v2.cpp)
-#target_link_libraries(test_gstreamer_v2
-#    ob::OrbbecSDK
-#    PkgConfig::gstreamer
-#    PkgConfig::gstreamer-sdp
-#    PkgConfig::gstreamer-app
-#    PkgConfig::gstreamer-video
-#)
-add_executable(orbbec_gstreamer src/test_gstreamer3.cpp)
-target_link_libraries(orbbec_gstreamer
+add_executable(test_gstreamer3 src/test_gstreamer3.cpp)
+target_link_libraries(test_gstreamer3
     ob::OrbbecSDK
     PkgConfig::gstreamer
     PkgConfig::gstreamer-sdp
@@ -84,33 +72,37 @@ target_link_libraries(orbbec_gstreamer
     PkgConfig::gstreamer-video
 )
 
-add_executable(streamer src/gemini2_streamer.cpp)
-target_link_libraries(streamer
-    ob::OrbbecSDK
-    PkgConfig::gstreamer
-    PkgConfig::gstreamer-sdp
-    PkgConfig::gstreamer-app
-    PkgConfig::gstreamer-video
-)
+#add_executable(MyOrbbecStreamer src/MyOrbbecStreamer.cpp)
+#target_link_libraries(MyOrbbecStreamer
+#    ob::OrbbecSDK
+#    PkgConfig::gstreamer
+#    PkgConfig::gstreamer-sdp
+#    PkgConfig::gstreamer-app
+#    PkgConfig::gstreamer-video
+#)
+
+add_executable(test_MyOrbbecStreamer src/testMyOrbbecStreamer.cpp)
+target_link_libraries(test_MyOrbbecStreamer PRIVATE MyOrbbecStreamer)
 
 # orbbec gstreamer
-
-
-#add_executable(my-gstreamer-app main.cpp)
-
-#target_link_libraries(my-gstreamer-app
+#add_executable(streamerV2 src/streamerV2.cpp)
+#target_link_libraries(streamerV2
+#    ob::OrbbecSDK
+#    PkgConfig::GLIBMM
+#    PkgConfig::GSTMM
 #    PkgConfig::gstreamer
- #   PkgConfig::gstreamer-sdp
- #   PkgConfig::gstreamer-app
- #   PkgConfig::gstreamer-video
+#    PkgConfig::gstreamer-sdp
+#    PkgConfig::gstreamer-app
+#    PkgConfig::gstreamer-video
 #)
+
 
 # Install C++ executables
 install(TARGETS
-  #main
-  orbbec_gstreamer
-  #test_gstreamer_v2
-  streamer
+  main
+  test_gstreamer3
+  MyOrbbecStreamer
+  test_MyOrbbecStreamer
   DESTINATION lib/${PROJECT_NAME}
 )
 
