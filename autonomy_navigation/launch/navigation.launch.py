@@ -27,6 +27,6 @@ def generate_launch_description():
             name = 'navsat_transform_node',
             output = 'screen',
             parameters = [navsat_config],
-            remappings=[('imu', '/imu/acc_gryo'), ('gps/fix', '/fix'), ('odometry/filtered', 'odometry/global')]
+            remappings=[('imu', '/imu/acc_gyro'), ('gps/fix', '/fix'), ('odometry/filtered', 'odometry/global')]
         )
     ])

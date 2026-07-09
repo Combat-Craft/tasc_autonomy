@@ -45,7 +45,7 @@ def get_heading_quat(qw, qx, qy, qz):
         
     if heading < 0.0:
         heading += 360
-    elif heading > 360.0
+    elif heading > 360.0:
         heading -= 360
     
     return heading

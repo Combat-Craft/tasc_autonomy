@@ -72,6 +72,15 @@ target_link_libraries(test_gstreamer3
     PkgConfig::gstreamer-video
 )
 
+add_executable(test_orbbec src/test_orbbec.cpp)
+target_link_libraries(test_orbbec
+    ob::OrbbecSDK
+    PkgConfig::gstreamer
+    PkgConfig::gstreamer-sdp
+    PkgConfig::gstreamer-app
+    PkgConfig::gstreamer-video
+)
+
 #add_executable(MyOrbbecStreamer src/MyOrbbecStreamer.cpp)
 #target_link_libraries(MyOrbbecStreamer
 #    ob::OrbbecSDK
@@ -103,6 +112,7 @@ install(TARGETS
   test_gstreamer3
   MyOrbbecStreamer
   test_MyOrbbecStreamer
+  test_orbbec
   DESTINATION lib/${PROJECT_NAME}
 )
 

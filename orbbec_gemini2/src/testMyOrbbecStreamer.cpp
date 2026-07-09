@@ -4,6 +4,8 @@ int main(int argc, char *argv[]){
   MyOrbbecStreamer streamer(argc, argv) ;
   // call any setX() before any createXPipeline() methods
 
+  //streamer.setURI();
+
   streamer.runStream();
   return 0;
 }

@@ -157,12 +157,13 @@ def generate_launch_description():
         # Launch all sensors - currently imu, gps, gps route logger (real) 
         
         #IncludeLaunchDescription(
-            PathJoinSubstitution([
-              FindPackageShare("autonomy_sensors"),
-                  "launch",
-                  "sensors.launch.py"
-            ])    
-        ),
+        #    PathJoinSubstitution(
+        #        PathJoinSubstitution([
+        #            FindPackageShare("autonomy_sensors"),
+        #                "launch",
+        #                "sensors.launch.py"
+        #        ])    
+        #),
         
         #Launch all cameras/visions - currently only multicamera
         #IncludeLaunchDescription(

@@ -22,6 +22,10 @@ class MyOrbbecStreamer {
     int gain; //(min:1, max:255, step:2)
     //etc ....
     */
+
+    GstElement *pipeline;
+    GstBus *bus;
+
   public:
     // === METHODS ====================================================================================
     // constructor 
@@ -37,6 +41,9 @@ class MyOrbbecStreamer {
     //void set ();
     
     void runStream();
+    void stopStream();
+    void pauseStream();
+    void restartStream();
 };
 
 

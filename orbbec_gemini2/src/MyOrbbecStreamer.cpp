@@ -1,19 +1,19 @@
 #include "orbbec_gemini2/MyOrbbecStreamer.h"
 
 MyOrbbecStreamer::MyOrbbecStreamer(int argc, char *argv[]) {
-        cout << "MyOrbbecStreamer() contructor called" << std::endl;
-        /* Initialize GStreamer */
-        gst_init(&argc, &argv);
-        
-        // initialize defaults variables
-        width = 1280;
-        height = 720;
-        fps = 30;
-        bitrate = 512;
-        
+    cout << "MyOrbbecStreamer() contructor called" << std::endl;
+    /* Initialize GStreamer */
+    gst_init(&argc, &argv);
 
-        
-        srtURI.append("srt://127.0.0.1:7092?mode=caller");
+    // initialize defaults variables
+    width = 1280;
+    height = 720;
+    fps = 30;
+    bitrate = 1000;
+
+
+
+    srtURI.append("srt://127.0.0.1:7092?mode=caller");
 }
     
 void MyOrbbecStreamer::setWidth (int w) {
@@ -28,14 +28,52 @@ void MyOrbbecStreamer::setFPS (int f) {
 void MyOrbbecStreamer::setbitrate (int bitr){
   bitrate=bitr; 
 }
-void MyOrbbecStreamer::setURI(string s){
-  srtURI.replace(srtURI.begin(), srtURI.end(), s);
+// string ip should be just the ip address 
+//ex) 127.0.0.1  or  192.168.1.23
+void MyOrbbecStreamer::setURI(string ip){
+  string uri = "srt://" + ip + ":7092?mode=caller";
+  srtURI.replace(srtURI.begin(), srtURI.end(), uri);
 };
 
 //void set (){};
 //void set (){};
 //void set (){};
 //void set (){};
+
+void stopStream(){
+
+    gst_app_src_end_of_stream(GST_APP_SRC(appsrc));
+    //gst_element_set_state(pipeline, GST_STATE_NULL);
+    
+
+
+    pipeline.stStateChangeReturn stateRet =  gst_element_set_state(pipeline, GST_STATE_NULL);
+    if (stateRet == GST_STATE_CHANGE_FAILURE) {
+        std::cerr << "Unable to set the GStreamer pipeline to the playing state." << std::endl;
+        gst_object_unref(pipeline);
+        return;
+    }
+    gst_object_unref(bus);
+    gst_object_unref(pipeline);
+}
+
+void pauseStream(){
+    pipeline.stStateChangeReturn stateRet = gst_element_set_state(pipeline, GST_STATE_PAUSE);
+    if (stateRet == GST_STATE_CHANGE_FAILURE) {
+        std::cerr << "Unable to set the GStreamer pipeline to the playing state." << std::endl;
+        gst_object_unref(pipeline);
+        return;
+    }
+}
+
+void restartStream(){
+    pipeline.stStateChangeReturn stateRet = gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    if (stateRet == GST_STATE_CHANGE_FAILURE) {
+        std::cerr << "Unable to set the GStreamer pipeline to the playing state." << std::endl;
+        gst_object_unref(pipeline);
+        return;
+    }
+}
     
 void MyOrbbecStreamer::runStream(){
   try{
@@ -73,7 +111,7 @@ void MyOrbbecStreamer::runStream(){
     /* Initialize GStreamer */
     //gst_init(&argc, &argv);
 
-    GstElement *pipeline = gst_pipeline_new("orbbec-appsrc-pipeline");
+    pipeline = gst_pipeline_new("orbbec-appsrc-pipeline");
     GstElement *appsrc = gst_element_factory_make("appsrc", "orbbec-source");
     GstElement *videoconvert = gst_element_factory_make("videoconvert", "video-convert");
     GstElement *encoder = gst_element_factory_make("x264enc", "x264-encoder");
@@ -136,7 +174,7 @@ void MyOrbbecStreamer::runStream(){
         return;
     }
 
-    GstBus *bus = gst_element_get_bus(pipeline);
+    bus = gst_element_get_bus(pipeline);
     guint64 frameCount = 0;
     bool running = true;
 
@@ -207,12 +245,9 @@ void MyOrbbecStreamer::runStream(){
         }
     }
 
-    gst_app_src_end_of_stream(GST_APP_SRC(appsrc));
-    gst_element_set_state(pipeline, GST_STATE_NULL);
-    gst_object_unref(bus);
-    gst_object_unref(pipeline);
     
-
+    
+/*
     auto inputWatchThread = std::thread([]{
         while(true) {
             std::string cmd;
@@ -224,6 +259,7 @@ void MyOrbbecStreamer::runStream(){
         }
     });
     inputWatchThread.detach();
+*/
     pipe.stop();
 
 

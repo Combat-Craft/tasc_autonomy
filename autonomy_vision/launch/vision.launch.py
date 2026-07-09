@@ -37,7 +37,7 @@ def generate_launch_description():
             PathJoinSubstitution([
               FindPackageShare("autonomy_vision"),
                   "launch",
-                  "forbbec.launch.py"
+                  "orbbec.launch.py"
             ])    
         ),
 

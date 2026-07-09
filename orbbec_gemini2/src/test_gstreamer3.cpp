@@ -39,12 +39,11 @@ int main(int argc, char **argv) try {
     //    std::cout << "\nIR sensor enabled";
     //}
 
-    // Start the pipeline with config.
+    // Start the pipeline 
     pipe.start(config);
-         
+    
 
-
-    /* Initialize GStreamer */
+    // Initialize GStreamer 
     gst_init(&argc, &argv);
 
     GstElement *pipeline = gst_pipeline_new("orbbec-appsrc-pipeline");
@@ -208,4 +207,5 @@ catch(ob::Error &e) {
     std::cout << "\nPress any key to exit.";
     //ob_smpl::waitForKeyPressed();
     exit(EXIT_FAILURE);
-} 
+} //with config.
+  //  pipe.start(config);
