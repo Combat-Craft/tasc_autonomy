@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Interactive test client for streamer_service.py.
+Interactive test client for initializev2.py.
 
 Mimics what the real GUI's QTcpSocket does: connect once, then send one
 JSON control message per line for as long as the connection stays open.
@@ -8,7 +8,7 @@ This exercises the same "wait to receive data" loop the diagram shows,
 across multiple state changes on a single connection.
 
 Usage:
-    python3 test_client.py [--host 127.0.0.1] [--port 6000]
+    python3 client.py [--host 127.0.0.1] [--port 6000]
 
 At the prompt:
     play back                  -> play with default settings
