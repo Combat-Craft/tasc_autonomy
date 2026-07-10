@@ -44,11 +44,11 @@ ros2 launch autonomy_vision morse_detector.launch.py
 
 # Servo Motor & Panorama Capture
 
-This section covers the camera servo control and panorama capture workflow. `motor_input.py` lets the user manually send servo commands or trigger a panorama sweep, `motor_controller.py` forwards the mapped servo commands to the Arduino, and `panorama_stitcher.py` rotates the camera through a set range of angles, captures images at each position, and creates a stitched panorama with GPS and heading metadata.
+This section covers the camera servo control and panorama capture workflow. `motor_input.py` lets the user manually send servo commands or trigger a named panorama sweep, `motor_controller.py` forwards the mapped servo commands to the Arduino, `panorama_capture.py` rotates the camera through a set range of angles and saves IP camera snapshots with GPS/heading metadata, and `panorama_opencv_stitcher.py` stitches the saved images afterward.
 
 ## Table of Contents
 
-- [0) TL;DR for testing](#0-testing)
+- [0) TL;DR for testing](#0-tldr-for-testing)
 - [1) Build](#1-build)
 - [2) Topics](#2-topics)
 - [3) Launch File](#3-launch-file)
@@ -57,10 +57,11 @@ This section covers the camera servo control and panorama capture workflow. `mot
 - [6) Manual Commands and Verification](#6-manual-commands-and-verification)
 - [7) Hardware and Device Notes](#7-hardware-and-device-notes)
 - [8) Dependencies Used by Current Code](#8-dependencies-used-by-current-code)
+- [9) Running Through SSH](#9-running-through-ssh)
 
 ## 0) TL;DR for testing
 
-Arduino wiring:
+Arduino wiring using the Arduino Nano pinout:
 
 | Servo Wire | Connection |
 | ---------- | ---------- |
@@ -68,7 +69,7 @@ Arduino wiring:
 | Orange     | D9         |
 | Red        | 5V         |
 
-launch:
+Build, source, and launch:
 
 ```bash
 cd ~/<your_ros2_ws>
@@ -77,11 +78,19 @@ source install/setup.bash
 ros2 launch autonomy_vision motor.launch.py
 ```
 
-The launch file opens separate terminals for `motor_input.py` and `panorama_stitcher.py`. The launch file opens separate terminals for `motor_input.py` and `panorama_stitcher.py`, so there will be 3 terminals total: the original launch terminal, the motor input terminal, and the panorama stitcher log terminal. 
+The launch file opens separate terminals for the motor input node and panorama node. Including the original launch terminal, there will be 3 terminals total: the original launch terminal, the motor input terminal, and the panorama log terminal.
 
-In the `motor_input.py` terminal, enter a number from `-135` to `+135` to manually move the servo, or enter `p` to trigger a panorama sweep. The panorama sweep captures 18 images across a 270° range with `~15.9°` between captures. It hasa `1.0 s` move time and `1.0 s` settle time per position (`~36 s` total capture time).
+In the `motor_input.py` terminal, enter a number from `-135` to `+135` to manually move the servo, or enter `p,folder_name` to trigger a named panorama sweep.
 
-If testing without a camera, launch in test mode:
+Example panorama trigger input:
+
+```txt
+p,test_sweep_01
+```
+
+The panorama sweep captures 10 images across a 270° range from `-135°` to `+135°`, with about `30°` between capture positions. It uses a `1.0 s` move time and `1.0 s` settle time per position, so the servo sweep takes about `20 s`, plus IP camera snapshot time.
+
+If testing without the IP camera, launch in test mode:
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
@@ -95,6 +104,18 @@ ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitu
 
 ```bash
 ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
+```
+
+After a successful sweep, check the saved images and metadata:
+
+```bash
+ls -l ~/panorama_images/test_sweep_01
+```
+
+Then run the standalone stitcher and enter the sweep folder path when prompted:
+
+```bash
+python3 panorama_opencv_stitcher.py
 ```
 
 ## 1) Build
@@ -112,17 +133,16 @@ source install/setup.bash
 | Topic | Type | Direction | Description |
 |---|---|---|---|
 | `/motor_cmd` | `std_msgs/Float64` | Input/Output | Servo angle command in degrees, from `-135` to `+135` |
-| `/panorama_trigger` | `std_msgs/Float64` | Input/Output | Trigger topic for starting the panorama sweep |
-| `/image_raw` | `sensor_msgs/Image` | Input/Output | Raw camera image from the camera node |
-| `/arm_cam/image/compressed` | `sensor_msgs/CompressedImage` | Input/Output | Compressed camera image used by `panorama_stitcher` |
-| `/gps/fix` | `sensor_msgs/NavSatFix` | Input | GPS position saved with panorama metadata |
-| `/heading` | `std_msgs/Float32` | Input | Rover heading in degrees, used to calculate camera heading/cardinal overlay |
+| `/panorama_trigger` | `std_msgs/String` | Input/Output | Trigger topic for starting a named panorama sweep; the message data is used as the output folder name |
+| `/gps/fix` | `sensor_msgs/NavSatFix` | Input | GPS position saved with each captured frame |
+| `/heading` | `std_msgs/Float32` | Input | Rover heading in degrees, used to calculate camera heading/cardinal metadata |
+| `/cardinal_compass` | `std_msgs/String` | Input | Optional rover cardinal direction input using a 16-point compass rose |
 
 ## 3) Launch File
 
 ### `motor.launch.py`
 
-Launches the motor, camera, and panorama-related nodes needed for manual servo control and panorama capture.
+Launches the motor controller and panorama capture nodes needed for manual servo control and panorama capture.
 
 Normal mode with camera:
 
@@ -191,34 +211,40 @@ camera → /image_raw → image_transport republish → /arm_cam/image/compresse
 
 ### `motor_input.py`
 
-Allows the user to control the camera servo and trigger a panorama sweep from the terminal.
+Allows the user to control the camera servo and trigger a named panorama sweep from the terminal.
 
 User inputs:
 
-| Input                        | Action                          |
-| ---------------------------- | ------------------------------- |
-| Number from `-135` to `+135` | Publishes a servo angle command |
-| `p`                          | Triggers the panorama sweep     |
-| `e`                          | Exits the node                  |
+| Input                        | Action |
+| ---------------------------- | ------ |
+| Number from `-135` to `+135` | Publishes a servo angle command to `/motor_cmd` |
+| `p,folder_name`              | Triggers a panorama sweep and sends `folder_name` to `/panorama_trigger` |
+| `e`                          | Exits the node |
 
 Published topics:
 
-| Topic               | Type               | Description                                 |
-| ------------------- | ------------------ | ------------------------------------------- |
-| `/motor_cmd`        | `std_msgs/Float64` | Manual servo angle command                  |
-| `/panorama_trigger` | `std_msgs/Float64` | Trigger message for starting panorama sweep |
+| Topic               | Type               | Description |
+| ------------------- | ------------------ | ----------- |
+| `/motor_cmd`        | `std_msgs/Float64` | Manual servo angle command |
+| `/panorama_trigger` | `std_msgs/String`  | Requested panorama sweep folder name |
 
 Related nodes:
 
-| Node                   | Relationship                                                                |
-| ---------------------- | --------------------------------------------------------------------------- |
+| Node                   | Relationship |
+| ---------------------- | ------------ |
 | `motor_controller.py`  | Subscribes to `/motor_cmd` and sends the converted servo command to Arduino |
-| `panorama_stitcher.py` | Subscribes to `/panorama_trigger` and begins the panorama sweep             |
+| `panorama_capture.py`  | Subscribes to `/panorama_trigger`, creates the requested sweep folder, moves the servo, and saves captured images |
 
 Example prompt:
 
 ```txt
-Enter angle (-135 to 135 | 'p' for panorama | 'e' to exit):
+Enter angle (-135 to 135 | 'p,folder_name' for panorama | 'e' to exit):
+```
+
+Example panorama trigger:
+
+```txt
+p,test_sweep_01
 ```
 
 ---
@@ -229,8 +255,8 @@ Subscribes to camera servo angle commands and sends the mapped servo value to th
 
 Subscribed topics:
 
-| Topic        | Type               | Description                    |
-| ------------ | ------------------ | ------------------------------ |
+| Topic        | Type               | Description |
+| ------------ | ------------------ | ----------- |
 | `/motor_cmd` | `std_msgs/Float64` | Servo angle command in degrees |
 
 Serial parameters:
@@ -260,10 +286,10 @@ The Arduino Servo library expects values from `0` to `180`, but the ROS 2 contro
 
 Related nodes:
 
-| Node                   | Relationship                                                                     |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `motor_input.py`       | Publishes manual servo angle commands to `/motor_cmd`                            |
-| `panorama_stitcher.py` | Publishes automated servo angle commands to `/motor_cmd` during a panorama sweep |
+| Node                  | Relationship |
+| --------------------- | ------------ |
+| `motor_input.py`      | Publishes manual servo angle commands to `/motor_cmd` |
+| `panorama_capture.py` | Publishes automated servo angle commands to `/motor_cmd` during a panorama sweep |
 
 Troubleshooting serial device detection:
 
@@ -271,9 +297,10 @@ Troubleshooting serial device detection:
 ls /dev/ttyUSB* /dev/ttyACM*
 lsusb
 dmesg | tail -50
+dmesg | grep -iE "ch34|ttyUSB|ttyACM"
 ```
 
-If the Arduino uses a CH340/CH341 USB serial chip and the device does not appear, reload the driver:
+If the Arduino uses a CH340/CH341 USB serial chip and the device does not appear, first try reloading the built-in driver:
 
 ```bash
 sudo modprobe ch341
@@ -281,84 +308,102 @@ sudo modprobe ch341
 
 Then unplug and reconnect the Arduino USB cable.
 
-If `lsusb` does not show the device at all, it is likely a cable, USB port, or hardware issue.
+If the built-in driver still does not work and the CH341SER driver is already available on the Jetson, load it with:
 
-If `lsusb` shows the CH340 device but `/dev/ttyUSB*` does not appear, it is likely a driver issue.
+```bash
+cd CH341SER
+sudo make load
+```
 
 ---
 
-### `panorama_stitcher.py`
+### `panorama_capture.py`
 
-Controls an automated camera panorama sweep.
+Controls an automated camera panorama capture sweep.
 
-When triggered, this node moves the camera servo through a sequence of angles from `-135` to `+135` degrees, captures one compressed camera frame at each angle, stores GPS/heading metadata for each frame, and attempts to stitch the captured frames into a panorama image.
+When triggered, this node moves the camera servo through a sequence of angles from `-135°` to `+135°`, captures one IP camera snapshot at each angle, stores GPS/heading metadata for each frame, and saves the captured images into a named sweep folder.
 
 Main behavior:
 
 1. Waits for a trigger message on `/panorama_trigger`.
-2. Publishes servo angle commands to `/motor_cmd`.
-3. Waits for the servo to move and settle.
-4. Captures a compressed image frame from `/arm_cam/image/compressed`.
-5. Saves the frame, servo angle, GPS coordinates, and heading.
-6. Repeats until all sweep angles are complete.
-7. Attempts to stitch the captured frames into `panorama.jpg`.
-8. Resets and waits for the next trigger.
+2. Uses the trigger message as the requested sweep folder name.
+3. Creates a unique folder inside `~/panorama_images`.
+4. Publishes servo angle commands to `/motor_cmd`.
+5. Waits for the servo to move and settle.
+6. Captures one JPEG snapshot from the configured IP camera URL.
+7. Saves the image as `frame_000.jpg`, `frame_001.jpg`, etc.
+8. Stores the servo angle, GPS coordinates, rover heading, camera heading, and camera cardinal direction.
+9. Repeats until all sweep angles are complete.
+10. Saves `metadata.csv` inside the sweep folder.
+11. Resets and waits for the next trigger.
 
 Published topics:
 
-| Topic        | Type               | Description                                                 |
-| ------------ | ------------------ | ----------------------------------------------------------- |
+| Topic        | Type               | Description |
+| ------------ | ------------------ | ----------- |
 | `/motor_cmd` | `std_msgs/Float64` | Target camera servo angle in degrees, from `-135` to `+135` |
 
 Subscribed topics:
 
-| Topic                       | Type                          | Description                                       |
-| --------------------------- | ----------------------------- | ------------------------------------------------- |
-| `/panorama_trigger`         | `std_msgs/Float64`            | Trigger message used to start the panorama sweep  |
-| `/arm_cam/image/compressed` | `sensor_msgs/CompressedImage` | Compressed camera image used for panorama capture |
-| `/gps/fix`                  | `sensor_msgs/NavSatFix`       | GPS coordinates saved with panorama metadata      |
-| `/heading`                  | `std_msgs/Float32`            | Rover heading in degrees clockwise from north     |
+| Topic               | Type                    | Description |
+| ------------------- | ----------------------- | ----------- |
+| `/panorama_trigger` | `std_msgs/String`       | Trigger message used to start the panorama sweep; the message data is used as the output folder name |
+| `/gps/fix`          | `sensor_msgs/NavSatFix` | GPS coordinates saved with each captured frame |
+| `/heading`          | `std_msgs/Float32`      | Rover heading in degrees clockwise from north |
+| `/cardinal_compass` | `std_msgs/String`       | Optional rover cardinal direction input using a 16-point compass rose |
 
 Parameters:
 
-| Parameter   | Description                                                                            | Default |
-| ----------- | -------------------------------------------------------------------------------------- | ------- |
-| `test_mode` | Simulates image captures and tests motor movement without requiring real camera frames | `false` |
+| Parameter   | Description | Default |
+| ----------- | ----------- | ------- |
+| `test_mode` | Simulates image captures and tests motor movement without requiring the real IP camera | `false` |
+| `cam_url`   | IP camera snapshot URL used to capture JPEG images | `http://192.168.1.117:6688/snapshot/PROFILE_000` |
+| `save_dir`  | Base directory where named sweep folders are created | `~/panorama_images` |
 
-Test mode example:
+Output folder structure:
 
-```bash
-ros2 launch autonomy_vision motor.launch.py test_mode:=true
+```txt
+~/panorama_images/
+└── test_sweep_01/
+    ├── frame_000.jpg
+    ├── frame_001.jpg
+    ├── frame_002.jpg
+    ├── ...
+    └── metadata.csv
+```
+
+`metadata.csv` columns:
+
+```txt
+frame
+servo_angle
+gps_latitude
+gps_longitude
+rover_heading
+camera_heading
+camera_cardinal
+image_path
 ```
 
 Sweep configuration:
 
-| Setting                   | Value              |
-| ------------------------- | ------------------ |
+| Setting                   | Value |
+| ------------------------- | ----- |
 | Sweep range               | `-135°` to `+135°` |
-| Number of sweep angles    | `18`               |
-| Approximate angle spacing | `15.9°`            |
-| Move time                 | `1.0 s`            |
-| Settle time               | `1.0 s`            |
-| Output file               | `panorama.jpg`     |
+| Number of capture angles  | `10` |
+| Approximate angle spacing | `30°` |
+| Move time                 | `1.0 s` |
+| Settle time               | `1.0 s` |
+| ROS sweep output          | `frame_*.jpg` images and `metadata.csv` |
+| Stitching output          | `panorama.jpg`, created later by `panorama_opencv_stitcher.py` |
 
 The sweep currently uses:
 
 ```python
-self.sweep_angles = np.linspace(-135, 135, 18)
+self.sweep_angles = np.linspace(-135, 135, 10)
 ```
 
-This gives 18 capture positions across a 270-degree range.
-
-Metadata and overlay behavior:
-
-* Stores GPS coordinates from `/gps/fix`.
-* Stores rover heading from `/heading`.
-* Calculates camera heading as rover heading plus servo angle.
-* Converts camera heading into an 8-direction compass label.
-* Draws GPS text at the top-left of the panorama.
-* Draws heading/cardinal markers near the top of the panorama.
-* Draws servo angle markers near the bottom of the panorama.
+This gives 10 capture positions across a 270-degree range. Since there are 9 gaps between 10 positions, the spacing is approximately 30 degrees.
 
 Heading reference:
 
@@ -369,14 +414,22 @@ Heading reference:
 270° = West
 ```
 
-Related nodes:
+The camera-facing heading is calculated as:
 
-| Node                            | Relationship                                               |
-| ------------------------------- | ---------------------------------------------------------- |
-| `motor_input.py`                | Publishes manual servo commands and panorama triggers      |
-| `motor_controller.py`           | Receives `/motor_cmd` and sends mapped commands to Arduino |
-| Camera node / image republisher | Provides compressed frames on `/arm_cam/image/compressed`  |
-| GPS/IMU node or test publisher  | Provides `/gps/fix` and `/heading`                         |
+```txt
+camera_heading = rover_heading + servo_angle
+```
+
+The code converts the camera heading into a 16-point compass label such as `N`, `NNE`, `NE`, `ENE`, `E`, `ESE`, `SE`, or `SSE`.
+
+Related nodes/scripts:
+
+| Node/Script                    | Relationship |
+| ------------------------------ | ------------ |
+| `motor_input.py`               | Publishes manual servo commands and named panorama triggers |
+| `motor_controller.py`          | Receives `/motor_cmd` and sends mapped commands to Arduino |
+| GPS/IMU node or test publisher | Provides `/gps/fix` and `/heading` |
+| `panorama_opencv_stitcher.py`  | Loads saved `frame_*.jpg` images and `metadata.csv`, stitches them, draws labels, and saves `panorama.jpg` |
 
 Configuration notes:
 
@@ -387,6 +440,68 @@ The sweep timing and number of angles may need to be adjusted based on:
 * servo speed
 * camera mount vibration
 * image blur during capture
+* IP camera snapshot response time
+
+---
+
+### `panorama_opencv_stitcher.py`
+
+Standalone OpenCV script for stitching panorama sweep images after they have been captured by `panorama_capture.py`.
+
+This script is intentionally separate from ROS 2 so that stitching can be run after image capture without causing CPU spikes during the live sweep.
+
+Input:
+
+| Input | Description |
+| ----- | ----------- |
+| Sweep folder path | Folder containing `frame_*.jpg` images and optional `metadata.csv` |
+
+Output:
+
+| Output | Description |
+| ------ | ----------- |
+| `panorama.jpg` | Final stitched panorama image saved inside the same sweep folder |
+
+Expected folder structure:
+
+```txt
+~/panorama_images/
+└── test_sweep_01/
+    ├── frame_000.jpg
+    ├── frame_001.jpg
+    ├── frame_002.jpg
+    ├── ...
+    ├── metadata.csv
+    └── panorama.jpg
+```
+
+Main behavior:
+
+1. Prompts the user for a sweep folder path.
+2. Loads all valid `frame_*.jpg` images in sorted order.
+3. Reads `metadata.csv` if it exists.
+4. Uses OpenCV's panorama stitcher to create a panorama.
+5. Draws the GPS label on the top-left of the final panorama.
+6. Draws approximate camera cardinal/heading labels across the top based on frame order.
+7. Saves the result as `panorama.jpg` inside the same sweep folder.
+
+Run example:
+
+```bash
+python3 panorama_opencv_stitcher.py
+```
+
+Example folder path to enter:
+
+```txt
+~/panorama_images/test_sweep_01
+```
+
+Notes:
+
+* At least 2 valid `frame_*.jpg` images are needed to stitch.
+* Stitching can fail if there is not enough overlap between images, if the images are blurry, or if the camera angle spacing is too large.
+* Cardinal label positions are approximate because OpenCV warps and crops the input images internally.
 
 ## 5) Arduino Servo Firmware
 
@@ -413,6 +528,8 @@ The ROS 2 `motor_controller` node maps the camera servo range of `-135` to `+135
 ```
 
 ### Arduino Pin Wiring
+
+Use the Arduino Nano pinout diagram. The servo signal wire connects to the Nano's digital pin `D9`.
 
 | Servo Wire | Connection |
 | ---------- | ---------- |
@@ -478,11 +595,13 @@ ros2 topic echo /motor_cmd
 
 ### Trigger Panorama Manually
 
+Trigger a named panorama sweep:
+
 ```bash
-ros2 topic pub --once /panorama_trigger std_msgs/msg/Float64 "{data: 999.0}"
+ros2 topic pub --once /panorama_trigger std_msgs/msg/String "{data: 'test_sweep_01'}"
 ```
 
-The actual value is not important. Receiving a message on `/panorama_trigger` starts the sweep.
+The string value is used as the requested output folder name inside `~/panorama_images`.
 
 Check that panorama trigger messages are being published:
 
@@ -506,43 +625,84 @@ Terminal 2 — publish fake heading:
 ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
 ```
 
-Check test GPS and heading data:
+Optional — publish fake rover cardinal direction:
+
+```bash
+ros2 topic pub /cardinal_compass std_msgs/msg/String "{data: 'E'}" -r 1
+```
+
+Check test GPS, heading, and cardinal data:
 
 ```bash
 ros2 topic echo /gps/fix
 ros2 topic echo /heading
+ros2 topic echo /cardinal_compass
 ```
 
-### Test Panorama Sweep Without Camera
+### Test Panorama Sweep Without IP Camera
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
 ```
 
-This tests the servo sweep without waiting for real camera frames from `/arm_cam/image/compressed`.
+This tests the servo sweep without requiring real IP camera snapshots.
 
-### Check Camera Output
+### Check IP Camera Snapshot URL
 
-Check that the raw camera topic is publishing:
+The capture node uses the `cam_url` parameter to request one JPEG snapshot at each servo angle. The default URL is:
 
-```bash
-ros2 topic hz /image_raw
+```txt
+http://192.168.1.117:6688/snapshot/PROFILE_000
 ```
 
-Check that the compressed camera topic is publishing:
+Before running a real sweep, check that the IP camera URL is reachable from the Jetson or computer running the node. For example, open the URL in a browser or download one test image:
 
 ```bash
-ros2 topic hz /arm_cam/image/compressed
+wget -O test_snapshot.jpg "http://192.168.1.117:6688/snapshot/PROFILE_000"
 ```
 
-If the servo moves to the first sweep angle and then stops, check whether `/arm_cam/image/compressed` is publishing. In normal mode, `panorama_stitcher` waits for a compressed camera frame before moving to the next angle.
+### Check Output Sweep Folder
 
-### Check Output Panorama
-
-After a successful panorama sweep, check that the output image was created:
+After a successful panorama capture sweep, check that the output folder was created:
 
 ```bash
-ls -l panorama.jpg
+ls -l ~/panorama_images
+```
+
+Check the saved frames and metadata:
+
+```bash
+ls -l ~/panorama_images/test_sweep_01
+```
+
+The folder should contain files similar to:
+
+```txt
+frame_000.jpg
+frame_001.jpg
+frame_002.jpg
+...
+metadata.csv
+```
+
+### Run the OpenCV Stitcher
+
+After capturing the sweep images, run the standalone stitcher:
+
+```bash
+python3 panorama_opencv_stitcher.py
+```
+
+When prompted, enter the sweep folder path:
+
+```txt
+~/panorama_images/test_sweep_01
+```
+
+After successful stitching, check that the panorama was created:
+
+```bash
+ls -l ~/panorama_images/test_sweep_01/panorama.jpg
 ```
 
 ### General ROS 2 Checks
@@ -599,15 +759,23 @@ Check recent kernel messages:
 
 ```bash
 dmesg | tail -50
+dmesg | grep -iE "ch34|ttyUSB|ttyACM"
 ```
 
-If the Arduino uses a CH340/CH341 USB serial chip and `/dev/ttyUSB*` does not appear, reload the CH340 driver:
+If the Arduino uses a CH340/CH341 USB serial chip and `/dev/ttyUSB*` does not appear, reload the built-in CH340 driver:
 
 ```bash
 sudo modprobe ch341
 ```
 
 Then unplug and reconnect the Arduino USB cable.
+
+If the built-in driver still does not work and the CH341SER driver is already available on the Jetson, load it with:
+
+```bash
+cd CH341SER
+sudo make load
+```
 
 If `lsusb` does not show the device at all, it is likely a hardware, cable, or USB port issue.
 
@@ -641,30 +809,22 @@ The output should include:
 dialout
 ```
 
-### Camera Device
+### IP Camera Snapshot URL
 
-The motor/panorama launch file uses `v4l2_camera` and defaults to:
+The current panorama capture workflow uses an IP camera snapshot URL instead of subscribing to a ROS compressed image topic.
+
+Default snapshot URL:
 
 ```txt
-/dev/video0
+http://192.168.1.117:6688/snapshot/PROFILE_000
 ```
 
-To select a different camera device for the motor/panorama launch file:
+The IP camera and the Jetson/computer running the node must be on the same reachable network. If image capture fails, check that the URL can be opened from the same machine running `panorama_capture.py`.
+
+Example test:
 
 ```bash
-ros2 launch autonomy_vision motor.launch.py camera_device:=/dev/video2
-```
-
-Check available camera devices:
-
-```bash
-ls -l /dev/video*
-```
-
-Check available camera devices with `v4l2-ctl`:
-
-```bash
-v4l2-ctl --list-devices
+wget -O test_snapshot.jpg "http://192.168.1.117:6688/snapshot/PROFILE_000"
 ```
 
 ## 8) Dependencies Used by Current Code
@@ -676,6 +836,80 @@ sensor_msgs
 OpenCV / cv2
 NumPy
 PySerial
-v4l2_camera
-image_transport
+csv
+os
+pathlib
+time
+urllib.request
+```
+
+## 9) Running through SSH
+
+### Installing CH341SER Driver on Jetson
+
+```bash
+git clone https://github.com/juliagoda/CH341SER.git
+cd CH341SER
+make
+sudo make load
+```
+
+Since its already cloned, just do the following:
+```bash
+cd CH341SER
+sudo make load
+```
+
+### Terminal 1 — Launch Motor Controller and Panorama Capture
+
+```bash
+cd ~/autonomy_ws
+colcon build --packages-select autonomy_vision
+source install/setup.bash
+ros2 launch autonomy_vision motor2.launch.py
+```
+
+When not using camera put in test mode
+
+```bash
+ros2 launch autonomy_vision motor2.launch.py test_mode:=true
+```
+
+### Terminal 2 — Motor Input
+
+```bash
+cd ~/autonomy_ws
+source install/setup.bash
+ros2 run autonomy_vision motor_input
+```
+
+### Terminal 3 — Fake Heading
+
+```bash
+cd ~/autonomy_ws
+source install/setup.bash
+ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
+```
+
+### Terminal 4 — Fake GPS
+
+```bash
+cd ~/autonomy_ws
+source install/setup.bash
+ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitude: -79.380000, altitude: 100.0}" -r 1
+```
+
+### Run the Stitcher
+
+After the sweep finishes:
+
+```bash
+cd ~/autonomy_ws//src/tasc_autonomy/autonomy_vision/autonomy_vision
+python3 panorama_opencv_stitcher.py
+```
+
+Example input for when it prompts for folder path:
+
+```txt
+~/panorama_images/test_sweep_01
 ```
