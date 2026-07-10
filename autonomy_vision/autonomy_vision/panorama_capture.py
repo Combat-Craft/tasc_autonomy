@@ -6,7 +6,7 @@ ROS2 Node
 Controls an automated camera panorama capture sweep.
 
 When triggered, this node incrementally moves the camera servo through a sequence of angles
-(from -110 to +110 degrees), captures one IP camera snapshot at each angle, stores GPS/heading
+(from -120 to +120 degrees), captures one IP camera snapshot at each angle, stores GPS/heading
 metadata for each frame, and saves the captured images into a named sweep folder.
 
 Main behavior:
@@ -24,7 +24,7 @@ Main behavior:
 
 Published topics:
     - /motor_cmd
-        Target camera servo angle in degrees, from -110 to +110.
+        Target camera servo angle in degrees, from -120 to +120.
         motor_controller.py subscribes to this topic and sends the mapped
         servo value to the Arduino.
 
@@ -113,7 +113,7 @@ Related nodes/scripts:
         a sweep folder, stitches the images, draws metadata labels, and saves panorama.jpg.
 
 Sweep configuration note:
-    The current sweep uses 10 fixed servo angles from -110 to +110 degrees.
+    The current sweep uses 10 fixed servo angles from -120 to +120 degrees.
     The current timing values are:
         - move_time = 1.0s
         - settle_time = 1.0s
@@ -183,8 +183,8 @@ class PanoramaSweeper(Node):
         # Sweep configuration
         # -------------------------------------------------
 
-        # The camera moves from -110 degrees to +110 degrees and captures one image at each angle.
-        self.sweep_angles = np.linspace(-110, 110, 10) # 220° / 9 gaps = 24.4° per image
+        # The camera moves from -120 degrees to +120 degrees and captures one image at each angle.
+        self.sweep_angles = np.linspace(-120, 120, 10) # 240° / 9 gaps = 26.7° per image
         self.sweep_index = 0 # Index of the current sweep angle.
 
         # -------------------------------------------------
