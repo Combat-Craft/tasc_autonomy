@@ -6,7 +6,7 @@ ROS2 Node
 Allows the user to manually control the camera servo and trigger a named panorama sweep.
 
 User inputs:
-    - A number from -110 to +110:
+    - A number from -120 to +120:
         Publishes a servo angle command to /motor_cmd.
 
     - 'p,folder_name':
@@ -80,7 +80,7 @@ def main():
 
     try:
         while True: # Recieves input from user continuously and it exits when user inputs 'e'
-            val = input("Enter angle (-110 to 110 | 'p,folder_name' for panorama | 'e' to exit): ").strip() # Prompt user
+            val = input("Enter angle (-120 to 120 | 'p,folder_name' for panorama | 'e' to exit): ").strip() # Prompt user
             if val == 'e': # Exit
                 break
             elif val.startswith("p,"): # Trigger panorama sweep with a user-provided folder name
