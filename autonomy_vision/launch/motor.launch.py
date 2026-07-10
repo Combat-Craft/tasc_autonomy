@@ -130,7 +130,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
+from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
 
@@ -160,11 +160,26 @@ def generate_launch_description():
         description='Baud rate for Arduino serial communication'
     )
 
+    # Allows the IP camera snapshot URL to be changed from the command line.
+    cam_url_arg = DeclareLaunchArgument(
+        'cam_url',
+        default_value='http://192.168.1.117:6688/snapshot/PROFILE_000',
+        description='IP camera snapshot URL used by panorama_capture'
+    )
+
+    # Allows the panorama save directory to be changed from the command line.
+    save_dir_arg = DeclareLaunchArgument(
+        'save_dir',
+        default_value='~/panorama_images',
+        description='Base directory where panorama sweep folders are saved'
+    )
+
     # Stores the runtime value of each launch argument that are passed into the nodes.
     test_mode = LaunchConfiguration('test_mode')
     serial_port = LaunchConfiguration('serial_port')
     baud_rate = LaunchConfiguration('baud_rate')
-
+    cam_url = LaunchConfiguration('cam_url')
+    save_dir = LaunchConfiguration('save_dir')
 
     # -------------------------------------------------
     # Nodes
@@ -209,7 +224,7 @@ def generate_launch_description():
         name='panorama_capture',
         # output='screen',
         # prefix='gnome-terminal --',
-        parameters=[{'test_mode': test_mode}]
+        parameters=[{'test_mode': ParameterValue(test_mode, value_type=bool), 'cam_url': cam_url, 'save_dir': save_dir}]
     )
 
     # -------------------------------------------------
@@ -222,6 +237,8 @@ def generate_launch_description():
         test_mode_arg,
         serial_port_arg,
         baud_rate_arg,
+        cam_url_arg,
+        save_dir_arg,
         motor_controller_node,
         panorama_capture_node,
     ])
