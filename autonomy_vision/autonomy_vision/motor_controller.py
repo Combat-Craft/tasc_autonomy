@@ -7,8 +7,8 @@ Subscribes to camera servo angle commands and sends the mapped servo value to th
 
 Subscribed topics:
     - /motor_cmd
-        The node receives the servo angle from this topic which is published by 'motor_input.py' and sends
-        the mapped servo value to the Arduino as a newline-terminated serial message.
+        The node receives the servo angle from this topic which is published by 'motor_input.py' or 
+        'panorama_capture.py', and sends the mapped servo value to the Arduino as a newline-terminated serial message.
 
 Launch arguments (serial connection):
     - serial_port (default: /dev/ttyUSB0) 
@@ -16,34 +16,60 @@ Launch arguments (serial connection):
 
 Angle mapping:
     - Arduino's servo library expects value within 0-180.
-    - So, target servo angle from /motor_cmd (range of -135 to +135 degree) is mapped to 0-180 range for Arduino.
+    - So, target servo angle from /motor_cmd (range of -110 to +110 degree) is mapped to 0-180 range for Arduino.
 
-    -135 degrees -> 0      (min. angle value)
+    -110 degrees -> 0      (min. angle value)
     0 degrees -> 90        (centre angle value)
-    +135 degrees -> 180    (max. angle value)
+    +110 degrees -> 180    (max. angle value)
 
 Related nodes:
     - motor_input.py
         Publishes manual servo angle commands to /motor_cmd.
 
-    - panorama_stitcher.py
+    - panorama_capture.py
         Publishes servo angle commands to /motor_cmd during an automated
         panorama sweep.    
 
+CH341 / CH340 driver note (for the Jetson):
+    The Arduino Nano/CH340 serial adapter may require the CH341/CH340 driver
+    on the Jetson if the built-in ch341 driver is missing or not working.
+
+    Initial installation (only needed once):
+        git clone https://github.com/juliagoda/CH341SER.git
+        cd CH341SER
+        make
+        sudo make load
+
+    Since CH341SER is already on the Jetson now, normally only this is needed
+    if the Arduino does not appear as /dev/ttyUSB0:
+        cd CH341SER
+        sudo make load
+
 Troubleshooting:
-    - Device not listed (/dev/ttyUSB* or /dev/ttyACM* missing):
+    - If the Arduino device is not listed:
 
         Check:
-            ls /dev/ttyUSB* /dev/ttyACM*   (see if device appears)
-            lsusb                          (check if USB device is detected at all)
-            dmesg | tail -50               (check kernel detection messages)
+            ls /dev/ttyUSB* /dev/ttyACM*
+            lsusb
+            dmesg | tail -50
+            dmesg | grep -iE "ch34|ttyUSB|ttyACM"
 
-   - If nothing appears:
-        Reload CH340 driver: sudo modprobe ch341
-        Then unplug and reconnect the Arduino USB cable
+    - If CH340 appears in lsusb but /dev/ttyUSB0 does not appear:
 
-   - If still not detected:
-        Try a different USB port or cable
+        First try:
+            sudo modprobe ch341
+
+        Then unplug and reconnect the Arduino USB cable.
+
+    - If the built-in driver still does not work:
+
+        Load the CH341SER driver:
+            cd CH341SER
+            sudo make load
+
+    - If /dev/ttyUSB0 still does not appear:
+
+        Try a different USB cable or USB port.
 """
 
 import rclpy
@@ -80,21 +106,22 @@ class MotorController(Node):
             self.callback,
             10
         )
+
         self.get_logger().info("Motor controller ready")
 
     def callback(self, msg):
         cmd = round(msg.data)
 
         # Enforce angle limits        
-        if cmd > 135:
-            self.get_logger().warn(f"Command {cmd} exceeds max limit of 135, clamping to 135")
-            cmd = 135
-        elif cmd < -135:
-            self.get_logger().warn(f"Command {cmd} exceeds min limit of -135, clamping to -135")
-            cmd = -135
+        if cmd > 110:
+            self.get_logger().warn(f"Command {cmd} exceeds max limit of 110, clamping to 110")
+            cmd = 110
+        elif cmd < -110:
+            self.get_logger().warn(f"Command {cmd} exceeds min limit of -110, clamping to -110")
+            cmd = -110
 
-        # Map target angle (-135 to +135 deg) to 0-180 range for Arduino
-        arduino_input = int((cmd + 135) * (180 / 270))
+        # Map target angle (-110 to +110 deg) to 0-180 range for Arduino
+        arduino_input = int((cmd + 110) * (180 / 220))
 
         command = f"{arduino_input}\n" # Add newline character to indicate to the Arduino that the command is complete
         self.ser.write(command.encode())  # Send command over serial to  (what moves it)
