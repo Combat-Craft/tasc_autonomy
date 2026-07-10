@@ -30,10 +30,10 @@ def main(args):
     # Set up the gstreamer pipeline
     player = Gst.Pipeline.new("test-stream")
 
-    source = Gst.ElementFactory.make("v4l2src", "back_web_cam")
-    source.set_property("device", "/dev/back_web_cam")
+    source = Gst.ElementFactory.make("v4l2src", "mina_cam")
+    source.set_property("device", "/dev/mina_cam")
 
-    caps = Gst.Caps.from_string("video/x-raw, format=YUY2, width=640, height=360, framerate=30/1")
+    caps = Gst.Caps.from_string("video/x-raw, format=YUY2, width=640, height=480, framerate=30/1")
     filter = Gst.ElementFactory.make("capsfilter", "filter")
     filter.set_property("caps", caps)
     
@@ -46,7 +46,7 @@ def main(args):
     videoconvert = Gst.ElementFactory.make("videoconvert", "video-converter")
 
     sink = Gst.ElementFactory.make("srtsink", "sink")
-    sink.set_property("uri", "srt://192.168.1.23:7091?mode=caller")
+    sink.set_property("uri", "srt://192.168.1.23:7090?mode=caller")
     sink.set_property("sync", False)
     sink.set_property("latency", 200)
     

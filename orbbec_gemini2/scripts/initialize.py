@@ -27,6 +27,19 @@ CAMERAS = [
         }
     },
 
+    {
+        "name": "mina_cam",
+        "source": "v4l2src",
+        "source_uri": "/dev/mina_cam",
+        "port": 7090,
+        "caps": {
+            "format": "YUY2",
+            "width": 640,
+            "height": 480,
+            "framerate": 30,
+        }
+    },
+
     
 ]
 

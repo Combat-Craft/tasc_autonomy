@@ -184,7 +184,7 @@ class PanoramaSweeper(Node):
         # -------------------------------------------------
 
         # The camera moves from -120 degrees to +120 degrees and captures one image at each angle.
-        self.sweep_angles = np.linspace(-120, 120, 10) # 240° / 9 gaps = 26.7° per image
+        self.sweep_angles = np.linspace(-120, 120, 12) # 240° / 9 gaps = 26.7° per image
         self.sweep_index = 0 # Index of the current sweep angle.
 
         # -------------------------------------------------
