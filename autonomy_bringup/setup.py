@@ -13,7 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         # Include all launch files.
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')) # changed launch/* to launch/*.py in glob()
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')), # changed launch/* to launch/*.py in glob()
         #Extra lines to scan _sensors subdirectory for py files
         (os.path.join('share', package_name, 'launch', '_sensors'), glob('launch/_sensors/*.py')),
     ],

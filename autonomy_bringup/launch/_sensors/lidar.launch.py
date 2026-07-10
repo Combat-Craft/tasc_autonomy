@@ -14,18 +14,17 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
-from ament_index_python.packages import get_package_share_directory
+from launch_ros.substitutions import FindPackageShare
 
-# ADJUST: verify these match your actual repo  rplidar A1M8, settings taken from sensors.launch.py
+# ADJUST: verify these match your actual repo
 LIDAR_PACKAGE = 'rplidar_ros'          # ADJUST
 LIDAR_EXECUTABLE = 'rplidar_node'      # ADJUST
 LIDAR_NODE_NAME = 'rplidar_node'
 LIDAR_FRAME_ID = 'laser_frame'         # ADJUST
-LIDAR_SERIAL_PORT = '/dev/ttyUSB1'     # ADJUST
+LIDAR_SERIAL_PORT = '/dev/ttyUSB0'     # ADJUST
 LIDAR_SCAN_TOPIC = '/scan'
 
-# not super sure about SLAM stuff:
-SLAM_TOOLBOX_PACKAGE = 'slam_toolbox' 
+SLAM_TOOLBOX_PACKAGE = 'slam_toolbox'
 SLAM_TOOLBOX_LAUNCH_FILE = 'online_async_launch.py'  # ADJUST if using a different slam mode
 
 
@@ -35,7 +34,7 @@ def generate_launch_description():
         description='Launch the lidar driver node'
     )
     enable_slam_arg = DeclareLaunchArgument(
-        'enable_slam', default_value='true',
+        'enable_slam', default_value='false',  # set default to false since as of 10-July-2026 we have no nav2 stack
         description='Launch slam_toolbox (produces /map)'
     )
 
@@ -59,7 +58,7 @@ def generate_launch_description():
     slam_toolbox_include = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
-                get_package_share_directory(SLAM_TOOLBOX_PACKAGE),
+                FindPackageShare(SLAM_TOOLBOX_PACKAGE),
                 'launch',
                 SLAM_TOOLBOX_LAUNCH_FILE,
             ])

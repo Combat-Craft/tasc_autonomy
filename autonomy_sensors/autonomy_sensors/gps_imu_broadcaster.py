@@ -73,7 +73,7 @@ class IMUGPSNode(Node):
         self.compassGPS_pub = self.create_publisher(String, '/cardinal_compass', 10) # N S E W
               
         ## IMU 
-        self.imu_pub = self.create_publisher(Imu, '/imu/acc_gryo', 50)
+        self.imu_pub = self.create_publisher(Imu, '/imu/acc_gyro', 50)
         self.mag_pub = self.create_publisher(MagneticField, '/imu/mag', 50)
 
         #self.heading_pub = self.create_publisher(Float32, '/heading', 10) #
@@ -368,7 +368,7 @@ class IMUGPSNode(Node):
             
             #self.get_logger().info(
             #                f"Acc X,Y,Z ={imu_msg.linear_acceleration.x}, {imu_msg.linear_acceleration.y}, {imu_msg.linear_acceleration.z},"
-            #                f"Gryo X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
+            #                f"Gyro X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
             #        )
             
             # Magnetometer data ==========================================================================
