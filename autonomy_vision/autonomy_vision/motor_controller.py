@@ -16,11 +16,11 @@ Launch arguments (serial connection):
 
 Angle mapping:
     - Arduino's servo library expects value within 0-180.
-    - So, target servo angle from /motor_cmd (range of -110 to +110 degree) is mapped to 0-180 range for Arduino.
+    - So, target servo angle from /motor_cmd (range of -120 to +120 degree) is mapped to 0-180 range for Arduino.
 
-    -110 degrees -> 0      (min. angle value)
+    -120 degrees -> 0      (min. angle value)
     0 degrees -> 90        (centre angle value)
-    +110 degrees -> 180    (max. angle value)
+    +120 degrees -> 180    (max. angle value)
 
 Related nodes:
     - motor_input.py
@@ -113,15 +113,15 @@ class MotorController(Node):
         cmd = round(msg.data)
 
         # Enforce angle limits        
-        if cmd > 110:
-            self.get_logger().warn(f"Command {cmd} exceeds max limit of 110, clamping to 110")
-            cmd = 110
-        elif cmd < -110:
-            self.get_logger().warn(f"Command {cmd} exceeds min limit of -110, clamping to -110")
-            cmd = -110
+        if cmd > 120:
+            self.get_logger().warn(f"Command {cmd} exceeds max limit of 120, clamping to 120")
+            cmd = 120
+        elif cmd < -120:
+            self.get_logger().warn(f"Command {cmd} exceeds min limit of -120, clamping to -120")
+            cmd = -120
 
-        # Map target angle (-110 to +110 deg) to 0-180 range for Arduino
-        arduino_input = int((cmd + 110) * (180 / 220))
+        # Map target angle (-120 to +120 deg) to 0-180 range for Arduino
+        arduino_input = int((cmd + 120) * (180 / 240))
 
         command = f"{arduino_input}\n" # Add newline character to indicate to the Arduino that the command is complete
         self.ser.write(command.encode())  # Send command over serial to  (what moves it)
