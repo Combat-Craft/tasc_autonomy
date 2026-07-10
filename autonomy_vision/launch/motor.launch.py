@@ -1,7 +1,7 @@
 """
 ROS2 Launch file
 
-Launches the motor, camera, and panorama-related nodes needed for manual servo control and panorama capture.
+Launches the motor controller and panorama capture nodes.
 
 Launch command:
     Normal mode with camera:
@@ -21,10 +21,7 @@ Launch arguments:
 
 Started nodes:
     - motor_controller
-    - motor_input
-    - panorama_stitcher
-    - camera
-    - image_republisher
+    - panorama_capture
 
 Important topics:
     /motor_cmd:
@@ -32,12 +29,6 @@ Important topics:
 
     /panorama_trigger:
         Trigger message used to start the panorama sweep.
-
-    /image_raw:
-        Raw image topic from the camera node.
-
-    /arm_cam/image/compressed:
-        Compressed image topic used by panorama_stitcher.
 """
 
 from launch import LaunchDescription
@@ -60,13 +51,6 @@ def generate_launch_description():
         description='Run panorama stitcher without requiring camera frames'
     )
 
-    # Allows the camera device to be changed from the command line.
-    camera_device_arg = DeclareLaunchArgument(
-        'camera_device',
-        default_value='/dev/video0',
-        description='Camera device path'
-    )
-
     # Allows the serial port to be changed from the command line.
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -83,7 +67,6 @@ def generate_launch_description():
 
     # Stores the runtime value of each launch argument that are passed into the nodes.
     test_mode = LaunchConfiguration('test_mode')
-    camera_device = LaunchConfiguration('camera_device')
     serial_port = LaunchConfiguration('serial_port')
     baud_rate = LaunchConfiguration('baud_rate')
 
@@ -98,62 +81,39 @@ def generate_launch_description():
         package='autonomy_vision',
         executable='motor_controller',
         name='motor_controller',
-        output='screen',
+        # output='screen',
         parameters=[{
             'serial_port': serial_port,
             'baud_rate': baud_rate
         }]
     )
 
+    '''
     # Motor input node:
     # Opens a separate terminal for user input.
     # The user can enter servo angles, 'p' for panorama, or 'e' to exit.
     motor_input_node = Node(
         package='autonomy_vision',
         executable='motor_input',
-        name='motor_input',
-        output='screen',
+        # name='motor_input',
+        # output='screen',
         prefix='gnome-terminal --'
     )
-
-    # Camera node:
-    # Starts the v4l2 camera node using the selected camera device.
-    # This node publishes raw images, usually on /image_raw.
-    camera_node = Node(
-        package='v4l2_camera',
-        executable='v4l2_camera_node',
-        name='camera',
-        output='screen',
-        parameters=[{'video_device': camera_device}]
-    )
-
-    # Image republisher node:
-    # Converts raw images from /image_raw into compressed images.
-    # The panorama stitcher subscribes to /arm_cam/image/compressed.
-    image_republisher_node = Node(
-        package='image_transport',
-        executable='republish',
-        name='image_republisher',
-        output='screen',
-        arguments=['raw', 'compressed'],
-        remappings=[
-            ('in', '/image_raw'),
-            ('out/compressed', '/arm_cam/image/compressed')
-        ]
-    )
+    '''
 
 
-    # Panorama stitcher node:
+
+    # Panorama capture node:
     # Runs the panorama sweep logic.
     # It subscribes to /panorama_trigger, publishes servo commands to /motor_cmd,
-    # and receives compressed camera frames from /arm_cam/image/compressed.
+    # and receives compressed camera frames from the ip camera.
     # The test_mode parameter is passed in from the launch argument.
-    panorama_stitcher_node = Node(
+    panorama_capture_node = Node(
         package='autonomy_vision',
-        executable='panorama_stitcher',
-        name='panorama_stitcher',
-        output='screen',
-        prefix='gnome-terminal --',
+        executable='panorama_capture',
+        name='panorama_capture',
+        # output='screen',
+        # prefix='gnome-terminal --',
         parameters=[{'test_mode': test_mode}]
     )
 
@@ -165,12 +125,8 @@ def generate_launch_description():
     # followed by all nodes that should be started. 
     return LaunchDescription([
         test_mode_arg,
-        camera_device_arg,
         serial_port_arg,
         baud_rate_arg,
         motor_controller_node,
-        motor_input_node,
-        panorama_stitcher_node,
-        camera_node,
-        image_republisher_node,
+        panorama_capture_node,
     ])
