@@ -13,7 +13,7 @@ def generate_launch_description():
             'camera_index': 0,
             'threshold_percentile': 85.0,
             'min_bright_fraction': 0.01,
-            'publish_hz': 10.0
+            'publish_hz': 60.0
         }]
     )
 

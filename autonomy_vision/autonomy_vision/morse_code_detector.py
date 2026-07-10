@@ -128,9 +128,20 @@ class MorseCodeDetector(Node):
             )
 
 
-        # Direct camera capture (no ROS image topic / usb_cam needed)
+        # Open by explicit device path rather than numeric index — with
+        # many /dev/videoN nodes present (multiple cameras, metadata
+        # nodes, etc.) OpenCV's V4L2 "open by index" enumeration can fail
+        # to map cleanly to the device you actually want.
+        camera_index_param = self.get_parameter(
+            "camera_index"
+        ).value
 
-        self.cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
+        if isinstance(camera_index_param, str) and camera_index_param.startswith("/dev/"):
+            camera_device = camera_index_param
+        else:
+            camera_device = f"/dev/video{camera_index_param}"
+
+        self.cap = cv2.VideoCapture(camera_device, cv2.CAP_V4L2)
 
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -172,6 +183,15 @@ class MorseCodeDetector(Node):
             10
         )
 
+        # Any message on this topic clears the accumulated decoded text —
+        # handy for resetting between test runs without restarting the node.
+        self.reset_sub = self.create_subscription(
+            String,
+            "/morse_reset",
+            self._on_reset,
+            10
+        )
+
 
         self.bridge = CvBridge()
 
@@ -206,6 +226,18 @@ class MorseCodeDetector(Node):
             f"Morse detector reading camera index {camera_index} "
             f"at {publish_hz:.1f} Hz"
         )
+
+
+    def _on_reset(self, msg):
+
+        self.message = ""
+        self.current_sym = ""
+
+        self.get_logger().info("Decoded message reset")
+
+        out = String()
+        out.data = self.message
+        self.pub_decoded.publish(out)
 
 
     def capture_callback(self):
@@ -401,6 +433,8 @@ class MorseCodeDetector(Node):
 
     def _flush(self, word=False):
 
+        had_pending = bool(self.current_sym)
+
         if self.current_sym:
 
             letter = MORSE_CODE.get(
@@ -413,7 +447,12 @@ class MorseCodeDetector(Node):
             self.current_sym = ""
 
 
-        if word:
+        # Only pad a word-gap space if there was actually a pending
+        # symbol to close out, or the message doesn't already end in
+        # whitespace. Otherwise repeated long gaps with nothing new
+        # detected (e.g. ambient noise while idle) just keep padding
+        # spaces onto the end of the message forever.
+        if word and (had_pending or not self.message.endswith(" ")):
 
             self.message += " "
 
