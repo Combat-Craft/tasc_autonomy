@@ -1,41 +1,136 @@
 """
-ROS2 Launch file
+ROS2 Launch File
 
-Launches the motor controller and panorama capture nodes.
-
-Launch command:
-    Normal mode with camera:
-        ros2 launch autonomy_vision motor.launch.py
-
-    Test mode without requiring camera frames:
-        ros2 launch autonomy_vision motor.launch.py test_mode:=true
-
-    Select a specific camera device:
-        ros2 launch autonomy_vision motor.launch.py camera_device:=/dev/video0
-
-Launch arguments:
-    - test_node
-    - camera_device
-    - serial_port
-    - baud_rate
-
-Started nodes:
+Launches the non-interactive nodes:
     - motor_controller
     - panorama_capture
 
-Important topics:
-    /motor_cmd:
-        Servo angle command in degrees, from -135 to +135.
+This launch file does not launch motor_input.py because motor_input.py uses keyboard input. 
 
-    /panorama_trigger:
-        Trigger message used to start the panorama sweep.
+Workflow:
+    Terminal 1 — launch the non-interactive nodes:
+        ros2 launch autonomy_vision motor.launch.py
+
+    Terminal 2 — run the interactive input node:
+        ros2 run autonomy_vision motor_input
+
+    In motor_input.py, enter:
+        - a servo angle (-120 to +120)
+        - p,folder_name to trigger a named panorama sweep
+        - e to exit
+
+Launch commands:
+    Normal mode with real IP camera snapshots:
+        ros2 launch autonomy_vision motor.launch.py
+
+    Test mode without requiring real camera images:
+        ros2 launch autonomy_vision motor.launch.py test_mode:=true
+
+Launch arguments:
+    - test_mode
+        Passed to panorama_capture.py.
+        If true, panorama_capture simulates captures and does not require real camera snapshots.
+        Default: False
+
+    - serial_port
+        Passed to motor_controller.py.
+        Arduino serial device path.
+        Default:/dev/ttyUSB0.
+
+    - baud_rate
+        Passed to motor_controller.py.
+        Arduino serial baud rate.
+        Default: 115200.
+
+    - cam_url
+        Passed to panorama_capture.py.
+        IP camera snapshot URL used to capture JPEG images.
+        Default: http://192.168.1.117:6688/snapshot/PROFILE_000
+
+    - save_dir
+        Passed to panorama_capture.py.
+        Base folder where panorama sweep folders are saved.
+        Default: ~/panorama_images.
+
+Started nodes:
+    - motor_controller
+        Subscribes to /motor_cmd.
+        Sends mapped servo commands to the Arduino over serial.
+
+    - panorama_capture
+        Subscribes to /panorama_trigger, /gps/fix, and /heading.
+        Publishes servo angle commands to /motor_cmd.
+        Captures IP camera snapshots and saves frame_*.jpg plus metadata.csv.
+
+Interactive node not launched here (Used by user to input commands):
+    - motor_input
+        Run separately with:
+            ros2 run autonomy_vision motor_input
+
+        Publishes manual servo commands and panorama trigger messages.
+
+Important topics:
+    /motor_cmd
+
+        Servo angle command in degrees.
+        Expected range is -120 to +120.
+
+        Published by:
+            - motor_input.py for manual servo movement
+            - panorama_capture.py during automated panorama sweeps
+
+        Subscribed by:
+            - motor_controller.py
+
+    /panorama_trigger
+
+        Trigger message used to start a panorama sweep.
+
+        Published by:
+            - motor_input.py
+
+        Subscribed by:
+            - panorama_capture.py
+
+    /gps/fix
+        Provides GPS latitude and longitude for panorama metadata.
+
+        Subscribed by:
+            - panorama_capture.py
+
+    /heading
+
+        Provides rover heading in degrees clockwise from north.
+        Used by panorama_capture.py to calculate camera-facing heading:
+
+            camera_heading = rover_heading + servo_angle
+
+        Subscribed by:
+            - panorama_capture.py
+
+    /rosout
+        Contains log messages from motor_controller and panorama_capture.
+
+Output:
+    panorama_capture.py saves each triggered sweep under save_dir.
+
+    Example:
+        ~/panorama_images/test_sweep_01/
+            frame_000.jpg
+            frame_001.jpg
+            ...
+            metadata.csv
+
+Offline stitching:
+    After a sweep is captured, run panorama_opencv_stitcher.py separately to create
+    panorama.jpg from the saved frame_*.jpg images and metadata.csv.
 """
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
+from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
 
@@ -65,11 +160,26 @@ def generate_launch_description():
         description='Baud rate for Arduino serial communication'
     )
 
+    # Allows the IP camera snapshot URL to be changed from the command line.
+    cam_url_arg = DeclareLaunchArgument(
+        'cam_url',
+        default_value='http://192.168.1.117:6688/snapshot/PROFILE_000',
+        description='IP camera snapshot URL used by panorama_capture'
+    )
+
+    # Allows the panorama save directory to be changed from the command line.
+    save_dir_arg = DeclareLaunchArgument(
+        'save_dir',
+        default_value='~/panorama_images',
+        description='Base directory where panorama sweep folders are saved'
+    )
+
     # Stores the runtime value of each launch argument that are passed into the nodes.
     test_mode = LaunchConfiguration('test_mode')
     serial_port = LaunchConfiguration('serial_port')
     baud_rate = LaunchConfiguration('baud_rate')
-
+    cam_url = LaunchConfiguration('cam_url')
+    save_dir = LaunchConfiguration('save_dir')
 
     # -------------------------------------------------
     # Nodes
@@ -114,7 +224,7 @@ def generate_launch_description():
         name='panorama_capture',
         # output='screen',
         # prefix='gnome-terminal --',
-        parameters=[{'test_mode': test_mode}]
+        parameters=[{'test_mode': ParameterValue(test_mode, value_type=bool), 'cam_url': cam_url, 'save_dir': save_dir}]
     )
 
     # -------------------------------------------------
@@ -127,6 +237,8 @@ def generate_launch_description():
         test_mode_arg,
         serial_port_arg,
         baud_rate_arg,
+        cam_url_arg,
+        save_dir_arg,
         motor_controller_node,
         panorama_capture_node,
     ])
