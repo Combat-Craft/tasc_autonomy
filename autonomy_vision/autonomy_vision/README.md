@@ -44,11 +44,11 @@ ros2 launch autonomy_vision morse_detector.launch.py
 
 # Servo Motor & Panorama Capture
 
-This section covers the camera servo control and panorama capture workflow. `motor_input.py` lets the user manually send servo commands or trigger a named panorama sweep, `motor_controller.py` forwards the mapped servo commands to the Arduino, `panorama_capture.py` rotates the camera through a set range of angles and saves IP camera snapshots with GPS/heading metadata, and `panorama_opencv_stitcher.py` stitches the saved images afterward.
+This section covers the camera servo control and panorama capture workflow. `motor_input.py` lets the user manually send servo commands or trigger a named panorama sweep, `motor_controller.py` forwards the mapped servo commands to the Arduino, and `panorama_capture.py` rotates the camera through a set range of angles while saving IP camera snapshots and GPS/heading metadata into a named sweep folder. After capture is complete, `panorama_opencv_stitcher.py` can be run separately to stitch the saved images from that folder into a final panorama.
 
 ## Table of Contents
 
-- [0) TL;DR for testing](#0-tldr-for-testing)
+- [0) TL;DR](#0-tldr)
 - [1) Build](#1-build)
 - [2) Topics](#2-topics)
 - [3) Launch File](#3-launch-file)
@@ -56,10 +56,9 @@ This section covers the camera servo control and panorama capture workflow. `mot
 - [5) Arduino Servo Firmware](#5-arduino-servo-firmware)
 - [6) Manual Commands and Verification](#6-manual-commands-and-verification)
 - [7) Hardware and Device Notes](#7-hardware-and-device-notes)
-- [8) Dependencies Used by Current Code](#8-dependencies-used-by-current-code)
-- [9) Running Through SSH](#9-running-through-ssh)
+- [8) Dependencies Used by Code](#8-dependencies-used-by-current-code)
 
-## 0) TL;DR for testing
+## 0) TL;DR
 
 Arduino wiring using the Arduino Nano pinout:
 
@@ -69,53 +68,66 @@ Arduino wiring using the Arduino Nano pinout:
 | Orange     | D9         |
 | Red        | 5V         |
 
-Build, source, and launch:
+Load ch341 driver on the Jetson, since Arduino uses a CH340/CH341 USB serial chip:
+```bash
+cd CH341SER
+sudo make load
+```
+
+Launching and starting nodes:
+
+### Terminal 1 — Launch Motor Controller and Panorama Capture (Non-Interactive Nodes)
 
 ```bash
-cd ~/<your_ros2_ws>
+cd ~/autonomy_ws
 colcon build --packages-select autonomy_vision
 source install/setup.bash
 ros2 launch autonomy_vision motor.launch.py
 ```
 
-The launch file opens separate terminals for the motor input node and panorama node. Including the original launch terminal, there will be 3 terminals total: the original launch terminal, the motor input terminal, and the panorama log terminal.
-
-In the `motor_input.py` terminal, enter a number from `-135` to `+135` to manually move the servo, or enter `p,folder_name` to trigger a named panorama sweep.
-
-Example panorama trigger input:
-
-```txt
-p,test_sweep_01
-```
-
-The panorama sweep captures 10 images across a 270° range from `-135°` to `+135°`, with about `30°` between capture positions. It uses a `1.0 s` move time and `1.0 s` settle time per position, so the servo sweep takes about `20 s`, plus IP camera snapshot time.
-
-If testing without the IP camera, launch in test mode:
+When not using IP camera, put in test mode
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
 ```
 
-For panorama testing with overlays, publish fake GPS and heading data in separate terminals:
+### Terminal 2 — Motor Input (Interactive node used by user to control the motor)
 
 ```bash
-ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitude: -79.380000, altitude: 100.0}" -r 1
+cd ~/autonomy_ws
+source install/setup.bash
+ros2 run autonomy_vision motor_input
 ```
 
+### Terminal 3 — Fake Heading (Testing-only)
+
 ```bash
+cd ~/autonomy_ws
+source install/setup.bash
 ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
 ```
 
-After a successful sweep, check the saved images and metadata:
+### Terminal 4 — Fake GPS (Testing-only)
 
 ```bash
-ls -l ~/panorama_images/test_sweep_01
+cd ~/autonomy_ws
+source install/setup.bash
+ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitude: -79.380000, altitude: 100.0}" -r 1
 ```
 
-Then run the standalone stitcher and enter the sweep folder path when prompted:
+### Run the Stitcher
+
+After the sweep finishes:
 
 ```bash
+cd ~/autonomy_ws//src/tasc_autonomy/autonomy_vision/autonomy_vision
 python3 panorama_opencv_stitcher.py
+```
+
+Example input for when it prompts for folder path:
+
+```txt
+~/panorama_images/test_sweep_01
 ```
 
 ## 1) Build
@@ -136,7 +148,6 @@ source install/setup.bash
 | `/panorama_trigger` | `std_msgs/String` | Input/Output | Trigger topic for starting a named panorama sweep; the message data is used as the output folder name |
 | `/gps/fix` | `sensor_msgs/NavSatFix` | Input | GPS position saved with each captured frame |
 | `/heading` | `std_msgs/Float32` | Input | Rover heading in degrees, used to calculate camera heading/cardinal metadata |
-| `/cardinal_compass` | `std_msgs/String` | Input | Optional rover cardinal direction input using a 16-point compass rose |
 
 ## 3) Launch File
 
@@ -156,12 +167,6 @@ Test mode without requiring camera frames:
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
 ```
 
-Select a specific camera device:
-
-```bash
-ros2 launch autonomy_vision motor.launch.py camera_device:=/dev/video0
-```
-
 Select a specific Arduino serial port:
 
 ```bash
@@ -179,7 +184,6 @@ Launch arguments:
 | Argument        | Description                                                   | Default        |
 | --------------- | ------------------------------------------------------------- | -------------- |
 | `test_mode`     | Runs `panorama_stitcher` without requiring real camera frames | `false`        |
-| `camera_device` | Camera device path used by `v4l2_camera_node`                 | `/dev/video0`  |
 | `serial_port`   | Serial port used by the Arduino motor controller              | `/dev/ttyUSB0` |
 | `baud_rate`     | Arduino serial communication baud rate                        | `115200`       |
 
@@ -187,7 +191,7 @@ Started nodes:
 
 | Node                | Description                                                            |
 | ------------------- | ---------------------------------------------------------------------- |
-| `motor_controller.py`  | Subscribes to `/motor_cmd` and forwards mapped servo values to Arduino |
+| `panorama_capture.py`  | Subscribes to `/motor_cmd` and forwards mapped servo values to Arduino |
 | `motor_input.py`       | Opens a terminal for manual servo input and panorama triggering        |
 | `panorama_stitcher.py` | Runs the panorama sweep logic                                          |
 | `v4l2_camera_node`  | Publishes raw camera frames                                            |
@@ -841,75 +845,4 @@ os
 pathlib
 time
 urllib.request
-```
-
-## 9) Running through SSH
-
-### Installing CH341SER Driver on Jetson
-
-```bash
-git clone https://github.com/juliagoda/CH341SER.git
-cd CH341SER
-make
-sudo make load
-```
-
-Since its already cloned, just do the following:
-```bash
-cd CH341SER
-sudo make load
-```
-
-### Terminal 1 — Launch Motor Controller and Panorama Capture
-
-```bash
-cd ~/autonomy_ws
-colcon build --packages-select autonomy_vision
-source install/setup.bash
-ros2 launch autonomy_vision motor2.launch.py
-```
-
-When not using camera put in test mode
-
-```bash
-ros2 launch autonomy_vision motor2.launch.py test_mode:=true
-```
-
-### Terminal 2 — Motor Input
-
-```bash
-cd ~/autonomy_ws
-source install/setup.bash
-ros2 run autonomy_vision motor_input
-```
-
-### Terminal 3 — Fake Heading
-
-```bash
-cd ~/autonomy_ws
-source install/setup.bash
-ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
-```
-
-### Terminal 4 — Fake GPS
-
-```bash
-cd ~/autonomy_ws
-source install/setup.bash
-ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitude: -79.380000, altitude: 100.0}" -r 1
-```
-
-### Run the Stitcher
-
-After the sweep finishes:
-
-```bash
-cd ~/autonomy_ws//src/tasc_autonomy/autonomy_vision/autonomy_vision
-python3 panorama_opencv_stitcher.py
-```
-
-Example input for when it prompts for folder path:
-
-```txt
-~/panorama_images/test_sweep_01
 ```
