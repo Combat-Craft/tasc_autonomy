@@ -37,7 +37,9 @@ setup(
         'console_scripts': [
             # Panorama
             #'panorama_stitcher = autonomy_vision.panorama_stitcher:main',
-            'panorama_stitcher = autonomy_vision.panorama_stitcher_ip:main',
+            'panorama_stitcher = autonomy_vision.panorama_stitcher_ip:main', # unneeded
+            'panorama_capture = autonomy_vision.panorama_capture:main', # Moves servo through sweep angles and saves images to a folder.
+            'panorama_opencv_stitcher = autonomy_vision.panorama_opencv_stitcher:main', # Stitches images from a sweep folder into a panorama and saves as panorama.jpg.
             
             # Motors
             'motor_controller = autonomy_vision.motor_controller:main',
