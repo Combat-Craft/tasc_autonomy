@@ -130,7 +130,6 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
 
@@ -224,7 +223,7 @@ def generate_launch_description():
         name='panorama_capture',
         # output='screen',
         # prefix='gnome-terminal --',
-        parameters=[{'test_mode': ParameterValue(test_mode, value_type=bool), 'cam_url': cam_url, 'save_dir': save_dir}]
+        parameters=[{'test_mode': test_mode, 'cam_url': cam_url, 'save_dir': save_dir}]
     )
 
     # -------------------------------------------------
