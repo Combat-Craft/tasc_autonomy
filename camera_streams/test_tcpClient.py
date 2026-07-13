@@ -22,17 +22,22 @@ import argparse
 import json
 import socket
 
+#   "state" : 
+#   "camera" :
+#   OPTIONAL
+#   "width" :
+#   "height" :
+#   "fps" :
+#   "bitrate" :
 
 def build_message(parts):
-    state = parts[0]
-    camera = parts[1]
-    message = {"state": state, "camera": camera}
+
+    message = {"state": parts[0], "camera": parts[1]}
     if len(parts) > 2:
-        message["res"] = parts[2]
-    if len(parts) > 3:
-        message["fps"] = int(parts[3])
-    if len(parts) > 4:
-        message["bitrate"] = int(parts[4])
+        message["width"] = parts[2]
+        message["height"] = parts[3]
+        message["fps"] = int(parts[4])
+        message["bitrate"] = int(parts[5])
     return message
 
 
@@ -46,7 +51,7 @@ def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((args.host, args.port))
     print("Connected.")
-    print("Commands: play <camera> [res] [fps] [bitrate] | pause <camera> | kill <camera> | quit")
+    print("Commands: play <camera> [width] [height] [fps] [bitrate] | stop <camera> | quit")
 
     try:
         while True:
@@ -60,7 +65,7 @@ def main():
             try:
                 message = build_message(parts)
             except (IndexError, ValueError):
-                print("Couldn't parse that. Format: <state> <camera> [res] [fps] [bitrate]")
+                print("Couldn't parse that. Format: <state> <camera> [width] [height] [fps] [bitrate]")
                 continue
 
             payload = (json.dumps(message) + "\n").encode("utf-8")
