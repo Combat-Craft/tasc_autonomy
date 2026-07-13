@@ -44,7 +44,7 @@ ros2 launch autonomy_vision morse_detector.launch.py
 
 # Servo Motor & Panorama Capture
 
-This section covers the camera servo control and panorama capture workflow. `motor_input.py` lets the user manually send servo commands or trigger a named panorama sweep, `motor_controller.py` forwards the mapped servo commands to the Arduino, and `panorama_capture.py` rotates the camera through a set range of angles while saving IP camera snapshots and GPS/heading metadata into a named sweep folder. After capture is complete, `panorama_opencv_stitcher.py` can be run separately to stitch the saved images from that folder into a final panorama.
+This section covers the camera servo control and panorama capture workflow. Foxglove is used to publish commands through two ROS 2 topics: /motor_cmd, which receives servo angle commands in degrees, and /panorama_trigger, which receives the requested panorama sweep folder name. motor_controller.py subscribes to /motor_cmd and forwards the mapped servo commands to the Arduino, while panorama_capture.py subscribes to /panorama_trigger and rotates the camera through a set range of angles while saving IP camera snapshots and GPS/heading metadata into a named sweep folder. After capture is complete, panorama_opencv_stitcher.py can be run separately to stitch the saved images from that folder into a final panorama.
 
 ## Table of Contents
 
@@ -60,7 +60,7 @@ This section covers the camera servo control and panorama capture workflow. `mot
 
 ## 0) TL;DR
 
-Arduino wiring using the Arduino Nano pinout:
+Arduino Nano wiring for the MG90D servo motor, using the Arduino Nano pinout:
 
 | Servo Wire | Connection |
 | ---------- | ---------- |
@@ -68,7 +68,8 @@ Arduino wiring using the Arduino Nano pinout:
 | Orange     | D9         |
 | Red        | 5V         |
 
-Load ch341 driver on the Jetson, since Arduino uses a CH340/CH341 USB serial chip:
+Load the CH341 driver on the Jetson, since the Arduino uses a CH340/CH341 USB serial chip:
+
 ```bash
 cd CH341SER
 sudo make load
@@ -76,7 +77,9 @@ sudo make load
 
 Launching and starting nodes:
 
-### Terminal 1 — Launch Motor Controller and Panorama Capture (Non-Interactive Nodes)
+### Terminal 1 — Launch Motor Controller and Panorama Capture
+
+These are the non-interactive nodes.
 
 ```bash
 cd ~/autonomy_ws
@@ -85,13 +88,69 @@ source install/setup.bash
 ros2 launch autonomy_vision motor.launch.py
 ```
 
-When not using IP camera, put in test mode
+When testing without the IP camera, use test mode:
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
 ```
 
-### Terminal 2 — Motor Input (Interactive node used by user to control the motor)
+### Foxglove — Control Servo and Trigger Panorama
+
+Foxglove is the main method for sending user commands. Foxglove’s **"Publish"** panels are used to publish messages directly to ROS 2 topics. In the Publish panel, Foxglove provides a message field like:
+
+```json
+{
+  "data": 
+}
+```
+
+The value after `"data":` is what we enter depending on the topic.
+
+To manually move the servo, publish to:
+
+```txt
+/motor_cmd
+```
+
+Message type:
+
+```txt
+std_msgs/msg/Float64
+```
+
+Example message:
+
+```json
+{
+  "data": 0.0
+}
+```
+
+To trigger a named panorama sweep, publish to:
+
+```txt
+/panorama_trigger
+```
+
+Message type:
+
+```txt
+std_msgs/msg/String
+```
+
+Example message:
+
+```json
+{
+  "data": "test_sweep_01"
+}
+```
+
+For `/panorama_trigger`, only enter the folder name as the string value.
+
+### Alternative — Terminal Motor Input
+
+If Foxglove is not being used, `motor_input.py` can be run separately on a new terminal.
 
 ```bash
 cd ~/autonomy_ws
@@ -99,7 +158,26 @@ source install/setup.bash
 ros2 run autonomy_vision motor_input
 ```
 
-### Terminal 3 — Fake Heading (Testing-only)
+In `motor_input.py`, example commands as follows:
+
+Moves the servo to the center position.
+```txt
+0
+```
+
+Triggers a panorama sweep and saves the output in a folder named `test_sweep_01`.
+```txt
+p,test_sweep_01
+```
+
+Exits the `motor_input.py` node.
+```txt
+e
+```
+
+### Terminal 2 — Fake Heading Data
+
+Testing-only, if the real heading/IMU source is not running:
 
 ```bash
 cd ~/autonomy_ws
@@ -107,7 +185,9 @@ source install/setup.bash
 ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
 ```
 
-### Terminal 4 — Fake GPS (Testing-only)
+### Terminal 3 — Fake GPS Data
+
+Testing-only, if the real GPS source is not running:
 
 ```bash
 cd ~/autonomy_ws
@@ -120,11 +200,11 @@ ros2 topic pub /gps/fix sensor_msgs/msg/NavSatFix "{latitude: 43.657000, longitu
 After the sweep finishes:
 
 ```bash
-cd ~/autonomy_ws//src/tasc_autonomy/autonomy_vision/autonomy_vision
+cd ~/autonomy_ws/src/tasc_autonomy/autonomy_vision/autonomy_vision
 python3 panorama_opencv_stitcher.py
 ```
 
-Example input for when it prompts for folder path:
+Example input when prompted for the sweep folder path:
 
 ```txt
 ~/panorama_images/test_sweep_01
@@ -142,26 +222,32 @@ source install/setup.bash
 
 ## 2) Topics
 
-| Topic | Type | Direction | Description |
-|---|---|---|---|
-| `/motor_cmd` | `std_msgs/Float64` | Input/Output | Servo angle command in degrees, from `-135` to `+135` |
-| `/panorama_trigger` | `std_msgs/String` | Input/Output | Trigger topic for starting a named panorama sweep; the message data is used as the output folder name |
-| `/gps/fix` | `sensor_msgs/NavSatFix` | Input | GPS position saved with each captured frame |
-| `/heading` | `std_msgs/Float32` | Input | Rover heading in degrees, used to calculate camera heading/cardinal metadata |
+| Topic               | Type                    | Direction                                                                           | Description                                                                                                           |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `/motor_cmd`        | `std_msgs/msg/Float64`      | Published by Foxglove or `panorama_capture.py`; subscribed by `motor_controller.py` | Servo angle command in degrees, from `-120` to `+120`. Foxglove can publish to this topic to manually move the servo. |
+| `/panorama_trigger` | `std_msgs/msg/String`       | Published by Foxglove; subscribed by `panorama_capture.py`                          | Trigger topic for starting a named panorama sweep. The message data is used as the output folder name.                |
+| `/gps/fix`          | `sensor_msgs/msg/NavSatFix` | Subscribed by `panorama_capture.py`                                                 | GPS latitude and longitude saved with each captured frame.                                                            |
+| `/heading`          | `std_msgs/msg/Float32`      | Subscribed by `panorama_capture.py`                                                 | Rover heading in degrees, used to calculate camera heading and camera cardinal metadata.                              |
+| `/rosout`           | ROS 2 logging topic     | Published by ROS 2 nodes                                                            | ROS 2 log output from `motor_controller.py` and `panorama_capture.py`.                                       |
 
 ## 3) Launch File
 
 ### `motor.launch.py`
 
-Launches the motor controller and panorama capture nodes needed for manual servo control and panorama capture.
+Launches the following nodes needed for camera servo control and panorama capture:
 
-Normal mode with camera:
+* `motor_controller.py`
+* `panorama_capture.py`
+
+In Foxglove, use the **"Publish"** panels to publish directly to `/motor_cmd` for manual servo movement and `/panorama_trigger` for starting a named panorama sweep.
+
+Normal mode with real IP camera snapshots:
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py
 ```
 
-Test mode without requiring camera frames:
+Test mode without requiring real IP camera snapshots:
 
 ```bash
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
@@ -179,41 +265,66 @@ Select a specific baud rate:
 ros2 launch autonomy_vision motor.launch.py baud_rate:=115200
 ```
 
+Override the IP camera snapshot URL:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py cam_url:=http://192.168.1.117:6688/snapshot/PROFILE_000
+```
+
+Override the panorama save directory:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py save_dir:=~/panorama_images
+```
+
 Launch arguments:
 
-| Argument        | Description                                                   | Default        |
-| --------------- | ------------------------------------------------------------- | -------------- |
-| `test_mode`     | Runs `panorama_stitcher` without requiring real camera frames | `false`        |
-| `serial_port`   | Serial port used by the Arduino motor controller              | `/dev/ttyUSB0` |
-| `baud_rate`     | Arduino serial communication baud rate                        | `115200`       |
+| Argument      | Description                                                                                                                           | Default                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `test_mode`   | Runs `panorama_capture.py` without requiring real IP camera snapshots. This is useful for testing the sweep logic without the camera. | `false`                                          |
+| `serial_port` | Serial port used by the Arduino motor controller.                                                                                     | `/dev/ttyUSB0`                                   |
+| `baud_rate`   | Arduino serial communication baud rate.                                                                                               | `115200`                                         |
+| `cam_url`     | IP camera snapshot URL used by `panorama_capture.py` to capture JPEG images.                                                          | `http://192.168.1.117:6688/snapshot/PROFILE_000` |
+| `save_dir`    | Base folder where panorama sweep folders are saved.                                                                                   | `~/panorama_images`                              |
 
 Started nodes:
 
-| Node                | Description                                                            |
-| ------------------- | ---------------------------------------------------------------------- |
-| `panorama_capture.py`  | Subscribes to `/motor_cmd` and forwards mapped servo values to Arduino |
-| `motor_input.py`       | Opens a terminal for manual servo input and panorama triggering        |
-| `panorama_stitcher.py` | Runs the panorama sweep logic                                          |
-| `v4l2_camera_node`  | Publishes raw camera frames                                            |
-| `image_republisher` | Converts raw images to compressed images for panorama capture          |
+| Node                  | Description                                                                                                                                                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `motor_controller.py` | Subscribes to `/motor_cmd`, maps the `-120` to `+120` degree command range into the Arduino Servo library `0` to `180` range, and sends the command to the Arduino over serial.                                                     |
+| `panorama_capture.py` | Subscribes to `/panorama_trigger`, `/gps/fix`, and `/heading`; publishes servo commands to `/motor_cmd`; captures IP camera snapshots from `cam_url`; and saves `frame_*.jpg` images plus `metadata.csv` into a named sweep folder. |
 
-Motor control flow:
+Optional alternative input node:
+
+| Node             | Description                                                                                                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `motor_input.py` | Optional terminal-based alternative to Foxglove. It can publish manual servo commands to `/motor_cmd` and panorama trigger messages to `/panorama_trigger`, but it is not launched by `motor.launch.py`. |
+
+Motor control flow with Foxglove:
+
+```txt
+Foxglove Publish panel → /motor_cmd → motor_controller → Arduino Nano → MG90D servo
+```
+
+Panorama trigger flow with Foxglove:
+
+```txt
+Foxglove Publish panel → /panorama_trigger → panorama_capture
+panorama_capture → /motor_cmd → motor_controller → Arduino Nano → MG90D servo sweep
+panorama_capture → IP camera snapshot URL → saves frame_*.jpg and metadata.csv
+```
+
+Optional terminal-based flow using motor_input.py:
 
 ```txt
 motor_input → /motor_cmd → motor_controller → Arduino Nano → MG90D servo
+motor_input → /panorama_trigger → panorama_capture
 ```
 
-Panorama flow:
-
-```txt
-motor_input → /panorama_trigger → panorama_stitcher
-panorama_stitcher → /motor_cmd → motor_controller → Arduino → servo sweep
-camera → /image_raw → image_transport republish → /arm_cam/image/compressed → panorama_stitcher
-```
 
 ## 4) Nodes
 
-### `motor_input.py`
+### `motor_input.py` (Optional alternative to Foxglove)
 
 Allows the user to control the camera servo and trigger a named panorama sweep from the terminal.
 
@@ -229,8 +340,8 @@ Published topics:
 
 | Topic               | Type               | Description |
 | ------------------- | ------------------ | ----------- |
-| `/motor_cmd`        | `std_msgs/Float64` | Manual servo angle command |
-| `/panorama_trigger` | `std_msgs/String`  | Requested panorama sweep folder name |
+| `/motor_cmd`        | `std_msgs/msg/Float64` | Manual servo angle command |
+| `/panorama_trigger` | `std_msgs/msg/String`  | Requested panorama sweep folder name |
 
 Related nodes:
 
@@ -245,10 +356,21 @@ Example prompt:
 Enter angle (-135 to 135 | 'p,folder_name' for panorama | 'e' to exit):
 ```
 
-Example panorama trigger:
+Example input commands are as follows:
 
+Moves the servo to the center position.
+```txt
+0
+```
+
+Triggers a panorama sweep and saves the output in a folder named `test_sweep_01`.
 ```txt
 p,test_sweep_01
+```
+
+Exits the `motor_input.py` node.
+```txt
+e
 ```
 
 ---
@@ -259,9 +381,9 @@ Subscribes to camera servo angle commands and sends the mapped servo value to th
 
 Subscribed topics:
 
-| Topic        | Type               | Description |
-| ------------ | ------------------ | ----------- |
-| `/motor_cmd` | `std_msgs/Float64` | Servo angle command in degrees |
+| Topic        | Type               | Description                                                    |
+| ------------ | ------------------ | -------------------------------------------------------------- |
+| `/motor_cmd` | `std_msgs/msg/Float64` | Servo angle command in degrees, expected from `-120` to `+120` |
 
 Serial parameters:
 
@@ -280,20 +402,46 @@ ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB1 baud_rate:
 
 Angle mapping:
 
-The Arduino Servo library expects values from `0` to `180`, but the ROS 2 control range is `-135` to `+135` degrees. The node maps the ROS 2 angle into the Arduino servo range.
+The Arduino Servo library expects values from `0` to `180`, but the ROS 2 control range is `-120` to `+120` degrees. The node maps the ROS 2 angle into the Arduino servo range.
 
 ```txt
--135 degrees → 0
+-120 degrees → 0
 0 degrees    → 90
-+135 degrees → 180
++120 degrees → 180
 ```
 
-Related nodes:
+Related command sources:
 
-| Node                  | Relationship |
-| --------------------- | ------------ |
-| `motor_input.py`      | Publishes manual servo angle commands to `/motor_cmd` |
-| `panorama_capture.py` | Publishes automated servo angle commands to `/motor_cmd` during a panorama sweep |
+| Source                 | Relationship                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| Foxglove Publish panel | Can publish manual servo angle commands directly to `/motor_cmd`                                 |
+| `panorama_capture.py`  | Publishes automated servo angle commands to `/motor_cmd` during a panorama sweep                 |
+| `motor_input.py`       | Optional terminal-based alternative that can publish manual servo angle commands to `/motor_cmd` |
+
+Foxglove trigger method:
+
+Foxglove is the main user-control method. Use Foxglove’s **Publish** panel to publish directly to `/motor_cmd`.
+
+Topic:
+
+```txt
+/motor_cmd
+```
+
+Message type:
+
+```txt
+std_msgs/msg/Float64
+```
+
+Example Foxglove message:
+
+```json
+{
+  "data": -45
+}
+```
+
 
 Troubleshooting serial device detection:
 
@@ -304,7 +452,18 @@ dmesg | tail -50
 dmesg | grep -iE "ch34|ttyUSB|ttyACM"
 ```
 
-If the Arduino uses a CH340/CH341 USB serial chip and the device does not appear, first try reloading the built-in driver:
+The Arduino uses a CH340/CH341 USB serial chip, so it should usually appear as `/dev/ttyUSB0` or another `/dev/ttyUSB*` device.
+
+On the Jetson, if the Arduino appears in `lsusb` but no `/dev/ttyUSB*` device appears, load the CH341SER driver:
+
+```bash
+cd CH341SER
+sudo make load
+```
+
+On the Jetson, there is usually no need to unplug and reconnect the Arduino USB cable after running `sudo make load`.
+
+If you are using your VM instead of the Jetson, first try reloading the built-in CH341 driver:
 
 ```bash
 sudo modprobe ch341
@@ -312,12 +471,7 @@ sudo modprobe ch341
 
 Then unplug and reconnect the Arduino USB cable.
 
-If the built-in driver still does not work and the CH341SER driver is already available on the Jetson, load it with:
-
-```bash
-cd CH341SER
-sudo make load
-```
+If the device still does not appear, try a different USB cable, USB port, or check whether the USB device is being passed through correctly to the VM.
 
 ---
 
@@ -325,7 +479,7 @@ sudo make load
 
 Controls an automated camera panorama capture sweep.
 
-When triggered, this node moves the camera servo through a sequence of angles from `-135°` to `+135°`, captures one IP camera snapshot at each angle, stores GPS/heading metadata for each frame, and saves the captured images into a named sweep folder.
+When triggered, this node moves the camera servo through a sequence of angles from `-120°` to `+120°`, captures one IP camera snapshot at each angle, stores GPS/heading metadata for each frame, and saves the captured images into a named sweep folder.
 
 Main behavior:
 
@@ -339,30 +493,57 @@ Main behavior:
 8. Stores the servo angle, GPS coordinates, rover heading, camera heading, and camera cardinal direction.
 9. Repeats until all sweep angles are complete.
 10. Saves `metadata.csv` inside the sweep folder.
-11. Resets and waits for the next trigger.
+11. Returns the servo to `0°`, resets, and waits for the next trigger.
 
 Published topics:
 
-| Topic        | Type               | Description |
-| ------------ | ------------------ | ----------- |
-| `/motor_cmd` | `std_msgs/Float64` | Target camera servo angle in degrees, from `-135` to `+135` |
+| Topic        | Type               | Description                                                 |
+| ------------ | ------------------ | ----------------------------------------------------------- |
+| `/motor_cmd` | `std_msgs/msg/Float64` | Target camera servo angle in degrees, from `-120` to `+120` |
 
 Subscribed topics:
 
-| Topic               | Type                    | Description |
-| ------------------- | ----------------------- | ----------- |
-| `/panorama_trigger` | `std_msgs/String`       | Trigger message used to start the panorama sweep; the message data is used as the output folder name |
-| `/gps/fix`          | `sensor_msgs/NavSatFix` | GPS coordinates saved with each captured frame |
-| `/heading`          | `std_msgs/Float32`      | Rover heading in degrees clockwise from north |
-| `/cardinal_compass` | `std_msgs/String`       | Optional rover cardinal direction input using a 16-point compass rose |
+| Topic               | Type                    | Description                                                                                          |
+| ------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `/panorama_trigger` | `std_msgs/msg/String`       | Trigger message used to start the panorama sweep; the message data is used as the output folder name |
+| `/gps/fix`          | `sensor_msgs/msg/NavSatFix` | GPS coordinates saved with each captured frame                                                       |
+| `/heading`          | `std_msgs/msg/Float32`      | Rover heading in degrees clockwise from north                                                        |
 
 Parameters:
 
-| Parameter   | Description | Default |
-| ----------- | ----------- | ------- |
-| `test_mode` | Simulates image captures and tests motor movement without requiring the real IP camera | `false` |
-| `cam_url`   | IP camera snapshot URL used to capture JPEG images | `http://192.168.1.117:6688/snapshot/PROFILE_000` |
-| `save_dir`  | Base directory where named sweep folders are created | `~/panorama_images` |
+| Parameter   | Description                                                                      | Default                                          |
+| ----------- | -------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `test_mode` | Simulates captures and tests motor movement without requiring the real IP camera | `false`                                          |
+| `cam_url`   | IP camera snapshot URL used to capture JPEG images                               | `http://192.168.1.117:6688/snapshot/PROFILE_000` |
+| `save_dir`  | Base directory where named sweep folders are created                             | `~/panorama_images`                              |
+
+Foxglove trigger method:
+
+Foxglove is the main user-control method. Use Foxglove’s **Publish** panel to publish directly to `/panorama_trigger`.
+
+Topic:
+
+```txt
+/panorama_trigger
+```
+
+Message type:
+
+```txt
+std_msgs/msg/String
+```
+
+Example Foxglove message:
+
+```json
+{
+  "data": "test_sweep_01"
+}
+```
+
+The string value is used as the requested output folder name inside `~/panorama_images`.
+
+Do not include `p,` when publishing from Foxglove. The `p,folder_name` format is only used by the optional `motor_input.py` terminal input node.
 
 Output folder structure:
 
@@ -391,23 +572,23 @@ image_path
 
 Sweep configuration:
 
-| Setting                   | Value |
-| ------------------------- | ----- |
-| Sweep range               | `-135°` to `+135°` |
-| Number of capture angles  | `10` |
-| Approximate angle spacing | `30°` |
-| Move time                 | `1.0 s` |
-| Settle time               | `1.0 s` |
-| ROS sweep output          | `frame_*.jpg` images and `metadata.csv` |
+| Setting                   | Value                                                          |
+| ------------------------- | -------------------------------------------------------------- |
+| Sweep range               | `-120°` to `+120°`                                             |
+| Number of capture angles  | `12`                                                           |
+| Approximate angle spacing | `21.8°`                                                        |
+| Move time                 | `1.0 s`                                                        |
+| Settle time               | `1.0 s`                                                        |
+| ROS sweep output          | `frame_*.jpg` images and `metadata.csv`                        |
 | Stitching output          | `panorama.jpg`, created later by `panorama_opencv_stitcher.py` |
 
 The sweep currently uses:
 
 ```python
-self.sweep_angles = np.linspace(-135, 135, 10)
+self.sweep_angles = np.linspace(-120, 120, 12)
 ```
 
-This gives 10 capture positions across a 270-degree range. Since there are 9 gaps between 10 positions, the spacing is approximately 30 degrees.
+This gives 12 capture positions across a 240-degree range. Since there are 11 gaps between 12 positions, the spacing is approximately 21.8 degrees.
 
 Heading reference:
 
@@ -424,15 +605,24 @@ The camera-facing heading is calculated as:
 camera_heading = rover_heading + servo_angle
 ```
 
-The code converts the camera heading into a 16-point compass label such as `N`, `NNE`, `NE`, `ENE`, `E`, `ESE`, `SE`, or `SSE`.
+The code calculates the camera-facing heading by adding the rover’s current heading to the servo angle, then converts that heading into a 16-point compass label: `N`, `NNE`, `NE`, `ENE`, `E`, `ESE`, `SE`, `SSE`, `S`, `SSW`, `SW`, `WSW`, `W`, `WNW`, `NW`, or `NNW`.
+
+```python
+camera_heading = (self.latest_heading + current_servo_angle) % 360.0
+camera_cardinal = self.heading_to_cardinal_16(camera_heading)
+```
+
+The modulo operation `% 360.0` keeps the heading within the normal compass range of `0°` to `359°`.
+
 
 Related nodes/scripts:
 
-| Node/Script                    | Relationship |
-| ------------------------------ | ------------ |
-| `motor_input.py`               | Publishes manual servo commands and named panorama triggers |
-| `motor_controller.py`          | Receives `/motor_cmd` and sends mapped commands to Arduino |
-| GPS/IMU node or test publisher | Provides `/gps/fix` and `/heading` |
+| Node/Script                    | Relationship                                                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Foxglove Publish panel         | Publishes `/motor_cmd` for manual servo movement and `/panorama_trigger` for panorama sweeps               |
+| `motor_controller.py`          | Receives `/motor_cmd` and sends mapped commands to Arduino                                                 |
+| GPS/IMU node or test publisher | Provides `/gps/fix` and `/heading`                                                                         |
+| `motor_input.py`               | Optional terminal-based alternative to Foxglove                                                            |
 | `panorama_opencv_stitcher.py`  | Loads saved `frame_*.jpg` images and `metadata.csv`, stitches them, draws labels, and saves `panorama.jpg` |
 
 Configuration notes:
@@ -456,14 +646,14 @@ This script is intentionally separate from ROS 2 so that stitching can be run af
 
 Input:
 
-| Input | Description |
-| ----- | ----------- |
+| Input             | Description                                                        |
+| ----------------- | ------------------------------------------------------------------ |
 | Sweep folder path | Folder containing `frame_*.jpg` images and optional `metadata.csv` |
 
 Output:
 
-| Output | Description |
-| ------ | ----------- |
+| Output         | Description                                                      |
+| -------------- | ---------------------------------------------------------------- |
 | `panorama.jpg` | Final stitched panorama image saved inside the same sweep folder |
 
 Expected folder structure:
@@ -492,6 +682,7 @@ Main behavior:
 Run example:
 
 ```bash
+cd ~/autonomy_ws/src/tasc_autonomy/autonomy_vision/autonomy_vision
 python3 panorama_opencv_stitcher.py
 ```
 
@@ -507,6 +698,7 @@ Notes:
 * Stitching can fail if there is not enough overlap between images, if the images are blurry, or if the camera angle spacing is too large.
 * Cardinal label positions are approximate because OpenCV warps and crops the input images internally.
 
+
 ## 5) Arduino Servo Firmware
 
 The Arduino firmware is located at:
@@ -515,7 +707,7 @@ The Arduino firmware is located at:
 autonomy_vision/firmware/panorama_motor/panorama_motor.ino
 ```
 
-The firmware controls an MG90D servo motor using the Arduino Servo library.
+The firmware controls an MG90D servo motor using the Arduino Servo library. The MG90D is a positional servo motor.
 
 The Arduino expects serial commands from ROS 2 in the range:
 
@@ -523,12 +715,12 @@ The Arduino expects serial commands from ROS 2 in the range:
 0 to 180
 ```
 
-The ROS 2 `motor_controller` node maps the camera servo range of `-135` to `+135` degrees into this Arduino range.
+The ROS 2 `motor_controller` node maps the camera servo range of `-120` to `+120` degrees into this Arduino range.
 
 ```txt
--135 degrees → 0
+-120 degrees → 0
 0 degrees    → 90
-+135 degrees → 180
++120 degrees → 180
 ```
 
 ### Arduino Pin Wiring
@@ -563,35 +755,77 @@ READY
 
 when it starts.
 
-The serial port and baud rate are passed through `motor.launch.py`:
+By default, `motor.launch.py` uses `/dev/ttyUSB0` as the Arduino serial port and `115200` as the baud rate. These values only need to be specified in the launch command if you want to override the defaults.
+
+Default launch command:
 
 ```bash
-ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB0 baud_rate:=115200
+ros2 launch autonomy_vision motor.launch.py
+```
+
+Example override if the Arduino appears on a different serial device:
+
+```bash
+ros2 launch autonomy_vision motor.launch.py serial_port:=/dev/ttyUSB1 baud_rate:=115200
 ```
 
 ## 6) Manual Commands and Verification
 
 ### Move Servo Manually
 
-Move to center:
+The main method for manual servo movement is Foxglove’s **"Publish"** panel.
+
+Publish to:
+
+```txt
+/motor_cmd
+```
+
+Message type:
+
+```txt
+std_msgs/msg/Float64
+```
+
+Foxglove message format:
+
+```json
+{
+  "data": 0.0
+}
+```
+
+Example values:
+Moves the servo to the center position.
+```json
+{
+  "data": 0.0
+}
+```
+
+Moves the servo to the minimum angle.
+```json
+{
+  "data": -120.0
+}
+```
+
+Moves the servo to the maximum angle.
+```json
+{
+  "data": 120.0
+}
+```
+
+Terminal command equivalent:
 
 ```bash
 ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: 0.0}"
+ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: -120.0}"
+ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: 120.0}"
 ```
 
-Move to minimum angle:
-
-```bash
-ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: -135.0}"
-```
-
-Move to maximum angle:
-
-```bash
-ros2 topic pub --once /motor_cmd std_msgs/msg/Float64 "{data: 135.0}"
-```
-
-Check that motor commands are being published:
+To check motor commands, run this before publishing a command:
 
 ```bash
 ros2 topic echo /motor_cmd
@@ -599,15 +833,37 @@ ros2 topic echo /motor_cmd
 
 ### Trigger Panorama Manually
 
-Trigger a named panorama sweep:
+The main method for triggering a panorama sweep is Foxglove’s **"Publish"** panel.
+
+Publish to:
+
+```txt
+/panorama_trigger
+```
+
+Message type:
+
+```txt
+std_msgs/msg/String
+```
+
+Foxglove message format:
+
+```json
+{
+  "data": "test_sweep_01"
+}
+```
+
+The string value is used as the requested output folder name inside `~/panorama_images`.
+
+Terminal command equivalent:
 
 ```bash
 ros2 topic pub --once /panorama_trigger std_msgs/msg/String "{data: 'test_sweep_01'}"
 ```
 
-The string value is used as the requested output folder name inside `~/panorama_images`.
-
-Check that panorama trigger messages are being published:
+To check panorama trigger messages, run this before publishing a trigger:
 
 ```bash
 ros2 topic echo /panorama_trigger
@@ -629,18 +885,11 @@ Terminal 2 — publish fake heading:
 ros2 topic pub /heading std_msgs/msg/Float32 "{data: 90.0}" -r 1
 ```
 
-Optional — publish fake rover cardinal direction:
-
-```bash
-ros2 topic pub /cardinal_compass std_msgs/msg/String "{data: 'E'}" -r 1
-```
-
-Check test GPS, heading, and cardinal data:
+Check test GPS and heading data:
 
 ```bash
 ros2 topic echo /gps/fix
 ros2 topic echo /heading
-ros2 topic echo /cardinal_compass
 ```
 
 ### Test Panorama Sweep Without IP Camera
@@ -649,7 +898,7 @@ ros2 topic echo /cardinal_compass
 ros2 launch autonomy_vision motor.launch.py test_mode:=true
 ```
 
-This tests the servo sweep without requiring real IP camera snapshots.
+This tests the panorama sweep logic without requiring real IP camera snapshots. The launch file still starts `motor_controller.py`, so the Arduino serial connection is still expected unless you modify the launch file or run `panorama_capture.py` separately for software-only testing.
 
 ### Check IP Camera Snapshot URL
 
@@ -657,12 +906,6 @@ The capture node uses the `cam_url` parameter to request one JPEG snapshot at ea
 
 ```txt
 http://192.168.1.117:6688/snapshot/PROFILE_000
-```
-
-Before running a real sweep, check that the IP camera URL is reachable from the Jetson or computer running the node. For example, open the URL in a browser or download one test image:
-
-```bash
-wget -O test_snapshot.jpg "http://192.168.1.117:6688/snapshot/PROFILE_000"
 ```
 
 ### Check Output Sweep Folder
@@ -694,6 +937,7 @@ metadata.csv
 After capturing the sweep images, run the standalone stitcher:
 
 ```bash
+cd ~/autonomy_ws/src/tasc_autonomy/autonomy_vision/autonomy_vision
 python3 panorama_opencv_stitcher.py
 ```
 
@@ -766,7 +1010,27 @@ dmesg | tail -50
 dmesg | grep -iE "ch34|ttyUSB|ttyACM"
 ```
 
-If the Arduino uses a CH340/CH341 USB serial chip and `/dev/ttyUSB*` does not appear, reload the built-in CH340 driver:
+The Arduino uses a CH340/CH341 USB serial chip, so it should usually appear as `/dev/ttyUSB0` or another `/dev/ttyUSB*` device.
+
+On the Jetson, if the Arduino appears in `lsusb` but no `/dev/ttyUSB*` device appears, load the CH341SER driver:
+
+```bash
+cd CH341SER
+sudo make load
+```
+
+There is no need to unplug and reconnect the Arduino USB cable when using the Jetson.
+
+Initial CH341SER installation is only needed once and has already been done on the Jetson:
+
+```bash
+git clone https://github.com/juliagoda/CH341SER.git
+cd CH341SER
+make
+sudo make load
+```
+
+If you are using your own VM instead of the Jetson, first try reloading the built-in CH341 driver:
 
 ```bash
 sudo modprobe ch341
@@ -774,26 +1038,15 @@ sudo modprobe ch341
 
 Then unplug and reconnect the Arduino USB cable.
 
-If the built-in driver still does not work and the CH341SER driver is already available on the Jetson, load it with:
+If `lsusb` does not show the device at all, it is likely a hardware, cable, USB passthrough, or USB port issue.
 
-```bash
-cd CH341SER
-sudo make load
-```
-
-If `lsusb` does not show the device at all, it is likely a hardware, cable, or USB port issue.
-
-If `lsusb` shows the CH340 device but `/dev/ttyUSB*` does not appear, it is likely a driver issue.
+If `lsusb` shows the CH340/CH341 device but `/dev/ttyUSB*` does not appear, it is likely a driver issue.
 
 ### Serial Permissions
 
-A temporary permission workaround is:
+The user running the ROS 2 nodes needs permission to access the Arduino serial device.
 
-```bash
-sudo chmod 666 /dev/ttyUSB0
-```
-
-A better long-term fix is to add the user to the `dialout` group:
+A long-term fix is to add the user to the `dialout` group:
 
 ```bash
 sudo usermod -a -G dialout $USER
@@ -823,23 +1076,23 @@ Default snapshot URL:
 http://192.168.1.117:6688/snapshot/PROFILE_000
 ```
 
-The IP camera and the Jetson/computer running the node must be on the same reachable network. If image capture fails, check that the URL can be opened from the same machine running `panorama_capture.py`.
-
-Example test:
-
-```bash
-wget -O test_snapshot.jpg "http://192.168.1.117:6688/snapshot/PROFILE_000"
-```
-
 ## 8) Dependencies Used by Current Code
 
+External ROS2/Python dependencies:
+
 ```txt
-rclpy
-std_msgs
-sensor_msgs
-OpenCV / cv2
-NumPy
+rclpy 
+std_msgs 
+sensor_msgs 
+launch 
+launch_ros 
+OpenCV / cv2 
+NumPy 
 PySerial
+```
+
+Python standard library modules used:
+```txt
 csv
 os
 pathlib
