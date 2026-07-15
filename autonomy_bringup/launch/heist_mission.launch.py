@@ -6,7 +6,7 @@ Nodes:
   - imu_gps + heading (/imu/acc_gyro, /imu/mag, /gps/fix, /heading, /cardinal_compass)
   - morse_detector (/morse_code, /morse_decoded, /morse_debug_image)
 
-NOTE: lidar is intentionally NOT included for this task.
+NOTE: lidar is disconnected for this task.
 """
 
 import os

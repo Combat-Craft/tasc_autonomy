@@ -52,7 +52,7 @@ def generate_launch_description():
     args = [
         DeclareLaunchArgument('enable_foxglove', default_value='true'),
         DeclareLaunchArgument('enable_lidar', default_value='true'),
-        DeclareLaunchArgument('enable_slam', default_value='true'),
+        DeclareLaunchArgument('enable_slam', default_value='false'),
         DeclareLaunchArgument('enable_imu_gps', default_value='true'),
         DeclareLaunchArgument('enable_heading', default_value='true'),
         DeclareLaunchArgument('enable_morse_detector', default_value='true'),
@@ -89,7 +89,7 @@ def generate_launch_description():
         'enable_route': LaunchConfiguration('enable_route'),
     })
 
-    panorama_include = _include('panorama_stitcher.launch.py', {
+    panorama_include = _include('motor_panorama.launch.py', {
         'enable_panorama_stitcher': LaunchConfiguration('enable_panorama_stitcher'),
     })
 
