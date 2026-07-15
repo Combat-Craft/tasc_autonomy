@@ -44,7 +44,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'enable_lidar': 'true',
-            'enable_slam': 'true',
+            'enable_slam': 'false',
         }.items(),
     )
 

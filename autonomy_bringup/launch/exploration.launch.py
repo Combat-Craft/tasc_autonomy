@@ -6,7 +6,7 @@ Nodes:
   - lidar + slam_toolbox (/scan, /map)
   - imu_gps + heading (/imu/acc_gyro, /imu/mag, /gps/fix, /heading, /cardinal_compass)
   - route (/gps/path)
-  - panorama_stitcher (/panorama_trigger, /motor_cmd)
+  - motor_panorama: motor_controller + panorama_capture (/panorama_trigger, /motor_cmd)
 """
 
 import os
@@ -33,7 +33,9 @@ TOPIC_WHITELIST = [
     '/heading',
     '/cardinal_compass',
     '/gps/path',
-    '/panorama_trigger',
+    '/panorama_trigger', 
+    # note the motor.launch structure, capture subscribed to trigger, but trigger only runs if 
+    # motor_input runs (separate from motor.launch.py)
     '/motor_cmd',
 ]
 
@@ -55,7 +57,7 @@ def generate_launch_description():
 
     lidar_include = _include('lidar.launch.py', {
         'enable_lidar': 'true',
-        'enable_slam': 'true',
+        'enable_slam': 'false',
     })
 
     imu_gps_include = _include('imu_gps.launch.py', {
@@ -67,7 +69,7 @@ def generate_launch_description():
         'enable_route': 'true',
     })
 
-    panorama_include = _include('panorama_stitcher.launch.py', {
+    panorama_include = _include('motor_panorama.launch.py', {
         'enable_panorama_stitcher': 'true',
     })
 
