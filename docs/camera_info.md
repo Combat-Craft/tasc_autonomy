@@ -29,7 +29,7 @@ Either the caller or listen IP must be default/0.0.0.0, and the other is the IP 
 To ensure the stream is being sent to our bay station PC, we will set our srtsink uri to the client ip and our srtsrc uri to be default. 
 We also manually set caller and listener, despite being default, for clarity and to reduce any risk of borking.
 
-## IP Cam
+## IP Cam / Top
 **Brand:** Revotech i706-P-Audio-FHW
 
 **Resolutions:** profile0: 2304 x 1296, 1920 x 1080 | profile1: 720 x 480, 640 x 360, 352 x 288
@@ -67,6 +67,30 @@ gst-launch-1.0 rtspsrc location=rtspt://admin:@192.168.1.117:8554/profile1 laten
 ```
 NOTE: You will have to change the sink when you add it to PyQT. Probably appsink? 
 
+
+## IP Cam 2 / ARM
+Same as before
+
+Has no udev name, no need as not connected to Jetson directly
+
+### How to Connect
+
+Connect to the LAN, and ensure your IPv4 settings are on 192.168.1.XXX/24.
+
+The camera's IP is 192.168.1.116/24.
+
+The access urls are:
+- rtspt://admin:@192.168.1.116:8554/profile0 
+- rtspt://admin:@192.168.1.116:8554/profile1 <-- WE USE THIS ONE FOR LOWER RESOLUTIONS
+
+### Gstreamer Pipeline (Tested via CLI)
+**Jetson/Server**
+``` N/A ``` Camera is connected via switch, does not need to route through Jetson
+
+**Bay Station/Client**
+```bash
+gst-launch-1.0 rtspsrc location=rtspt://admin:@192.168.1.116:8554/profile1 latency=0 ! rtph265depay ! h265parse !  avdec_h265 ! autovideosink sync=false
+```
 
 
 ##  Mina's Webcam
