@@ -17,11 +17,10 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
-# NOTE: 'morse_detector' is the name of a LAUNCH FILE in autonomy_vision,
-# not the executable. The actual node entry point is 'morse_code_detector'.(I think)
+# NOTE:  The actual node entry point is 'morse_detector'.(I think)
 MORSE_PACKAGE = 'autonomy_vision'
-MORSE_EXECUTABLE = 'morse_code_detector'
-MORSE_NODE_NAME = 'morse_code_detector'
+MORSE_EXECUTABLE = 'morse_detector'
+MORSE_NODE_NAME = 'morse_detector'
 
 
 def generate_launch_description():
