@@ -55,12 +55,11 @@ CAMERAS_DEFAULTS = {
 #Build Pipelines
 
 class CameraPipelineStreamer:
-    def __init__(self, camera_name, latency, client_ip):
+    def __init__(self, camera_name, latency):
 
         self.camera_name = camera_name
         self.pipeline = None
         self.bus = None
-        self.client_ip = client_ip
 
         # Save them here, in case we ever want to change these paramaters away from defaultsr
         self.source_plugin = CAMERAS_DEFAULTS[self.camera_name]["source"]
@@ -116,7 +115,7 @@ class CameraPipelineStreamer:
         videoconvert = Gst.ElementFactory.make("videoconvert", f"{self.camera_name}-convert")
 
         sink = Gst.ElementFactory.make("srtsink", f"{self.camera_name}-srtsink")
-        sink.set_property("uri", f"srt://{self.client_ip}:{self.port}?mode=caller")
+        sink.set_property("uri", f"srt://:{self.port}?mode=caller")
         sink.set_property("sync", False)
         sink.set_property("latency", self.latency)
 
@@ -143,7 +142,7 @@ class CameraPipelineStreamer:
         print(
             f"  {self.source_plugin} device={self.source_uri} "
             f"[{self.format} {self.width}x{self.height}@{self.framerate}] "
-            f"-> srt://{self.client_ip}:{self.port}"
+            f"-> srt://:{self.port}"
         )
         print()
 
@@ -202,7 +201,9 @@ class CameraPipelineStreamer:
 # then start the pipeline with start_pipelines() method
 #  - it will handle building and destroying exsting pipelines if they already exist
 # kill whenever
+
 """
+
 
 Gst.init(None)
 running = True
@@ -261,16 +262,16 @@ while running:
 
         # Create or update the CameraPipelineStreamer instance
         if camera_selection not in camera_pipelines:
-            camera_pipelines[camera_selection] = CameraPipelineStreamer(camera_selection, latency=200, client_ip=srt)
+            camera_pipelines[camera_selection] = CameraPipelineStreamer(camera_selection, latency=200)
 
         pipeline_streamer = camera_pipelines[camera_selection]
 
         if len(commandList) == 6:
             # Optional parameters for width, height, framerate, bitrate
-            width = int(commandList[2]) if len(commandList) > 2 else CAMERAS_DEFAULTS[camera_selection]["caps"]["width"]
-            height = int(commandList[3]) if len(commandList) > 3 else CAMERAS_DEFAULTS[camera_selection]["caps"]["height"]
-            framerate = int(commandList[4]) if len(commandList) > 4 else CAMERAS_DEFAULTS[camera_selection]["caps"]["framerate"]
-            bitrate = int(commandList[5]) if len(commandList) > 5 else CAMERAS_DEFAULTS[camera_selection]["bitrate"]
+            width = int(commandList[2]) 
+            height = int(commandList[3]) 
+            framerate = int(commandList[4]) 
+            bitrate = int(commandList[5]) 
             
             pipeline_streamer.set_width(width)
             pipeline_streamer.set_height(height)
@@ -282,9 +283,9 @@ while running:
         except RuntimeError as e:
             print(e)
 
+
+
+
 """
-
-
-
 
 

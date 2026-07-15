@@ -13,6 +13,22 @@ from gi.repository import Gst
 #HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 #PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
 
+"""
+NOTE: if testing on local host, you must set the IP of both srt uri's to 127.0.0.1 !
+"""
+
+"""
+packet = {
+    "state" : 
+    "camera" :
+
+    "width" :
+    "height" :
+    "fps" :
+    bitrate" :
+}
+"""
+
 def handle_client_command(commandPacket, ip):
     command = commandPacket.get("state")
     camera_selection = commandPacket.get("camera")
@@ -41,7 +57,7 @@ def handle_client_command(commandPacket, ip):
 
     elif command == 'play':
         if streamer is None:
-            camera_pipelines[camera_selection] = CameraPipelineStreamer(camera_selection, latency=200, client_ip=ip)
+            camera_pipelines[camera_selection] = CameraPipelineStreamer(camera_selection, latency=200)
             streamer = camera_pipelines[camera_selection]
 
         if width and height:
