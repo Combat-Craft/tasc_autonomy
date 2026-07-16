@@ -70,16 +70,7 @@ Known in-progress / issues:
           │   ├── Log
           │   ├── resource
           │   └── test
-          # --> combined C++ and Python ROS2 package. Has unique Building, please refer to internal readme or ask Artemis
-          ├── orbbec_gemini2/
-          │   ├── CMakeLists.txt
-          │   ├── package.xml
-          │   ├── orbbec_gemini2
-          │   ├── scripts #pynodes
-          │   ├── include/orbbec_gemini2 #c++ headers
-          │   └── src # c++ code
-          ├── install
-          └── test
+          ├── camera_streams
 ```
 
 # Installation 
@@ -167,55 +158,10 @@ ros2 launch autonomy_vision sensors.launch.py
 ```
 
 
-## IP Camera
-Note: IP Camera is set to static at 192.168.117 and I think it's network is 192.168.1.0/24 from other users' comments.
-Can change IP and change from static to DHCP (auto) at [its setting page](http://192.168.1.117)
+## Cameras
 
-```bash
-gst-launch-1.0 rtspsrc location=rtspt://admin:@192.168.1.117:8554/profile1 latency=0 ! queue ! rtph265depay ! h265parse !  avdec_h265 ! autovideosink sync=false -v
-```
-## Webcam
+Please read https://github.com/Combat-Craft/tasc_autonomy/blob/main/docs/camera_info.md
 
-### <u>if natively on Jetson</u>
-```bash
-gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! x264enc pass=cbr bitrate=500 tune=zerolatency speed-preset=ultrafast ! rtph264pay ! videoconvert !  autovideosink sync=false -v
-```
-
-### <u>if streaming over a network (needs testing)</u>
-**CHANGE THE IP ADDRESS - ASK COMMS FOR ADVICE ON THAT I DUNNO THEIR NETWORK SETTINGS**
-
-Server
-```bash
-gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! x264enc pass=cbr bitrate=500 tune=zerolatency speed-preset=ultrafast ! rtph264pay ! udpsink port=5000 host=127.0.0.1 -v
-```
-
-Client
-```bash
-gst-launch-1.0 udpsrc address=127.0.0.1 port=5000 ! "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96"! rtph264depay ! h264parse ! avdec_h264 ! videoconvert !  autovideosink sync=false -v
-```
-
-
-## Orbbec Gemini
-
-**Orbbec is issues with properly restarting. For now, whenever you end a stream, you must turn on/off via the cable.**
-
-### <u>if natively on Jetson</u>
-```bash
-gst-launch-1.0 v4l2src device=/dev/video6 ! videoconvert ! x264enc pass=cbr bitrate=500 tune=zerolatency speed-preset=ultrafast ! rtph264pay ! videoconvert !  autovideosink sync=false -v
-```
-
-### <u>if streaming over a network (needs testing)</u>
-**CHANGE THE IP ADDRESS - ASK COMMS FOR ADVICE ON THAT I DUNNO THEIR NETWORK SETTINGS**
-
-Server
-```bash
-gst-launch-1.0 v4l2src device=/dev/video6 ! videoconvert ! x264enc pass=cbr bitrate=500 tune=zerolatency speed-preset=ultrafast ! rtph264pay ! udpsink port=5000 host=127.0.0.1 -v
-```
-
-Client
-```bash
-gst-launch-1.0 udpsrc address=127.0.0.1 port=5000 ! "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96"! rtph264depay ! h264parse ! avdec_h264 ! videoconvert !  autovideosink sync=false -v
-```
 
 # Running ROS2 Files
 
