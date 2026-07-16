@@ -14,6 +14,8 @@ NOTE: You need to do sudo vim to edit it.
 
 Currently only has 3 camera rules
 
+NOTE: orbbec has an additional atrribute to select a specific stream. Update later
+
 ```
 SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTR{name}=="USB Webcam gadget: UVC HD Camer", SYMLINK+="mina_cam"
 
@@ -25,8 +27,8 @@ SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTR{name}=="Orbbec(R) Gemini(TM): O
 
 ## Note on SRT on Gstreamer
 Port on both caller and listener must be the same. 
-Either the caller or listen IP must be default/0.0.0.0, and the other is the IP of the other. 
-To ensure the stream is being sent to our bay station PC, we will set our srtsink uri to the client ip and our srtsrc uri to be default. 
+The listener's IP must be default/0.0.0.0, and the caller's IP must be the specific IP of the other. 
+To ensure the stream is being sent to our bay station PC, we will set our srtsink uri as the listener and thus default, and= our srtsrc uri to be the IP of the Jetson 192.168.1.17 . 
 We also manually set caller and listener, despite being default, for clarity and to reduce any risk of borking.
 
 ## IP Cam / Top
@@ -56,6 +58,7 @@ The camera's IP is 192.168.1.117/24.
 The access urls are:
 - rtspt://admin:@192.168.1.117:8554/profile0 
 - rtspt://admin:@192.168.1.117:8554/profile1 <-- WE USE THIS ONE FOR LOWER RESOLUTIONS
+- http://192.168.1.117:6688/snapshot/PROFILE_000 <- snapshot, gives a jpeg
 
 ### Gstreamer Pipeline (Tested via CLI)
 **Jetson/Server**
@@ -82,6 +85,7 @@ The camera's IP is 192.168.1.116/24.
 The access urls are:
 - rtspt://admin:@192.168.1.116:8554/profile0 
 - rtspt://admin:@192.168.1.116:8554/profile1 <-- WE USE THIS ONE FOR LOWER RESOLUTIONS
+- http://192.168.1.116:6688/snapshot/PROFILE_000 <- snapshot, gives a jpeg
 
 ### Gstreamer Pipeline (Tested via CLI)
 **Jetson/Server**
@@ -98,19 +102,6 @@ gst-launch-1.0 rtspsrc location=rtspt://admin:@192.168.1.116:8554/profile1 laten
 
 **Output Formats:**
 ```bash
-'MJPG' (Motion-JPEG, compressed)
-      Size: Discrete 640x480
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.067s (15.000 fps)
-              Interval: Discrete 0.100s (10.000 fps)
-      Size: Discrete 1280x720
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.067s (15.000 fps)
-              Interval: Discrete 0.100s (10.000 fps)
-      Size: Discrete 1920x1080
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.067s (15.000 fps)
-              Interval: Discrete 0.100s (10.000 fps)
 'YUYV' (YUYV 4:2:2)
       Size: Discrete 640x480
               Interval: Discrete 0.033s (30.000 fps)
@@ -120,20 +111,6 @@ gst-launch-1.0 rtspsrc location=rtspt://admin:@192.168.1.116:8554/profile1 laten
               Interval: Discrete 0.033s (30.000 fps)
               Interval: Discrete 0.067s (15.000 fps)
               Interval: Discrete 0.100s (10.000 fps)
-'H264' (H.264, compressed)
-      Size: Discrete 640x480
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.067s (15.000 fps)
-              Interval: Discrete 0.100s (10.000 fps)
-      Size: Discrete 1280x720
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.067s (15.000 fps)
-              Interval: Discrete 0.100s (10.000 fps)
-      Size: Discrete 1920x1080
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.067s (15.000 fps)
-              Interval: Discrete 0.100s (10.000 fps)
-
 ```
 
 ### Gstreamer Pipeline (Tested via CLI)
@@ -159,22 +136,6 @@ gst-launch-1.0 srtsrc uri="srt://:7090?mode=listener" ! h264parse ! avdec_h264 !
 
 **Output Formats:**
 ```bash
-'MJPG' (Motion-JPEG, compressed)
-      Size: Discrete 1920x1080
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.040s (25.000 fps)
-      Size: Discrete 1280x720
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.040s (25.000 fps)
-      Size: Discrete 640x480
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.040s (25.000 fps)
-      Size: Discrete 640x360
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.040s (25.000 fps)
-      Size: Discrete 352x288
-              Interval: Discrete 0.033s (30.000 fps)
-              Interval: Discrete 0.040s (25.000 fps)
 'YUYV' (YUYV 4:2:2)
       Size: Discrete 640x480
               Interval: Discrete 0.033s (30.000 fps)
@@ -282,7 +243,6 @@ Device Properties/constant names
 ```
 
 ```bash
-
 'YUYV' (YUYV 4:2:2)
     Size: Discrete 640x360
             Interval: Discrete 0.017s (60.000 fps)
@@ -308,31 +268,7 @@ Device Properties/constant names
             Interval: Discrete 0.067s (15.000 fps)
             Interval: Discrete 0.100s (10.000 fps)
             Interval: Discrete 0.200s (5.000 fps)
-'MJPG' (Motion-JPEG, compressed)
-    Size: Discrete 640x360
-            Interval: Discrete 0.017s (60.000 fps)
-            Interval: Discrete 0.033s (30.000 fps)
-            Interval: Discrete 0.067s (15.000 fps)
-            Interval: Discrete 0.100s (10.000 fps)
-            Interval: Discrete 0.200s (5.000 fps)
-    Size: Discrete 640x480
-            Interval: Discrete 0.017s (60.000 fps)
-            Interval: Discrete 0.033s (30.000 fps)
-            Interval: Discrete 0.067s (15.000 fps)
-            Interval: Discrete 0.100s (10.000 fps)
-            Interval: Discrete 0.200s (5.000 fps)
-    Size: Discrete 1280x720
-            Interval: Discrete 0.017s (60.000 fps)
-            Interval: Discrete 0.033s (30.000 fps)
-            Interval: Discrete 0.067s (15.000 fps)
-            Interval: Discrete 0.100s (10.000 fps)
-            Interval: Discrete 0.200s (5.000 fps)
-    Size: Discrete 1920x1080
-            Interval: Discrete 0.017s (60.000 fps)
-            Interval: Discrete 0.033s (30.000 fps)
-            Interval: Discrete 0.067s (15.000 fps)
-            Interval: Discrete 0.100s (10.000 fps)
-            Interval: Discrete 0.200s (5.000 fps)
+
 ```
 
 ### Gstreamer Pipeline (Tested via CLI)
@@ -358,9 +294,3 @@ gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=1280, he
 gst-launch-1.0 srtsrc uri="srt://:7092?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false 
 ```
 
-
-
-
-
-
-## 
