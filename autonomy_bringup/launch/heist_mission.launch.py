@@ -60,7 +60,7 @@ def generate_launch_description():
             ])
         ),
         launch_arguments={
-            'enable_morse_detector': 'true',
+            'camera_index': 'rtspt://admin:@192.168.1.116:8554/profile0',
         }.items(),
     )
 
