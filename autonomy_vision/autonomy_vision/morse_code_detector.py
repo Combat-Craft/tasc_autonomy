@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import time
 import collections
 
@@ -13,6 +14,12 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import String
 
 from cv_bridge import CvBridge
+
+try:
+    import psutil
+    _HAVE_PSUTIL = True
+except ImportError:
+    _HAVE_PSUTIL = False
 
 
 MORSE_CODE = {
@@ -95,10 +102,11 @@ class MorseCodeDetector(Node):
             10.0
         )
 
+        self.declare_parameter(
+            "log_cpu_stats",
+            True
+        )
 
-        camera_index = self.get_parameter(
-            "camera_index"
-        ).value
 
         self.thresh_pct = self.get_parameter(
             "threshold_percentile"
@@ -110,6 +118,10 @@ class MorseCodeDetector(Node):
 
         publish_hz = self.get_parameter(
             "publish_hz"
+        ).value
+
+        log_cpu_stats = self.get_parameter(
+            "log_cpu_stats"
         ).value
 
 
@@ -128,36 +140,66 @@ class MorseCodeDetector(Node):
             )
 
 
-        # Open by explicit device path rather than numeric index — with
-        # many /dev/videoN nodes present (multiple cameras, metadata
-        # nodes, etc.) OpenCV's V4L2 "open by index" enumeration can fail
-        # to map cleanly to the device you actually want.
+        # camera_index accepts three kinds of values:
+        #   - a plain int (0, 1, 2...)          -> opened as /dev/videoN via V4L2
+        #   - a "/dev/videoN" string             -> opened directly via V4L2
+        #   - an "rtsp://..." / "rtspt://..." URL -> opened via FFmpeg (IP camera)
         camera_index_param = self.get_parameter(
             "camera_index"
         ).value
 
-        if isinstance(camera_index_param, str) and camera_index_param.startswith("/dev/"):
+        is_rtsp = (
+            isinstance(camera_index_param, str)
+            and (
+                camera_index_param.startswith("rtsp://")
+                or camera_index_param.startswith("rtspt://")
+            )
+        )
+
+        if is_rtsp:
+
             camera_device = camera_index_param
+
+            # Force TCP transport for the RTSP session. UDP can silently
+            # drop packets on a busy/wireless network, which corrupts
+            # frame timing the same way dropped USB frames did earlier —
+            # and that's especially bad here since dits are only ~67ms.
+            # This also covers plain "rtsp://" URLs, not just "rtspt://".
+            os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
+                "rtsp_transport;tcp"
+            )
+
+            self.cap = cv2.VideoCapture(camera_device, cv2.CAP_FFMPEG)
+
+            # Don't call cap.set() for resolution/fourcc/fps here — those
+            # are meaningless for a network stream and are controlled on
+            # the camera itself. FPS in particular should be set on the
+            # camera side (you mentioned 25 FPS / H264 / 1920x1080).
+
         else:
-            camera_device = f"/dev/video{camera_index_param}"
 
-        self.cap = cv2.VideoCapture(camera_device, cv2.CAP_V4L2)
+            if isinstance(camera_index_param, str) and camera_index_param.startswith("/dev/"):
+                camera_device = camera_index_param
+            else:
+                camera_device = f"/dev/video{camera_index_param}"
 
-        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        self.cap.set(cv2.CAP_PROP_FPS, max(publish_hz, 30.0))
+            self.cap = cv2.VideoCapture(camera_device, cv2.CAP_V4L2)
+
+            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            self.cap.set(cv2.CAP_PROP_FPS, max(publish_hz, 30.0))
 
         if not self.cap.isOpened():
 
             self.get_logger().error(
-                f"Failed to open camera index {camera_index}"
+                f"Failed to open camera source {camera_device}"
             )
 
         else:
 
             self.get_logger().info(
-                f"Opened camera index {camera_index} "
+                f"Opened camera source {camera_device} "
                 f"at {self.cap.get(cv2.CAP_PROP_FRAME_WIDTH):.0f}x"
                 f"{self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT):.0f}"
             )
@@ -211,6 +253,11 @@ class MorseCodeDetector(Node):
             maxlen=60
         )
 
+        # Frame-processing time tracking, surfaced in the CPU log so you
+        # can see if the callback itself is taking too long relative to
+        # the requested period (a sign it can't keep up with publish_hz).
+        self._callback_durations = collections.deque(maxlen=100)
+
 
         # Timer-driven capture loop, replacing the old image-topic
         # subscription. Runs at publish_hz.
@@ -222,9 +269,57 @@ class MorseCodeDetector(Node):
         )
 
 
+        # Lightweight periodic CPU/memory logging so spikes are visible
+        # without needing a separate monitoring tool. Uses psutil if
+        # available; otherwise this is silently skipped.
+        self._proc = None
+
+        if log_cpu_stats and _HAVE_PSUTIL:
+
+            self._proc = psutil.Process(os.getpid())
+            # Prime the internal measurement window — the first call to
+            # cpu_percent() after this always returns 0.0.
+            self._proc.cpu_percent(interval=None)
+
+            self.cpu_log_timer = self.create_timer(
+                2.0,
+                self._log_cpu_stats
+            )
+
+        elif log_cpu_stats and not _HAVE_PSUTIL:
+
+            self.get_logger().warn(
+                "log_cpu_stats is enabled but psutil is not installed — "
+                "run: pip3 install psutil --break-system-packages"
+            )
+
+
         self.get_logger().info(
-            f"Morse detector reading camera index {camera_index} "
+            f"Morse detector reading {camera_device} "
             f"at {publish_hz:.1f} Hz"
+        )
+
+
+    def _log_cpu_stats(self):
+
+        if self._proc is None:
+            return
+
+        cpu_pct = self._proc.cpu_percent(interval=None)
+        mem_mb = self._proc.memory_info().rss / (1024 * 1024)
+
+        if self._callback_durations:
+            avg_ms = 1000.0 * sum(self._callback_durations) / len(self._callback_durations)
+            max_ms = 1000.0 * max(self._callback_durations)
+        else:
+            avg_ms = 0.0
+            max_ms = 0.0
+
+        level = self.get_logger().warn if cpu_pct > 80.0 else self.get_logger().info
+
+        level(
+            f"[perf] cpu={cpu_pct:.1f}% mem={mem_mb:.1f}MB "
+            f"callback_avg={avg_ms:.1f}ms callback_max={max_ms:.1f}ms"
         )
 
 
@@ -245,6 +340,8 @@ class MorseCodeDetector(Node):
         if not self.cap.isOpened():
             return
 
+        cb_start = time.monotonic()
+
         ret, frame = self.cap.read()
 
         if not ret or frame is None:
@@ -256,12 +353,16 @@ class MorseCodeDetector(Node):
             return
 
         # time.monotonic() taken immediately after a synchronous cap.read()
-        # is a reasonably accurate capture timestamp here — there's no ROS
-        # transport/queueing in between to introduce extra jitter, unlike
-        # the old topic-subscription version.
+        # is a reasonably accurate capture timestamp for a local device.
+        # For RTSP, FFmpeg/the network stack introduces its own buffering
+        # latency, so this is "time received" rather than true capture
+        # time — acceptable for this use case as long as delivery is
+        # reasonably steady (hence forcing TCP transport above).
         now = time.monotonic()
 
         self.process_frame(frame, now)
+
+        self._callback_durations.append(time.monotonic() - cb_start)
 
 
     def _debounced_state(self, raw_on):
@@ -284,7 +385,8 @@ class MorseCodeDetector(Node):
         # Downscale before analysis — the percentile/mean calculations
         # don't need full resolution, and this keeps the callback fast
         # enough to avoid falling behind on frames (which is what causes
-        # the large timing gaps that corrupt short dit/dash pulses).
+        # the large timing gaps that corrupt short dit/dash pulses). This
+        # matters even more now with a 1920x1080 source instead of 640x480.
         small = cv2.resize(
             frame,
             (160, 90),
