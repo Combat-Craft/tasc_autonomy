@@ -286,7 +286,7 @@ class IMUGPSNode(Node):
                           
             # Heading Calculation ========================================================================
             heading_msg = Float32()
-            heading_msg.data = heading
+            heading_msg.data = float(heading)
             
             # Cardinal Compass  ======================================================================
             ## will use 8-wind compass rose i.e. N NE E SE S SW W NW clockwise, 45deg each segment
@@ -314,17 +314,22 @@ class IMUGPSNode(Node):
         # GYRO_CONVERSION = PI / 180.0 # FastIMU outputs deg/s, convert to rad/s, UPDATE: done in firmware
         MAG_CONVERSION = 0.000001 # it will be coming in micro Tesla, need Tesla
                                   # tested in arduino, need to convert here to preserve precision
+        #self.get_logger().info(line)
         try:
-            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz, qw, qx, qy, qz = line.split(',')
+            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz, qw, qx, qy, qz, _2 = line.split(',')
             ax = float(ax) # * ACCEL_CONVERSION
             ay = float(ay) 
             az = float(az) 
+            #self.get_logger().info(f"imu_node.py: acc")
+
             gx = float(gx) # should already be radians/second
             gy = float(gy)
             gz = float(gz)
+            #self.get_logger().info(f"imu_node.py: gyro")
             mx = float(mx) * MAG_CONVERSION
             my = float(my) * MAG_CONVERSION
             mz = float(mz) * MAG_CONVERSION
+            #self.get_logger().info(f"imu_node.py: mag")
             qw = float(qw)
             qx = float(qx)
             qy = float(qy)
@@ -366,10 +371,10 @@ class IMUGPSNode(Node):
                 0.0, 0.0, 4.71762e-6
             ]
             
-            #self.get_logger().info(
-            #                f"Acc X,Y,Z ={imu_msg.linear_acceleration.x}, {imu_msg.linear_acceleration.y}, {imu_msg.linear_acceleration.z},"
-            #                f"Gyro X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
-            #        )
+            self.get_logger().info(
+                            f"Acc X,Y,Z ={imu_msg.linear_acceleration.x}, {imu_msg.linear_acceleration.y}, {imu_msg.linear_acceleration.z},"
+                            f"Gyro X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
+                    )
             
             # Magnetometer data ==========================================================================
             mag_msg = MagneticField()
@@ -385,7 +390,7 @@ class IMUGPSNode(Node):
                 0.0, 0.0, 1.0e-2
             ]
             
-            #self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
+            self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
 
             # test gps with quat
              # Heading Calculation ========================================================================
@@ -397,7 +402,7 @@ class IMUGPSNode(Node):
             #compass_msg = String()
             #compass_msg.data = get_cardinal_16(heading_msg.data)
             
-            self.get_logger().info(f"IMU Heading={heading_msg.data:.1f}, IMU Compass={compass_msg.data}")           
+            #self.get_logger().info(f"IMU Heading={heading_msg.data:.1f}, IMU Compass={compass_msg.data}")           
             
             #self.heading_pub.publish(heading_msg)
             #self.compass_pub.publish(compass_msg) 

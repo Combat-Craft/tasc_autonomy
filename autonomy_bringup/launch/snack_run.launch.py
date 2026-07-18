@@ -40,19 +40,6 @@ TOPIC_WHITELIST = [
 def generate_launch_description():
     foxglove_node = make_foxglove_node(TOPIC_WHITELIST)
 
-    lidar_include = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare(BRINGUP_PACKAGE),
-                'launch', '_sensors', 'lidar.launch.py',
-            ])
-        ),
-        launch_arguments={
-            'enable_lidar': 'true',
-            'enable_slam': 'false',
-        }.items(),
-    )
-
     imu_gps_include = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -68,6 +55,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         foxglove_node,
-        lidar_include,
         imu_gps_include,
     ])

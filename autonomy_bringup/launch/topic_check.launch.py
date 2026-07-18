@@ -44,8 +44,6 @@ def generate_launch_description():
     # Same flags as test_all.launch.py, just with enable_slam defaulted off.
     args = [
         DeclareLaunchArgument('enable_foxglove', default_value='true'),
-        DeclareLaunchArgument('enable_lidar', default_value='true'),
-        DeclareLaunchArgument('enable_slam', default_value='false'),
         DeclareLaunchArgument('enable_imu_gps', default_value='true'),
         DeclareLaunchArgument('enable_heading', default_value='true'),
         DeclareLaunchArgument('enable_morse_detector', default_value='true'),
@@ -62,8 +60,6 @@ def generate_launch_description():
         ),
         launch_arguments={
             'enable_foxglove': LaunchConfiguration('enable_foxglove'),
-            'enable_lidar': LaunchConfiguration('enable_lidar'),
-            'enable_slam': LaunchConfiguration('enable_slam'),
             'enable_imu_gps': LaunchConfiguration('enable_imu_gps'),
             'enable_heading': LaunchConfiguration('enable_heading'),
             'enable_morse_detector': LaunchConfiguration('enable_morse_detector'),

@@ -148,7 +148,7 @@ def generate_launch_description():
     # Allows the serial port to be changed from the command line.
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
-        default_value='/dev/ttyUSB0',
+        default_value='/dev/nano',
         description='Serial port for Arduino motor controller'
     )
 

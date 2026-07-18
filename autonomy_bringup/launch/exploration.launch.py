@@ -55,10 +55,6 @@ def _include(name, launch_arguments):
 def generate_launch_description():
     foxglove_node = make_foxglove_node(TOPIC_WHITELIST)
 
-    lidar_include = _include('lidar.launch.py', {
-        'enable_lidar': 'true',
-        'enable_slam': 'false',
-    })
 
     imu_gps_include = _include('imu_gps.launch.py', {
         'enable_imu_gps': 'true',
@@ -75,7 +71,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         foxglove_node,
-        lidar_include,
         imu_gps_include,
         route_include,
         panorama_include,

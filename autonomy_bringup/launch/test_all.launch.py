@@ -51,8 +51,6 @@ def _include(name, launch_arguments):
 def generate_launch_description():
     args = [
         DeclareLaunchArgument('enable_foxglove', default_value='true'),
-        DeclareLaunchArgument('enable_lidar', default_value='true'),
-        DeclareLaunchArgument('enable_slam', default_value='false'),
         DeclareLaunchArgument('enable_imu_gps', default_value='true'),
         DeclareLaunchArgument('enable_heading', default_value='true'),
         DeclareLaunchArgument('enable_morse_detector', default_value='true'),
@@ -71,10 +69,6 @@ def generate_launch_description():
     # Each of these sub-launch files handles its own IfCondition internally
     # (see lidar.launch.py / imu_gps.launch.py / etc.), so we just forward
     # our top-level flags straight through as launch_arguments.
-    lidar_include = _include('lidar.launch.py', {
-        'enable_lidar': LaunchConfiguration('enable_lidar'),
-        'enable_slam': LaunchConfiguration('enable_slam'),
-    })
 
     imu_gps_include = _include('imu_gps.launch.py', {
         'enable_imu_gps': LaunchConfiguration('enable_imu_gps'),
@@ -95,7 +89,6 @@ def generate_launch_description():
 
     return LaunchDescription(args + [
         foxglove_group,
-        lidar_include,
         imu_gps_include,
         morse_detector_include,
         route_include,

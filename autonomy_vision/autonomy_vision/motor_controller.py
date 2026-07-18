@@ -83,7 +83,7 @@ class MotorController(Node):
         super().__init__('motor_controller')
         
         # Default parameters for serial connection
-        self.declare_parameter('serial_port', '/dev/ttyUSB0')
+        self.declare_parameter('serial_port', '/dev/nano')
         self.declare_parameter('baud_rate', 115200)
 
         serial_port = self.get_parameter('serial_port').value

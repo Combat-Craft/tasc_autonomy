@@ -52,7 +52,7 @@ def generate_launch_description():
         description='Passed to panorama_capture - simulate captures, no real camera needed'
     )
     serial_port_arg = DeclareLaunchArgument(
-        'serial_port', default_value='/dev/ttyUSB0',
+        'serial_port', default_value='/dev/nano',
         description='Passed to motor_controller - Arduino serial device path'
     )
     baud_rate_arg = DeclareLaunchArgument(
