@@ -1,18 +1,10 @@
-#THIS is for my own testing to try things out at home with a USB camer :D
-
-#pip3 install opencv-python numpy --break-system-packages   # if you don't have them
-#python3 morse_test_usb.py --camera 0
-# OR for a live preview thing 
-# python3 morse_test_usb.py --camera 0 --show
-
-
 import argparse
+import threading
 import time
 import collections
 
 import cv2
 import numpy as np
-
 
 MORSE_CODE = {
     '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
@@ -36,7 +28,6 @@ MORSE_CODE = {
     '.--.-.': '@',
 }
 
-
 # ITU-R M.1677-1, 18 WPM PARIS reference
 DIT_LENGTH = 0.0667
 DASH_LENGTH = DIT_LENGTH * 3
@@ -49,22 +40,51 @@ CHAR_GAP_THRESHOLD = (INTRA_CHAR_GAP + INTER_CHAR_GAP) / 2
 WORD_GAP_THRESHOLD = (INTER_CHAR_GAP + INTER_WORD_GAP) / 2
 
 MIN_VALID_DURATION = DIT_LENGTH * 0.4
-DEBOUNCE_FRAMES = 5
+DEBOUNCE_FRAMES = 1  # Set to 1 to eliminate frames-based lag in VM environments
+
+
+class LatestFrameGrabber:
+    """
+    Continuously reads frames from a VideoCapture on a background thread
+    and always exposes only the most recently captured one.
+    """
+    def __init__(self, cap):
+        self.cap = cap
+        self._lock = threading.Lock()
+        self._frame = None
+        self._ok = False
+        self._stopped = False
+        self._thread = threading.Thread(target=self._reader_loop, daemon=True)
+        self._thread.start()
+
+    def _reader_loop(self):
+        while not self._stopped:
+            ret, frame = self.cap.read()
+            if ret:
+                with self._lock:
+                    self._frame = frame
+                    self._ok = True
+            else:
+                time.sleep(0.001)
+
+    def read(self):
+        with self._lock:
+            return self._ok, self._frame
+
+    def stop(self):
+        self._stopped = True
+        self._thread.join(timeout=1.0)
 
 
 class MorseTester:
 
-    def __init__(self, threshold_percentile, min_bright_fraction):
-
-        self.thresh_pct = threshold_percentile
-        self.min_bright_frac = min_bright_fraction
-
+    def __init__(self, threshold_percentile=None, min_bright_fraction=None):
         self.is_on = False
         self.on_time = None
         self.off_time = None
 
-        self._raw_hist = collections.deque(maxlen=DEBOUNCE_FRAMES)
-        self._bright_hist = collections.deque(maxlen=60)
+        # Track recent peak brightness values to establish baseline vs flash levels
+        self._peak_hist = collections.deque(maxlen=90)
 
         self.current_sym = ""
         self.message = ""
@@ -74,83 +94,65 @@ class MorseTester:
         self.current_sym = ""
         print("\n--- message reset ---\n")
 
-    def _debounced_state(self, raw_on):
-
-        self._raw_hist.append(raw_on)
-
-        if len(self._raw_hist) < self._raw_hist.maxlen:
-            return raw_on
-
-        on_votes = sum(self._raw_hist)
-        return on_votes > (len(self._raw_hist) / 2)
-
     def process_frame(self, frame, now):
-
+        # Downsample and convert to grayscale for faster processing
         small = cv2.resize(frame, (160, 90), interpolation=cv2.INTER_AREA)
         gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
 
-        thresh_val = float(np.percentile(gray, self.thresh_pct))
-        self._bright_hist.append(thresh_val)
+        # Track the absolute brightest pixel in the frame
+        peak_brightness = float(np.max(gray))
+        self._peak_hist.append(peak_brightness)
 
-        adaptive_thresh = float(np.mean(self._bright_hist)) * 1.05
-        adaptive_thresh = max(adaptive_thresh, 80.0)
+        # Set dynamic threshold between the lowest and highest peaks seen recently
+        val_min = min(self._peak_hist)
+        val_max = max(self._peak_hist)
+        adaptive_thresh = (val_min + val_max) / 2
 
-        bright_mask = gray > adaptive_thresh
-        bright_frac = bright_mask.mean()
-
-        on_bar = self.min_bright_frac * 1.5
-        off_bar = self.min_bright_frac * 0.5
-
-        if self.is_on:
-            raw_light_on = bright_frac >= off_bar
+        # Ignore tiny variations (noise) unless the frame peaks span at least 40 gray levels
+        if (val_max - val_min) > 40.0:
+            light_on = peak_brightness > adaptive_thresh
         else:
-            raw_light_on = bright_frac >= on_bar
+            light_on = False
 
-        light_on = self._debounced_state(raw_light_on)
-
+        # State transition: OFF -> ON
         if light_on and not self.is_on:
-
             self.is_on = True
             self.on_time = now
-
             if self.off_time:
                 gap = now - self.off_time
                 if gap >= MIN_VALID_DURATION:
                     self._handle_gap(gap)
 
+        # State transition: ON -> OFF
         elif not light_on and self.is_on:
-
             self.is_on = False
             self.off_time = now
-
             duration = now - self.on_time
             if duration >= MIN_VALID_DURATION:
                 self._handle_pulse(duration)
 
+        # Continuous OFF state: Check for word boundaries
         elif not light_on and not self.is_on:
-
             if self.off_time and self.current_sym:
                 gap = now - self.off_time
                 if gap > WORD_GAP_THRESHOLD:
                     self._flush(word=True)
 
-        return light_on, bright_frac
+        # Returning peak_brightness in place of bright_frac to preserve main loop compatibility
+        return light_on, peak_brightness
 
     def _handle_pulse(self, duration):
-
         symbol = "." if duration < DOT_DASH_THRESHOLD else "-"
         self.current_sym += symbol
         print(f"  pulse: {symbol} ({duration*1000:.0f}ms) -> current_sym='{self.current_sym}'")
 
     def _handle_gap(self, gap):
-
         if gap > WORD_GAP_THRESHOLD:
             self._flush(word=True)
         elif gap > CHAR_GAP_THRESHOLD:
             self._flush(word=False)
 
     def _flush(self, word=False):
-
         had_pending = bool(self.current_sym)
 
         if self.current_sym:
@@ -166,12 +168,10 @@ class MorseTester:
 
 
 def open_camera(camera_arg, width, height, fps):
-
     try:
         camera_index = int(camera_arg)
         cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
     except ValueError:
-        # A /dev/videoN path or similar string
         cap = cv2.VideoCapture(camera_arg, cv2.CAP_V4L2)
 
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
@@ -183,18 +183,19 @@ def open_camera(camera_arg, width, height, fps):
 
 
 def main():
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--camera", default="0",
-                         help="Camera index (e.g. 0) or device path (e.g. /dev/video2). Default: 0")
+                        help="Camera index or device path. Default: 0")
     parser.add_argument("--width", type=int, default=640)
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--fps", type=float, default=60.0,
-                         help="Requested capture FPS (default: 60, recommended >= 45 for clean dit detection)")
+                        help="Requested capture FPS (recommended >= 45)")
     parser.add_argument("--threshold-percentile", type=float, default=85.0)
     parser.add_argument("--min-bright-fraction", type=float, default=0.01)
     parser.add_argument("--show", action="store_true",
-                         help="Open a live preview window with ON/OFF overlay")
+                        help="Open a live preview window with ON/OFF overlay")
+    parser.add_argument("--debug-bright", action="store_true",
+                        help="Print raw peak brightness values every frame")
 
     args = parser.parse_args()
 
@@ -212,27 +213,39 @@ def main():
     actual_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     actual_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     print(f"Opened camera '{args.camera}' at {actual_w:.0f}x{actual_h:.0f}")
+    print("Using threaded latest-frame grabber (avoids stale-buffer issues)")
     print("Reading frames... Ctrl+C to quit"
           + (" | ESC to quit, 'r' to reset (preview window)" if args.show else ""))
     print()
 
-    tester = MorseTester(args.threshold_percentile, args.min_bright_fraction)
+    grabber = LatestFrameGrabber(cap)
+    time.sleep(0.3)
+
+    tester = MorseTester()
 
     frame_count = 0
     last_fps_check = time.monotonic()
+    last_processed_frame_id = None
 
     try:
         while True:
-
-            ret, frame = cap.read()
+            ret, frame = grabber.read()
 
             if not ret or frame is None:
-                print("WARNING: failed to read frame")
+                time.sleep(0.001)
                 continue
 
-            now = time.monotonic()
+            frame_id = id(frame)
+            if frame_id == last_processed_frame_id:
+                time.sleep(0.001)
+                continue
+            last_processed_frame_id = frame_id
 
+            now = time.monotonic()
             light_on, bright_frac = tester.process_frame(frame, now)
+
+            if args.debug_bright:
+                print(f"    peak_brightness={bright_frac:.1f} light_on={light_on}")
 
             frame_count += 1
             if now - last_fps_check >= 5.0:
@@ -242,13 +255,12 @@ def main():
                 last_fps_check = now
 
             if args.show:
-
                 debug = frame.copy()
                 color = (0, 255, 0) if light_on else (0, 0, 255)
 
                 cv2.putText(
                     debug,
-                    f"ON={light_on} bright={bright_frac:.3f}",
+                    f"ON={light_on} peak={bright_frac:.1f}",
                     (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.7,
@@ -266,7 +278,6 @@ def main():
                 )
 
                 cv2.imshow("Morse Test", debug)
-
                 key = cv2.waitKey(1) & 0xFF
 
                 if key == 27:  # ESC
@@ -277,6 +288,7 @@ def main():
     except KeyboardInterrupt:
         print("\nStopped.")
 
+    grabber.stop()
     cap.release()
 
     if args.show:
