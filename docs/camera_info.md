@@ -158,7 +158,7 @@ gst-launch-1.0 v4l2src device=/dev/back_web_cam ! "video/x-raw, format=YUY2, wid
 ```
 If YUY2 aint working for some reason:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/back_web_cam ! image/jpeg, width=640, height=360, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7091?mode=caller" sync=false
+gst-launch-1.0 v4l2src device=/dev/back_web_cam ! image/jpeg, width=640, height=360, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://:7091?mode=listener" sync=false
 ```
 
 OR
@@ -166,7 +166,7 @@ OR
 
 **Bay Station/Client**
 ```bash
-gst-launch-1.0 srtsrc uri="srt://:7091?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+gst-launch-1.0 srtsrc uri="srt://192.168.1.7:7091?mode=caller" keep-listening=true ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
 ```
 
 ##  Default Orbbec Gemini2 Connection via V2L4
@@ -286,11 +286,12 @@ gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! "video/x-raw, format=YUY2,
 
 If YUY2 aint working for some reason:
 ```bash
-gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=1280, height=720, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://192.168.1.XXX:7092?mode=caller" sync=false 
+gst-launch-1.0 v4l2src device=/dev/orbbec_color_cam ! image/jpeg, width=1280, height=720, framerate=30/1 ! jpegdec ! videoconvert ! x264enc pass=pass1 bitrate=500 tune=zerolatency speed-preset=ultrafast ! srtsink uri="srt://:7092?mode=listener" sync=false 
 ```
 
 **Bay Station/Client**
 ```bash
-gst-launch-1.0 srtsrc uri="srt://:7092?mode=listener" ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false 
+gst-launch-1.0 srtsrc uri="srt://:192.168.1.7:7092?mode=caller" keep-listening=true  ! h264parse ! avdec_h264 ! videoconvert ! autovideosink sync=false
+
 ```
 
