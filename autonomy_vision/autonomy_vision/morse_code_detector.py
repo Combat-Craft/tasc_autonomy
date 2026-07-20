@@ -72,7 +72,8 @@ class MorseCodeDetector(Node):
         super().__init__("morse_code_detector")
 
         # Parameters
-        self.declare_parameter("camera_index", 0)
+        self.declare_parameter("camera_index", -1)
+        self.declare_parameter("rtsp_uri", "rtsp://admin:@192.168.1.116:8554/profile0")
         self.declare_parameter("threshold_percentile", 85.0)
         self.declare_parameter("min_bright_fraction", 0.01)
         self.declare_parameter("publish_hz", 10.0)
@@ -80,53 +81,31 @@ class MorseCodeDetector(Node):
 
         self.thresh_pct = self.get_parameter("threshold_percentile").value
         self.min_bright_frac = self.get_parameter("min_bright_fraction").value
-        publish_hz = self.get_parameter("publish_hz").value
-        log_cpu_stats = self.get_parameter("log_cpu_stats").value
+        self.publish_hz = self.get_parameter("publish_hz").value
+        self.log_cpu_stats = self.get_parameter("log_cpu_stats").value
 
         # Warn if the configured capture rate is too slow to resolve a single dit
         min_recommended_hz = 3.0 / self.DIT_LENGTH  # ~45 Hz
-        if publish_hz < min_recommended_hz:
+        if self.publish_hz < min_recommended_hz:
             self.get_logger().warn(
-                f"publish_hz={publish_hz:.1f} is likely too low to "
+                f"publish_hz={self.publish_hz:.1f} is likely too low to "
                 f"reliably resolve {self.DIT_LENGTH*1000:.1f}ms dits "
                 f"(recommend >= {min_recommended_hz:.0f} Hz). "
                 f"Override with --ros-args -p publish_hz:=60.0"
             )
 
-        camera_index_param = self.get_parameter("camera_index").value
-        is_rtsp = (
-            isinstance(camera_index_param, str)
-            and (
-                camera_index_param.startswith("rtsp://")
-                or camera_index_param.startswith("rtspt://")
-            )
-        )
+        #camera_index_param = self.get_parameter("camera_index").value
+       # rtsp_uri_param = self.get_parameter("rtsp_uri").value
+        #is_rtsp = (
+        #    isinstance(camera_index_param, str)
+        ##    and (
+        #        camera_index_param.startswith("rtsp://")
+        #        or camera_index_param.startswith("rtspt://")
+        #    )
+        #)
 
-        if is_rtsp:
-            camera_device = camera_index_param
-            # Force TCP transport for the RTSP session to avoid dropped network frames
-            os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
-            self.cap = cv2.VideoCapture(camera_device, cv2.CAP_FFMPEG)
-        else:
-            if isinstance(camera_index_param, str) and camera_index_param.startswith("/dev/"):
-                camera_device = camera_index_param
-            else:
-                camera_device = f"/dev/video{camera_index_param}"
+        # copy past here
 
-            self.cap = cv2.VideoCapture(camera_device, cv2.CAP_V4L2)
-            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-            self.cap.set(cv2.CAP_PROP_FPS, max(publish_hz, 30.0))
-
-        if not self.cap.isOpened():
-            self.get_logger().error(f"Failed to open camera source {camera_device}")
-        else:
-            self.get_logger().info(
-                f"Opened camera source {camera_device} "
-                f"at {self.cap.get(cv2.CAP_PROP_FRAME_WIDTH):.0f}x"
-                f"{self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT):.0f}"
-            )
 
         # ROS interfaces
         self.pub_morse = self.create_publisher(String, "/morse_code", 10)
@@ -134,12 +113,14 @@ class MorseCodeDetector(Node):
         self.pub_debug = self.create_publisher(Image, "/morse_debug_image", 10)
 
         self.reset_sub = self.create_subscription(
-            String, "/morse_reset", self._on_reset, 10
+            String, "/morse_reset", self._on_morse_callback, 10
         )
 
         self.bridge = CvBridge()
 
         # State tracking
+        self.decoding_state = False
+        
         self.is_on = False
         self.on_time = None
         self.off_time = None
@@ -153,21 +134,19 @@ class MorseCodeDetector(Node):
         self._callback_durations = collections.deque(maxlen=100)
 
         # Timer-driven capture loop
-        timer_period = 1.0 / publish_hz
-        self.timer = self.create_timer(timer_period, self.capture_callback)
+        #timer_period = 1.0 / self.publish_hz
+        #self.timer = self.create_timer(timer_period, self.capture_callback)
 
         # CPU Performance tracking
         self._proc = None
-        if log_cpu_stats and _HAVE_PSUTIL:
+        if self.log_cpu_stats and _HAVE_PSUTIL and self.decoding_state:
             self._proc = psutil.Process(os.getpid())
             self._proc.cpu_percent(interval=None)
             self.cpu_log_timer = self.create_timer(2.0, self._log_cpu_stats)
-        elif log_cpu_stats and not _HAVE_PSUTIL:
+        elif self.log_cpu_stats and not _HAVE_PSUTIL:
             self.get_logger().warn(
                 "log_cpu_stats is enabled but psutil is not installed."
             )
-
-        self.get_logger().info(f"Morse detector reading {camera_device} at {publish_hz:.1f} Hz")
 
 
     def _log_cpu_stats(self):
@@ -191,7 +170,62 @@ class MorseCodeDetector(Node):
         )
 
 
+    def _on_morse_callback(self, msg):
+        if msg.data == "start":
+            self.message = ""
+            self.current_sym = ""
+            self.get_logger().info("MORSE: Starting Morse Decoder")
+            self.decoding_state = True
+
+        elif msg.data == "stop":
+            out = String()
+            out.data = self.message
+            self.get_logger().info(f"MORSE: Stoping Morse Decoder and decoded msg is {self.message}")
+            self.pub_decoded.publish(out)
+
+            self.cap.release()
+            self.decoding_state = False
+            return
+
+        camera_index_param = self.get_parameter("camera_index").value
+        rtsp_uri_param = self.get_parameter("rtsp_uri").value
+        
+        if camera_index_param == -1:
+            camera_device = rtsp_uri_param
+            # Force TCP transport for the RTSP session to avoid dropped network frames
+            os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
+            self.cap = cv2.VideoCapture(camera_device, cv2.CAP_FFMPEG)
+        else:
+            if isinstance(camera_index_param, str) and camera_index_param.startswith("/dev/"):
+                camera_device = camera_index_param
+            else:
+                camera_device = f"/dev/video{camera_index_param}"
+
+            self.cap = cv2.VideoCapture(camera_device, cv2.CAP_V4L2)
+            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            self.cap.set(cv2.CAP_PROP_FPS, max(self.publish_hz, 30.0))
+
+        if not self.cap.isOpened():
+            self.get_logger().error(f"Failed to open camera source {camera_device}")
+        else:
+            self.get_logger().info(
+                f"Opened camera source {camera_device} "
+                f"at {self.cap.get(cv2.CAP_PROP_FRAME_WIDTH):.0f}x"
+                f"{self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT):.0f}"
+            )
+        
+        if self.decoding_state:
+            # Timer-driven capture loop
+            timer_period = 1.0 / self.publish_hz
+            self.timer = self.create_timer(timer_period, self.capture_callback)
+            
+            self.get_logger().info(f"Morse detector reading {camera_device} at {self.publish_hz:.1f} Hz")
+
+
     def _on_reset(self, msg):
+        # change it so it starts/stop, not just reset
         self.message = ""
         self.current_sym = ""
         self.get_logger().info("Decoded message reset")

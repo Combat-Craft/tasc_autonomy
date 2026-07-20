@@ -8,10 +8,18 @@ def generate_launch_description():
 
     camera_index_arg = DeclareLaunchArgument(
         'camera_index',
-        default_value='rtspt://admin:@192.168.1.116:8554/profile0',
+        default_value= '-1',
         description=(
             'Camera source: int index (e.g. 0), /dev/videoN path, '
-            'or rtsp(t)://... URL for an IP camera. '
+            'or 1 for a rtsp(t) stream'
+        )
+    )
+
+    rtsp_uri_arg = DeclareLaunchArgument(
+        'rtsp_uri',
+        default_value='rtsp://admin:@192.168.1.116:8554/profile0',
+        description=(
+            'rtsp(t)://... URL for an IP camera. '
             'rtspt:// forces TCP transport (recommended over plain )'
             'rtsp:// which is usually UDP and more prone to dropped '
             'frames / timing jitter).'
@@ -46,6 +54,7 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'camera_index': LaunchConfiguration('camera_index'),
+            'rtsp_uri': LaunchConfiguration('rtsp_uri'),
             'threshold_percentile': LaunchConfiguration('threshold_percentile'),
             'min_bright_fraction': LaunchConfiguration('min_bright_fraction'),
             'publish_hz': LaunchConfiguration('publish_hz'),
@@ -55,6 +64,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         camera_index_arg,
+        rtsp_uri_arg,
         threshold_percentile_arg,
         min_bright_fraction_arg,
         publish_hz_arg,
