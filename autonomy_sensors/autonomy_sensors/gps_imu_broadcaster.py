@@ -55,7 +55,7 @@ class IMUGPSNode(Node):
         super().__init__('imu_gps_node')
         
         # Parameters (easy to override in launch files)
-        self.declare_parameter('port', '/dev/ttyUSB0')
+        self.declare_parameter('port', '/dev/autonavESP32')
         self.declare_parameter('baud', 115200) #still matches with new arduino sketch
         self.declare_parameter('frame_id', 'gps_imu_link') # match IMU, gps can be off by 5cm for all i care
         self.declare_parameter('simulated_data', False)
@@ -84,7 +84,7 @@ class IMUGPSNode(Node):
         self.init_serial_connection()  # Start Serial, or Simulated 
         self.thread = threading.Thread(target=self.publish_data, daemon=True) # Start all the other functions
         self.thread.start()
-        self.get_logger().info("imu_gps_node: GPS node started!")
+        self.get_logger().info("imu_gps_node: GPS IMU node started!")
 
     # ----------------------------------------------------------------------------------------------------
     # Serial Read Try function
@@ -293,7 +293,7 @@ class IMUGPSNode(Node):
             compass_msg = String()
             compass_msg.data = cardinal
             
-            self.get_logger().info(f"GPS Heading={heading_msg.data:.1f}, GPS Compass={compass_msg.data}")           
+            #self.get_logger().info(f"GPS Heading={heading_msg.data:.1f}, GPS Compass={compass_msg.data}")           
             
             self.headingGPS_pub.publish(heading_msg)
             self.compassGPS_pub.publish(compass_msg)  
@@ -316,7 +316,7 @@ class IMUGPSNode(Node):
                                   # tested in arduino, need to convert here to preserve precision
         #self.get_logger().info(line)
         try:
-            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz, qw, qx, qy, qz, _2 = line.split(',')
+            _, ms, ax, ay, az, gx, gy, gz, mx, my, mz, qw, qx, qy, qz = line.split(',')
             ax = float(ax) # * ACCEL_CONVERSION
             ay = float(ay) 
             az = float(az) 
@@ -371,10 +371,10 @@ class IMUGPSNode(Node):
                 0.0, 0.0, 4.71762e-6
             ]
             
-            self.get_logger().info(
-                            f"Acc X,Y,Z ={imu_msg.linear_acceleration.x}, {imu_msg.linear_acceleration.y}, {imu_msg.linear_acceleration.z},"
-                            f"Gyro X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
-                    )
+            #self.get_logger().info(
+            #                f"Acc X,Y,Z ={imu_msg.linear_acceleration.x}, {imu_msg.linear_acceleration.y}, {imu_msg.linear_acceleration.z},"
+            #                f"Gyro X,Y,Z ={imu_msg.angular_velocity.x}, {imu_msg.angular_velocity.y}, {imu_msg.angular_velocity.z},"
+            #        )
             
             # Magnetometer data ==========================================================================
             mag_msg = MagneticField()
@@ -390,7 +390,7 @@ class IMUGPSNode(Node):
                 0.0, 0.0, 1.0e-2
             ]
             
-            self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
+            #self.get_logger().info(f"Mag X,Y,Z ={mag_msg.magnetic_field.x}, {mag_msg.magnetic_field.y}, {mag_msg.magnetic_field.z}")
 
             # test gps with quat
              # Heading Calculation ========================================================================

@@ -31,7 +31,7 @@ class RouteLogger(Node):
         
         # Setup GPS coordinates output file
         home_dir = os.path.expanduser('~')
-        self.coords_file_ = os.path.join(home_dir, 'MORSEPASSWORD.txt')
+        self.coords_file_ = os.path.join(home_dir, 'ROUTE_LOGGER.txt')
         self.get_logger().info(f'GPS coordinates will be saved to {self.coords_file_}')
 
     def gps_callback(self, msg: NavSatFix):

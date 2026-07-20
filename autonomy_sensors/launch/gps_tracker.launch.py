@@ -27,8 +27,8 @@ def generate_launch_description():
         'walk_step_m', default_value='5.0',
         description='Step size in metres for ip mode walk')
 
-    mode        = LaunchConfiguration('mode')
-    foxglove    = LaunchConfiguration('foxglove')
+    mode        = LaunchConfiguration('mode', )
+    #foxglove    = LaunchConfiguration('foxglove')
     port        = LaunchConfiguration('port')
     baudrate    = LaunchConfiguration('baudrate')
     loop        = LaunchConfiguration('loop')
@@ -80,17 +80,15 @@ def generate_launch_description():
         package='autonomy_sensors',
         executable='route_logger',
         name='route_logger',
-        output='screen'
     )
 
-    foxglove_bridge_node = Node(
-        package='foxglove_bridge',
-        executable='foxglove_bridge',
-        name='foxglove_bridge',
-        output='screen',
-        condition=IfCondition(foxglove),
-        parameters=[{'port': 8765}]
-    )
+    #foxglove_bridge_node = Node(
+    #    package='foxglove_bridge',
+    #    executable='foxglove_bridge',
+    #    name='foxglove_bridge',
+    #    condition=IfCondition(foxglove),
+    #    parameters=[{'port': 8765}]
+    #)
 
     return LaunchDescription([
         mode_arg, foxglove_arg, port_arg, baudrate_arg,
@@ -99,5 +97,5 @@ def generate_launch_description():
         ip_gps_node,
         real_gps_node,
         route_logger_node,
-        foxglove_bridge_node,
+        #foxglove_bridge_node,
     ])

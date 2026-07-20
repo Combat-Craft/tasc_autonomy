@@ -35,7 +35,6 @@ def generate_launch_description():
         package=ROUTE_PACKAGE,
         executable=ROUTE_EXECUTABLE,
         name=ROUTE_NODE_NAME,
-        output='screen',
     )
 
     route_group = GroupAction(
