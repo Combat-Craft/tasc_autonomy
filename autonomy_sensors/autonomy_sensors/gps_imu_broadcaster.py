@@ -158,7 +158,8 @@ class IMUGPSNode(Node):
                 
             # no serial, no simulate
             else:
-                self.get_logger().warning("imu_gps_node: No serial IMU data, no simulated data")
+                self.get_logger().warning("imu_gps_node: No serial IMU data, no simulated data, restarting serial connections")
+                self.init_serial_connection() 
           
        
     # --------------------------------------------------
