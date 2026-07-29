@@ -29,13 +29,24 @@ TOPIC_WHITELIST = [
     '/imu/acc_gyro',
     '/imu/mag',
     '/gps/fix',
+    '/motor_cmd',
 ]
 
 
 def generate_launch_description():
     foxglove_node = make_foxglove_node(TOPIC_WHITELIST)
 
-
+    def _include(name, launch_arguments):
+        return IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare(BRINGUP_PACKAGE),
+                    'launch', '_sensors', name,
+                ])
+            ),
+            launch_arguments=launch_arguments.items(),
+        )
+    
     imu_gps_include = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -48,8 +59,12 @@ def generate_launch_description():
             'enable_heading': 'false',
         }.items(),
     )
+    panorama_include = _include('motor_panorama.launch.py', {
+            'enable_panorama_stitcher': 'true',
+        })
 
     return LaunchDescription([
         foxglove_node,
         imu_gps_include,
+        panorama_include,
     ])

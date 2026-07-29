@@ -33,6 +33,8 @@ TOPIC_WHITELIST = [
     '/morse_code',
     '/morse_decoded',
     '/morse_debug_image',
+    '/morse_reset',
+    '/motor_cmd',
 ]
 
 
@@ -52,6 +54,17 @@ def generate_launch_description():
         }.items(),
     )
 
+    def _include(name, launch_arguments):
+        return IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare(BRINGUP_PACKAGE),
+                    'launch', '_sensors', name,
+                ])
+            ),
+            launch_arguments=launch_arguments.items(),
+        )
+
     morse_detector_include = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -64,8 +77,13 @@ def generate_launch_description():
         }.items(),
     )
 
+    panorama_include = _include('motor_panorama.launch.py', {
+        'enable_panorama_stitcher': 'true',
+    })
+
     return LaunchDescription([
         foxglove_node,
         imu_gps_include,
         morse_detector_include,
+        panorama_include,
     ])

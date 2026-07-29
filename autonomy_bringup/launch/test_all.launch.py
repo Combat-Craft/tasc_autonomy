@@ -88,8 +88,7 @@ def generate_launch_description():
     })
 
     return LaunchDescription(args + [
-        foxglove_group,
-        imu_gps_include,
+        foxglove_group,        imu_gps_include,
         morse_detector_include,
         route_include,
         panorama_include,

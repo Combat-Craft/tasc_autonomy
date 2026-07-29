@@ -34,7 +34,19 @@ TOPIC_WHITELIST = [
     '/gps/fix',
     '/heading',
     '/cardinal_compass',
+    '/motor_cmd',
 ]
+
+def _include(name, launch_arguments):
+    return IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([
+                FindPackageShare(BRINGUP_PACKAGE),
+                'launch', '_sensors', name,
+            ])
+        ),
+        launch_arguments=launch_arguments.items(),
+    )
 
 
 def generate_launch_description():
@@ -53,7 +65,12 @@ def generate_launch_description():
         }.items(),
     )
 
+    panorama_include = _include('motor_panorama.launch.py', {
+            'enable_panorama_stitcher': 'true',
+        })
+
     return LaunchDescription([
         foxglove_node,
         imu_gps_include,
+        panorama_include
     ])
