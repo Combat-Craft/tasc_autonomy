@@ -1,0 +1,270 @@
+# apple
+
+import argparse
+import collections
+import os
+import threading
+import time
+import cv2
+import numpy as np
+
+MORSE_CODE = {
+    '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
+    '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J',
+    '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O',
+    '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
+    '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', '-.--': 'Y',
+    '--..': 'Z',
+    '-----': '0', '.----': '1', '..---': '2', '...--': '3',
+    '....-': '4', '.....': '5', '-....': '6', '--...': '7',
+    '---..': '8', '----.': '9',
+    '.-.-.-': '.', '--..--': ',', '..--..': '?',
+    '.----.': "'", '-.-.--': '!', '-..-.': '/',
+    '-.--.': '(', '-.--.-': ')',
+    '.-...': '&', '---...': ':',
+    '-.-.-.': ';', '-...-': '=',
+    '.-.-.': '+', '-....-': '-',
+    '..--.-': '_', '.-..-.': '"',
+    '.--.-.': '@',
+}
+
+# ROI Mouse Drag Globals
+roi_pts = []
+selecting_roi = False
+
+
+def mouse_callback(event, x, y, flags, param):
+    global roi_pts, selecting_roi
+    if event == cv2.EVENT_LBUTTONDOWN:
+        roi_pts = [(x, y)]
+        selecting_roi = True
+    elif event == cv2.EVENT_LBUTTONUP:
+        roi_pts.append((x, y))
+        selecting_roi = False
+
+
+class LatestFrameGrabber:
+    """
+    Background reader thread that continuously flushes the RTSP buffer
+    so the main loop only processes the newest real-time frame.
+    """
+    def __init__(self, cap):
+        self.cap = cap
+        self._lock = threading.Lock()
+        self._frame = None
+        self._ok = False
+        self._stopped = False
+        self._thread = threading.Thread(target=self._reader_loop, daemon=True)
+        self._thread.start()
+
+    def _reader_loop(self):
+        while not self._stopped:
+            ret, frame = self.cap.read()
+            if ret:
+                with self._lock:
+                    self._frame = frame
+                    self._ok = True
+            else:
+                time.sleep(0.001)
+
+    def read(self):
+        with self._lock:
+            return self._ok, self._frame
+
+    def stop(self):
+        self._stopped = True
+        self._thread.join(timeout=1.0)
+
+
+class MorseTester:
+    def __init__(self):
+        self.is_on = False
+        self.on_time = None
+        self.off_time = None
+
+        # --- MATCHING MICROCONTROLLER TIMINGS ---
+        # Dit = 100ms | Dash = 300ms | Intra-Gap = 100ms | Char-Gap = 300ms | Word-Gap = 700ms
+        self.DOT_DASH_THRESHOLD = 0.200      # Halfway between 100ms dot and 300ms dash
+        self.CHAR_GAP_THRESHOLD = 0.200      # Halfway between 100ms intra-gap and 300ms char-gap
+        self.WORD_GAP_THRESHOLD = 0.500      # Halfway between 300ms char-gap and 700ms word-gap
+
+        # Safety Guards
+        self.MIN_VALID_DURATION = 0.030      # Ignore noise < 30ms
+        self.MAX_VALID_PULSE    = 0.500      # Discard pulses > 500ms
+
+        self.current_sym = ""
+        self.message = ""
+
+    def reset(self):
+        self.message = ""
+        self.current_sym = ""
+        print("\n--- Message Reset ---\n")
+
+    def process_frame(self, frame, now, crop_box=None):
+        if crop_box and crop_box[2] > 10 and crop_box[3] > 10:
+            x, y, w, h = crop_box
+            target_region = frame[y:y+h, x:x+w]
+        else:
+            target_region = cv2.resize(frame, (160, 90), interpolation=cv2.INTER_AREA)
+
+        gray = cv2.cvtColor(target_region, cv2.COLOR_BGR2GRAY)
+
+        # Anti-Bloom Thresholding: Ignore halo bloom (<220), focus on hyper-bright core
+        _, saturated_mask = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)
+        hot_pixel_count = cv2.countNonZero(saturated_mask)
+
+        # Light is ON only when core saturated pixels are present
+        light_on = hot_pixel_count >= 10
+
+        # State Transition: OFF -> ON
+        if light_on and not self.is_on:
+            self.is_on = True
+            self.on_time = now
+            if self.off_time:
+                gap = now - self.off_time
+                if gap >= self.MIN_VALID_DURATION:
+                    self._handle_gap(gap)
+
+        # State Transition: ON -> OFF
+        elif not light_on and self.is_on:
+            self.is_on = False
+            self.off_time = now
+            duration = now - self.on_time
+            if self.MIN_VALID_DURATION <= duration <= self.MAX_VALID_PULSE:
+                self._handle_pulse(duration)
+            elif duration > self.MAX_VALID_PULSE:
+                print(f"  [IGNORED] Long Pulse ({duration*1000:.0f}ms)")
+
+        # Continuous OFF State: Check word boundary timeout
+        elif not light_on and not self.is_on:
+            if self.off_time and self.current_sym:
+                gap = now - self.off_time
+                if gap > self.WORD_GAP_THRESHOLD:
+                    self._flush(word=True)
+
+        return light_on, hot_pixel_count
+
+    def _handle_pulse(self, duration):
+        symbol = "." if duration < self.DOT_DASH_THRESHOLD else "-"
+        self.current_sym += symbol
+        print(f"  pulse: {symbol} ({duration*1000:.0f}ms) -> current_sym='{self.current_sym}'")
+
+    def _handle_gap(self, gap):
+        if gap > self.WORD_GAP_THRESHOLD:
+            print(f"  gap: {gap*1000:.0f}ms -> WORD END")
+            self._flush(word=True)
+        elif gap > self.CHAR_GAP_THRESHOLD:
+            print(f"  gap: {gap*1000:.0f}ms -> LETTER END")
+            self._flush(word=False)
+
+    def _flush(self, word=False):
+        had_pending = bool(self.current_sym)
+
+        if self.current_sym:
+            letter = MORSE_CODE.get(self.current_sym, "?")
+            self.message += letter
+            print(f"  letter: '{self.current_sym}' -> '{letter}'")
+            self.current_sym = ""
+
+        if word and (had_pending or not self.message.endswith(" ")):
+            self.message += " "
+
+        if had_pending or word:
+            print(f"DECODED: {self.message!r}")
+
+
+def open_camera(rtsp_url):
+    options = "rtsp_transport;tcp|fflags;nobuffer|flags;low_delay|max_delay;0"
+    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = options
+    return cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+
+
+def main():
+    global roi_pts
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--camera", default="rtsp://admin:@192.168.1.116:8554/profile1")
+    args = parser.parse_args()
+
+    cap = open_camera(args.camera)
+    if not cap.isOpened():
+        print(f"ERROR: Could not open camera stream '{args.camera}'")
+        return
+
+    print("Started Morse Decoder (ROI Drag Support)")
+    print("Tip: Click & Drag a box around the LED in the window to lock focus!")
+    print("Controls: Press 'ESC' to quit | Press 'r' to reset message | Press 'c' to clear ROI\n")
+
+    grabber = LatestFrameGrabber(cap)
+    time.sleep(0.5)
+
+    tester = MorseTester()
+    last_processed_frame_id = None
+    crop_box = None
+
+    cv2.namedWindow("Morse Stream Decoder")
+    cv2.setMouseCallback("Morse Stream Decoder", mouse_callback)
+
+    try:
+        while True:
+            ret, frame = grabber.read()
+            if not ret or frame is None:
+                time.sleep(0.001)
+                continue
+
+            frame_id = id(frame)
+            if frame_id == last_processed_frame_id:
+                time.sleep(0.001)
+                continue
+            last_processed_frame_id = frame_id
+
+            # Calculate crop box if drawn
+            if len(roi_pts) == 2:
+                p1, p2 = roi_pts[0], roi_pts[1]
+                x = min(p1[0], p2[0])
+                y = min(p1[1], p2[1])
+                w = abs(p1[0] - p2[0])
+                h = abs(p1[1] - p2[1])
+                if w > 10 and h > 10:
+                    crop_box = (x, y, w, h)
+
+            now = time.monotonic()
+            light_on, hot_pixels = tester.process_frame(frame, now, crop_box)
+
+            debug = frame.copy()
+
+            # Draw ROI Bounding Box
+            if crop_box:
+                x, y, w, h = crop_box
+                cv2.rectangle(debug, (x, y), (x + w, y + h), (255, 255, 0), 2)
+                cv2.putText(debug, "ROI LOCKED", (x, max(15, y - 5)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+
+            color = (0, 255, 0) if light_on else (0, 0, 255)
+            cv2.putText(debug, f"ON={light_on} CorePx={hot_pixels}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+            cv2.putText(debug, f"MSG: {tester.message[-35:]}", (10, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
+            cv2.imshow("Morse Stream Decoder", debug)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == 27:  # ESC
+                break
+            elif key == ord('r'):
+                tester.reset()
+            elif key == ord('c'):
+                roi_pts = []
+                crop_box = None
+                print("ROI cleared.")
+
+    except KeyboardInterrupt:
+        print("\nStopped.")
+
+    grabber.stop()
+    cap.release()
+    cv2.destroyAllWindows()
+    print(f"\nFinal Decoded Message: {tester.message!r}")
+
+
+if __name__ == "__main__":
+    main()
