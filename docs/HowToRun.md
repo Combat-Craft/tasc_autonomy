@@ -77,7 +77,7 @@ You should see 3 cameras. 1 is Tegra, 1 for the Orbbec with about 8 total paths,
 
 3. Go to camera_streams folder 
 ```bash
-cd ~/autonav_ws/src/tasc_autonomy/tree/main/camera_streams
+cd ~/autonav_ws/src/tasc_autonomy/camera_streams
 ```
    
 5. Start TCP Server for USB Camera Control. The 1st argument is the Jetson IP, and the 2nd is the Port
