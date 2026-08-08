@@ -91,13 +91,17 @@ If using Windows, ensure you have set up correctly for the GUI. This means MSYS2
 
 If you are smart and use Ubuntu/Linux, set up a venv with Pygobject, PySide6 and onvif-zeep all installed via pip install. Make sure to activate the venv!
 
-1. Go to where the *bleep* you saved ``tasc_autonomy_custom_gui``. 
+1. Go to where the *bleep* you saved ``tasc_autonomy_custom_gui``.
+2. Activate the virtual envrioment
+```bash
+source ../venv/bin/activate
+```
 
-2. Start up the GUI
+3. Start up the GUI
 ```bash
 python3 main.py
 ```
-3. Use the control panel to connect for camera controls, for USB cams or IP cams.
+4. Use the control panel to connect for camera controls, for USB cams or IP cams.
 
 
 ### NOTE FOR IP CAMERA SETTINGS
