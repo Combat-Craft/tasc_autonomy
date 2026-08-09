@@ -263,7 +263,7 @@ class IMUGPSNode(Node):
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = self.get_parameter('frame_id').value
     
-            if fix == 1:
+            if fix:
                 msg.status.status = NavSatStatus.STATUS_FIX
                 msg.status.service = NavSatStatus.SERVICE_GPS
     
